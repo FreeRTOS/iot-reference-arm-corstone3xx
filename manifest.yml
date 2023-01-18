@@ -1,0 +1,41 @@
+name : "IoT Reference Integration for Corstone-300"
+version: "v202303.00"
+description: |-
+  "Reference IoT integration project using the Arm Corstone-300 and FreeRTOS LTS libraries"
+dependencies:
+  - name: "FreeRTOS-Kernel"
+    version: "d4d5e43292a57df354dcf8f33d938283f2082855"
+    repository:
+      type: "git"
+      url: "https://github.com/FreeRTOS/FreeRTOS-Kernel.git"
+      path: "Middleware/FreeRTOS/kernel"
+  - name: "toolchains"
+    version: "v2022.09"
+    repository:
+      type: "git"
+      url: "https://git.gitlab.arm.com/iot/open-iot-sdk/toolchain.git"
+      path: "toolchains"
+  - name: "arm-corstone-platform-bsp"
+    version: "v0.1.0"
+    repository:
+      type: "git"
+      url: "https://git.gitlab.arm.com/iot/open-iot-sdk/arm-corstone-platform-bsp.git"
+      path: "Bsp/arm-corstone-platform-bsp"
+  - name: "CMSIS_5"
+    version: "5.9.0 (2b7495b8535bdcb306dac29b9ded4cfb679d7e5c)"
+    repository:
+      type: "git"
+      url: "https://github.com/ARM-software/CMSIS_5.git"
+      path: "Bsp/arm-corstone-platform-bsp/CMSIS/CMSIS_5"
+  - name: "trusted-firmware-m"
+    version: "TF-Mv1.8.0 (35ac80c8581d483da7d18cb8bcd20aaed096550c)"
+    repository:
+      type: "git"
+      url: "https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git"
+      path: "Middleware/ARM/TF-M/trusted-firmware-m"
+  - name: "FreeRTOS-Libraries-Integration-Tests"
+    version: "19603d26e396a6c9c45147333209ae3578b08e26"
+    repository:
+      type: "git"
+      url: "https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests"
+      path: "Middleware/FreeRTOS/FreeRTOS-Libraries-Integration-Tests"

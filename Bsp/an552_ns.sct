@@ -1,0 +1,21 @@
+/* Copyright 2023 Arm Limited and/or its affiliates
+ * <open-source-office@arm.com>
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+LR_CODE (0x01000000 + ((((0) + (0x60000)) + (0x400)))) {
+    ER_CODE (0x01000000 + ((((0) + (0x60000)) + (0x400)))) { ;(((0x60000) - (0x400) - (0xC00))) {
+        *.o (RESET +First)
+        * (InRoot$$Sections)
+        * (+RO)
+    }
+
+    ER_DATA (0x21000000) {
+        * (+ZI +RW)
+    }
+
+    ARM_LIB_STACK +0 ALIGN 32 EMPTY (0x0002800) {
+    }
+    ARM_LIB_HEAP +0 ALIGN 8 EMPTY (0x00b0000) {
+    }
+}
