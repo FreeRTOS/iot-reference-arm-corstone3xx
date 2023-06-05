@@ -40,8 +40,8 @@ set(CONFIG_TFM_ENABLE_CP10CP11 ON)
 
 # AWS OTA client doesn't use the patch version. Therefore, build version from TF-M is used. Because of this,
 # if only patch version is changed then the OTA will be rejected due to same firmwrae version.
-set(MCUBOOT_IMAGE_VERSION_NS "0.0.1+10" )
-set(MCUBOOT_IMAGE_VERSION_NS_UPDATE "0.0.1+20" )
+set(MCUBOOT_IMAGE_VERSION_NS "0.0.1+10")
+set(MCUBOOT_IMAGE_VERSION_NS_UPDATE "0.0.1+20")
 
 # Extra arguments for TF-M and ML
 set(TFM_CMAKE_ARGS "-DPROJECT_CONFIG_HEADER_FILE=${PRJ_DIR}/Config/tfm-config/project_config.h;-DCONFIG_TFM_ENABLE_CP10CP11=ON;-DTFM_EXCEPTION_INFO_DUMP=ON;-DNS=ON;-DPLATFORM_DEFAULT_UART_STDOUT=ON;-DMCUBOOT_SIGNATURE_KEY_LEN=2048;-DMCUBOOT_LOG_LEVEL=INFO;-DTFM_SPM_LOG_LEVEL=TFM_SPM_LOG_LEVEL_INFO;-DTFM_PARTITION_CRYPTO=ON;-DTFM_PARTITION_FIRMWARE_UPDATE=ON;-DTFM_PARTITION_INITIAL_ATTESTATION=ON;-DTFM_PARTITION_INTERNAL_TRUSTED_STORAGE=ON;-DTFM_PARTITION_PLATFORM=ON;-DTFM_PARTITION_PROTECTED_STORAGE=ON")
@@ -150,6 +150,7 @@ add_custom_command(
 
     BYPRODUCTS
         ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example_unsigned.bin
+        ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example-update_signed.bin
         ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example_signed.bin
 
     COMMAND
@@ -192,7 +193,7 @@ add_custom_command(
 
 add_custom_command(
     TARGET
-    aws-iot-example
+        aws-iot-example
     POST_BUILD
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example-update_signed.bin
