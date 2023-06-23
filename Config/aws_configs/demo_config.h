@@ -28,6 +28,17 @@
 #define DEMO_CONFIG_H
 
 #include "core_mqtt.h"
+#include "aws_clientcredential.h"
+
+/**
+ * To use this demo, please configure the client's certificate and private key
+ * in aws_configs/aws_clientcredential_keys.h
+ * and credentials in aws_configs/aws_clientcredential.h.
+ * 
+ * For the AWS IoT MQTT broker, refer to the AWS documentation below for details
+ * regarding client authentication.
+ * https://docs.aws.amazon.com/iot/latest/developerguide/client-authentication.html
+ */
 
 /**
  * @brief The name of the operating system that the application is running on.
@@ -61,64 +72,9 @@
  */
 #define democonfigMQTT_USERNAME_LENGTH    ( ( uint16_t ) ( sizeof( democonfigMQTT_USERNAME ) - 1 ) )
 
-/**
- * To use this demo, please configure the client's certificate and private key
- * in demos/include/aws_clientcredential_keys.h.
- * 
- * For the AWS IoT MQTT broker, refer to the AWS documentation below for details
- * regarding client authentication.
- * https://docs.aws.amazon.com/iot/latest/developerguide/client-authentication.html
- */
-
-/**
- * @brief The MQTT client identifier used in this example.  Each client identifier
- * must be unique; so edit as required to ensure that no two clients connecting to
- * the same broker use the same client identifier.
- *
- * #define democonfigCLIENT_IDENTIFIER    "insert here."
- */
-
-/*
-#define democonfigCLIENT_IDENTIFIER    ""
-*/
-
-#ifndef democonfigCLIENT_IDENTIFIER
-#error "Uncomment the democonfigCLIENT_IDENTIFIER macro above and insert MQTT client identifier"
-#endif /* democonfigCLIENT_IDENTIFIER */
-
-/**
- * @brief Endpoint of the MQTT broker to connect to.
- *
- * This demo application can be run with any MQTT broker, that supports mutual
- * authentication.
- *
- * For AWS IoT MQTT broker, this is the Thing's REST API Endpoint.
- *
- * @note Your AWS IoT Core endpoint can be found in the AWS IoT console under
- * Settings/Custom Endpoint, or using the describe-endpoint REST API (with
- * AWS CLI command line tool).
- *
- * #define democonfigMQTT_BROKER_ENDPOINT    ""
- */
-
-/*
- #define democonfigMQTT_BROKER_ENDPOINT    ""
-*/
-
-#ifndef democonfigMQTT_BROKER_ENDPOINT
-#error "Uncomment the democonfigMQTT_BROKER_ENDPOINT macro above and insert AWS IoT Core endpoint"
-#endif /* democonfigMQTT_BROKER_ENDPOINT */
-
-/**
- * @brief The port to use for the demo.
- *
- * In general, port 8883 is for secured MQTT connections.
- *
- * @note Port 443 requires use of the ALPN TLS extension with the ALPN protocol
- * name. When using port 8883, ALPN is not required.
- *
- * #define democonfigMQTT_BROKER_PORT    "...insert here..."
- */
-#define democonfigMQTT_BROKER_PORT 8883
+/* these are set in "aws_clientcredential.h" */
+#define democonfigCLIENT_IDENTIFIER clientcredentialIOT_THING_NAME
+#define democonfigMQTT_BROKER_ENDPOINT clientcredentialMQTT_BROKER_ENDPOINT
+#define democonfigMQTT_BROKER_PORT clientcredentialMQTT_BROKER_PORT
 
 #endif /* DEMO_CONFIG_H */
