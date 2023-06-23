@@ -1,7 +1,7 @@
 name : "IoT Reference Integration for Corstone-300"
-version: "v202303.00"
+version: "v202306.00"
 description: |-
-  "Reference IoT integration project using the Arm Corstone-300 and FreeRTOS LTS libraries"
+  "Reference IoT integration project using the Arm Corstone-300 and FreeRTOS libraries"
 dependencies:
   - name: "FreeRTOS-Kernel"
     version: "d4d5e43292a57df354dcf8f33d938283f2082855"
@@ -9,12 +9,6 @@ dependencies:
       type: "git"
       url: "https://github.com/FreeRTOS/FreeRTOS-Kernel.git"
       path: "Middleware/FreeRTOS/kernel"
-  - name: "toolchains"
-    version: "v2022.09"
-    repository:
-      type: "git"
-      url: "https://git.gitlab.arm.com/iot/open-iot-sdk/toolchain.git"
-      path: "toolchains"
   - name: "arm-corstone-platform-bsp"
     version: "v0.1.0"
     repository:
@@ -33,6 +27,84 @@ dependencies:
       type: "git"
       url: "https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git"
       path: "Middleware/ARM/TF-M/trusted-firmware-m"
+  - name: "mbedtls"
+    version: "v2.28.3 (981743de6fcdbe672e482b6fd724d31d0a0d2476)"
+    repository:
+      type: "git"
+      url: "https://github.com/Mbed-TLS/mbedtls.git"
+      path: "Middleware/ARM/mbedtls-lib/mbedtls"
+  - name: "IoT_Socket"
+    version: "1e15f55ae08c2169c0e4a59216e78a4906a66af8"
+    repository:
+      type: "git"
+      url: "https://github.com/MDK-Packs/IoT_Socket.git"
+      path: "Middleware/ARM/IoT_Socket-lib/IoT_Socket"
+  - name: "AVH"
+    version: "ab37f6126c94fee7bbd061f77716745dfbb77592"
+    repository:
+      type: "git"
+      url: "https://github.com/ARM-software/AVH.git"
+      path: "Middleware/ARM/IoT_VSocket-lib/AVH"
+  - name: "freertos-pkcs11-psa"
+    version: "40b4868b38720757f88615f0e705ad086956967a"
+    repository:
+      type: "git"
+      url: "https://github.com/Linaro/freertos-pkcs11-psa.git"
+      path: "Middleware/ARM/freertos-pkcs11-psa-lib/freertos-pkcs11-psa"
+  - name: "freertos-ota-pal-psa"
+    version: "08e6c6eeb978f28d873f9a12c58882b88f1b7235"
+    repository:
+      type: "git"
+      url: "https://github.com/Linaro/freertos-ota-pal-psa.git"
+      path: "Middleware/ARM/freertos-ota-pal-psa-lib/freertos-ota-pal-psa"
+  - name: "coreMQTT-Agent"
+    version: "505dd2343af5ffd84f865ae83938edc45b4f2baa"
+    repository:
+      type: "git"
+      url: "https://github.com/FreeRTOS/coreMQTT-Agent.git"
+      path: "Middleware/AWS/coreMQTT-Agent"
+  - name: "coreMQTT"
+    version: "33031789a12dad96892ad5008c8cd7ef8558e8ac"
+    repository:
+      type: "git"
+      url: "https://github.com/FreeRTOS/coreMQTT.git"
+      path: "Middleware/AWS/coreMQTT"
+  - name: "coreJSON"
+    version: "a1c702e6d216222ef45a520d8ba2aba315a1ea78"
+    repository:
+      type: "git"
+      url: "https://github.com/FreeRTOS/coreJSON.git"
+      path: "Middleware/AWS/coreJSON"
+  - name: "corePKCS11"
+    version: "ccba578b731c5f7ce351704c0a1f49831f640718"
+    repository:
+      type: "git"
+      url: "https://github.com/FreeRTOS/corePKCS11.git"
+      path: "Middleware/AWS/corePKCS11"
+  - name: "backoffAlgorithm"
+    version: "5db5777c8fa787f0b7851adc8a7e3e12985e7667"
+    repository:
+      type: "git"
+      url: "https://github.com/FreeRTOS/backoffAlgorithm.git"
+      path: "Middleware/AWS/backoffAlgorithm"
+  - name: "ota-for-aws-iot-embedded-sdk"
+    version: "406415ef38d9f0fbabd69735623008fd090043b3"
+    repository:
+      type: "git"
+      url: "https://github.com/aws/ota-for-aws-iot-embedded-sdk.git"
+      path: "Middleware/AWS/ota-for-aws-iot-embedded-sdk"
+  - name: "tinycbor"
+    version: "9924cfed3b95ad6de299ae675064430fdb886216"
+    repository:
+      type: "git"
+      url: "https://github.com/intel/tinycbor"
+      path: "Middleware/AWS/tinycbor"
+  - name: "toolchains"
+    version: "v2022.09"
+    repository:
+      type: "git"
+      url: "https://git.gitlab.arm.com/iot/open-iot-sdk/toolchain.git"
+      path: "toolchains"
   - name: "FreeRTOS-Libraries-Integration-Tests"
     version: "19603d26e396a6c9c45147333209ae3578b08e26"
     repository:

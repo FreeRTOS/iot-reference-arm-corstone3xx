@@ -1,0 +1,137 @@
+From 382d9fe69bb255455ddde7048b1906f69a659949 Mon Sep 17 00:00:00 2001
+From: Devaraj Ranganna <devaraj.ranganna@arm.com>
+Date: Fri, 5 May 2023 11:49:13 +0100
+Subject: [PATCH] Replace CMSIS-RTX APIs with FreeRTOS APIs
+
+Signed-off-by: Devaraj Ranganna <devaraj.ranganna@arm.com>
+---
+ interface/vsocket/iot_socket.c | 38 ++++++++++++++++++++++++++++------
+ 1 file changed, 32 insertions(+), 6 deletions(-)
+
+diff --git a/interface/vsocket/iot_socket.c b/interface/vsocket/iot_socket.c
+index 5c1c3f1..8a6d353 100644
+--- a/interface/vsocket/iot_socket.c
++++ b/interface/vsocket/iot_socket.c
+@@ -18,12 +18,18 @@
+ 
+ #include <string.h>
+ 
++/* Kernel includes. */
++#include "FreeRTOS.h"
++#include "task.h"
++
+ #include "iot_socket.h"
+ #ifdef   _RTE_
+ #include "RTE_Components.h"
+ #endif
+ #include CMSIS_device_header
+-#include "cmsis_os2.h"
++#ifndef  ARM_VSOCKET
++    #include "arm_vsocket.h"
++#endif
+ 
+ 
+ #define NUM_SOCKS               64
+@@ -89,6 +95,10 @@ int32_t iotSocketListen (int32_t socket, int32_t backlog) {
+ // Accept a new connection on a socket
+ int32_t iotSocketAccept (int32_t socket, uint8_t *ip, uint32_t *ip_len, uint16_t *port) {
+   volatile vSocketAcceptIO_t io;
++  TickType_t xNextWakeTime;
++
++  /* Initialise xNextWakeTime - this only needs to be done once. */
++  xNextWakeTime = xTaskGetTickCount();
+ 
+   if ((socket < 0) || (socket >= NUM_SOCKS)) {
+     return IOT_SOCKET_EINVAL;
+@@ -117,7 +127,7 @@ int32_t iotSocketAccept (int32_t socket, uint8_t *ip, uint32_t *ip_len, uint16_t
+     if (io.ret_val != IOT_SOCKET_EAGAIN) {
+       break;
+     }
+-    osDelay(10U);
++    vTaskDelayUntil( &xNextWakeTime, pdMS_TO_TICKS( 10UL ) );
+   }
+   if (io.ret_val >= 0) {
+     sock_attr[io.ret_val].ionbio  = 0U;
+@@ -130,6 +140,10 @@ int32_t iotSocketAccept (int32_t socket, uint8_t *ip, uint32_t *ip_len, uint16_t
+ // Connect a socket to a remote host
+ int32_t iotSocketConnect (int32_t socket, const uint8_t *ip, uint32_t ip_len, uint16_t port) {
+   volatile vSocketConnectIO_t io;
++  TickType_t xNextWakeTime;
++
++  /* Initialise xNextWakeTime - this only needs to be done once. */
++  xNextWakeTime = xTaskGetTickCount();
+ 
+   if ((socket < 0) || (socket >= NUM_SOCKS)) {
+     return IOT_SOCKET_EINVAL;
+@@ -154,7 +168,7 @@ int32_t iotSocketConnect (int32_t socket, const uint8_t *ip, uint32_t ip_len, ui
+     if ((io.ret_val != IOT_SOCKET_EINPROGRESS) && (io.ret_val != IOT_SOCKET_EALREADY)) {
+       break;
+     }
+-    osDelay(10U);
++    vTaskDelayUntil( &xNextWakeTime, pdMS_TO_TICKS( 10UL ) );
+   }
+   if (io.ret_val == IOT_SOCKET_EISCONN) {
+     return 0;
+@@ -167,6 +181,10 @@ int32_t iotSocketConnect (int32_t socket, const uint8_t *ip, uint32_t ip_len, ui
+ int32_t iotSocketRecv (int32_t socket, void *buf, uint32_t len) {
+   volatile vSocketRecvIO_t io;
+   uint32_t delay;
++  TickType_t xNextWakeTime;
++
++  /* Initialise xNextWakeTime - this only needs to be done once. */
++  xNextWakeTime = xTaskGetTickCount();
+ 
+   if ((socket < 0) || (socket >= NUM_SOCKS)) {
+     return IOT_SOCKET_EINVAL;
+@@ -194,7 +212,7 @@ int32_t iotSocketRecv (int32_t socket, void *buf, uint32_t len) {
+     if (io.ret_val != IOT_SOCKET_EAGAIN) {
+       break;
+     }
+-    osDelay(10U);
++    vTaskDelayUntil( &xNextWakeTime, pdMS_TO_TICKS( 10UL ) );
+   }
+ 
+   // On timeout returns EAGAIN
+@@ -205,6 +223,10 @@ int32_t iotSocketRecv (int32_t socket, void *buf, uint32_t len) {
+ int32_t iotSocketRecvFrom (int32_t socket, void *buf, uint32_t len, uint8_t *ip, uint32_t *ip_len, uint16_t *port) {
+   volatile vSocketRecvFromIO_t io;
+   uint32_t delay;
++  TickType_t xNextWakeTime;
++
++  /* Initialise xNextWakeTime - this only needs to be done once. */
++  xNextWakeTime = xTaskGetTickCount();
+ 
+   if ((socket < 0) || (socket >= NUM_SOCKS)) {
+     return IOT_SOCKET_EINVAL;
+@@ -235,7 +257,7 @@ int32_t iotSocketRecvFrom (int32_t socket, void *buf, uint32_t len, uint8_t *ip,
+     if (io.ret_val != IOT_SOCKET_EAGAIN) {
+       break;
+     }
+-    osDelay(10U);
++    vTaskDelayUntil( &xNextWakeTime, pdMS_TO_TICKS( 10UL ) );
+   }
+ 
+   // On timeout returns EAGAIN
+@@ -399,6 +421,10 @@ int32_t iotSocketClose (int32_t socket) {
+ // Retrieve host IP address from host name
+ int32_t iotSocketGetHostByName (const char *name, int32_t af, uint8_t *ip, uint32_t *ip_len) {
+   volatile vSocketGetHostByNameIO_t io;
++  TickType_t xNextWakeTime;
++
++  /* Initialise xNextWakeTime - this only needs to be done once. */
++  xNextWakeTime = xTaskGetTickCount();
+ 
+   io.param.name   = name;
+   io.param.len    = strlen(name);
+@@ -414,7 +440,7 @@ int32_t iotSocketGetHostByName (const char *name, int32_t af, uint8_t *ip, uint3
+     if (io.ret_val != IOT_SOCKET_EAGAIN) {
+       break;
+     }
+-    osDelay(10U);
++    vTaskDelayUntil( &xNextWakeTime, pdMS_TO_TICKS( 10UL ) );
+   }
+ 
+   return io.ret_val;
+-- 
+2.25.1
+

@@ -23,7 +23,7 @@ Options:
     -t,--target Target to run
 
 Examples:
-    blinky
+    blinky, aws-iot-example
 EOF
 }
 
@@ -61,15 +61,18 @@ case "$1" in
     blinky)
         EXAMPLE="$1"
         ;;
+    aws-iot-example)
+        EXAMPLE="$1"
+        ;;
     *)
-        echo "Usage: $0 <blinky>" >&2
+        echo "Usage: $0 <blinky,aws-iot-example>" >&2
         exit 1
         ;;
 esac
 
 case "$TARGET" in
     corstone300 )
-      FVP_BIN="FVP_Corstone_SSE-300_Ethos-U55"
+      FVP_BIN="VHT_Corstone_SSE-300_Ethos-U55"
       ;;
     corstone310 )
       FVP_BIN="VHT_Corstone_SSE-310"

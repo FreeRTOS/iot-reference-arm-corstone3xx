@@ -3,3 +3,8 @@
 # SPDX-License-Identifier: MIT
 
 add_subdirectory(TF-M)
+add_subdirectory(mbedtls-lib)
+add_subdirectory(IoT_Socket-lib)
+add_subdirectory(IoT_VSocket-lib)
+add_subdirectory(freertos-pkcs11-psa-lib)
+add_subdirectory(freertos-ota-pal-psa-lib)

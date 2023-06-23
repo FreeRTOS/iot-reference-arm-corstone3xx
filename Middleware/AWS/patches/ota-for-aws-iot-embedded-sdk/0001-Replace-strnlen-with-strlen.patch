@@ -1,0 +1,35 @@
+From 979d676938f1705076b26f27a5c02cb26a13bf25 Mon Sep 17 00:00:00 2001
+From: Devaraj Ranganna <devaraj.ranganna@arm.com>
+Date: Mon, 22 May 2023 16:06:15 +0100
+Subject: [PATCH] Replace `strnlen` with `strlen`
+
+The `strnlen` is not part of C standard library and hence not portable.
+Replace `strnlen` with `strlen`.
+
+Signed-off-by: Devaraj Ranganna <devaraj.ranganna@arm.com>
+---
+ source/ota_mqtt.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/source/ota_mqtt.c b/source/ota_mqtt.c
+index d2fc7b3..12fabc3 100644
+--- a/source/ota_mqtt.c
++++ b/source/ota_mqtt.c
+@@ -890,8 +890,13 @@ OtaErr_t requestJob_Mqtt( const OtaAgentContext_t * pAgentCtx )
+ 
+     pTopicParts[ 1 ] = ( const char * ) pAgentCtx->pThingName;
+ 
++    xThingNameLength = ( uint32_t ) strlen( ( const char * ) pAgentCtx->pThingName );
++
+     /* Client token max length is 64. It is a combination of request counter (max 10 characters), a separator colon, and the ThingName. */
+-    xThingNameLength = ( uint32_t ) strnlen( ( const char * ) pAgentCtx->pThingName, OTA_CLIENT_TOKEN_MAX_THINGNAME_LEN );
++    if( xThingNameLength > OTA_CLIENT_TOKEN_MAX_THINGNAME_LEN )
++    {
++        xThingNameLength = OTA_CLIENT_TOKEN_MAX_THINGNAME_LEN;
++    }
+ 
+     reqCounterStringLength = ( uint32_t ) stringBuilderUInt32Decimal( reqCounterString, sizeof( reqCounterString ), reqCounter );
+ 
+-- 
+2.25.1
+

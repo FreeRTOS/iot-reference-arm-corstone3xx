@@ -56,7 +56,7 @@ Options:
     --configure-only Create build tree but do not build
 
 Examples:
-    blinky
+    blinky, aws-iot-example
 EOF
 }
 
@@ -106,8 +106,11 @@ case "$1" in
     blinky)
         EXAMPLE="$1"
         ;;
+    aws-iot-example)
+        EXAMPLE="$1"
+        ;;
     *)
-        echo "Missing example <blinky>"
+        echo "Missing example <blinky,aws-iot-example>"
         show_usage
         exit 2
         ;;

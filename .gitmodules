@@ -13,3 +13,39 @@
 [submodule "Bsp/arm-corstone-platform-bsp"]
 	path = Bsp/arm-corstone-platform-bsp
 	url = https://git.gitlab.arm.com/iot/open-iot-sdk/arm-corstone-platform-bsp.git
+[submodule "Middleware/ARM/mbedtls-lib/mbedtls"]
+	path = Middleware/ARM/mbedtls-lib/mbedtls
+	url = https://github.com/Mbed-TLS/mbedtls.git
+[submodule "Middleware/ARM/IoT_Socket-lib/IoT_Socket"]
+	path = Middleware/ARM/IoT_Socket-lib/IoT_Socket
+	url = https://github.com/MDK-Packs/IoT_Socket.git
+[submodule "Middleware/ARM/IoT_VSocket-lib/AVH"]
+	path = Middleware/ARM/IoT_VSocket-lib/AVH
+	url = https://github.com/ARM-software/AVH.git
+[submodule "Middleware/ARM/freertos-pkcs11-psa-lib/freertos-pkcs11-psa"]
+	path = Middleware/ARM/freertos-pkcs11-psa-lib/freertos-pkcs11-psa
+	url = https://github.com/Linaro/freertos-pkcs11-psa.git
+[submodule "Middleware/ARM/freertos-ota-pal-psa-lib/freertos-ota-pal-psa"]
+	path = Middleware/ARM/freertos-ota-pal-psa-lib/freertos-ota-pal-psa
+	url = https://github.com/Linaro/freertos-ota-pal-psa.git
+[submodule "Middleware/AWS/coreMQTT-Agent"]
+	path = Middleware/AWS/coreMQTT-Agent
+	url = https://github.com/FreeRTOS/coreMQTT-Agent
+[submodule "Middleware/AWS/coreMQTT"]
+	path = Middleware/AWS/coreMQTT
+	url = https://github.com/FreeRTOS/coreMQTT.git
+[submodule "Middleware/AWS/coreJSON"]
+	path = Middleware/AWS/coreJSON
+	url = https://github.com/FreeRTOS/coreJSON.git
+[submodule "Middleware/AWS/corePKCS11"]
+	path = Middleware/AWS/corePKCS11
+	url = https://github.com/FreeRTOS/corePKCS11.git
+[submodule "Middleware/AWS/backoffAlgorithm"]
+	path = Middleware/AWS/backoffAlgorithm
+	url = https://github.com/FreeRTOS/backoffAlgorithm.git
+[submodule "Middleware/AWS/ota-for-aws-iot-embedded-sdk"]
+	path = Middleware/AWS/ota-for-aws-iot-embedded-sdk
+	url = https://github.com/aws/ota-for-aws-iot-embedded-sdk.git
+[submodule "Middleware/AWS/tinycbor"]
+	path = Middleware/AWS/tinycbor
+	url = https://github.com/intel/tinycbor

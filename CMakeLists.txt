@@ -13,3 +13,7 @@ set(PRJ_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 if(EXAMPLE STREQUAL "blinky")
     add_subdirectory(Projects/blinky)
 endif()
+
+if(EXAMPLE STREQUAL "aws-iot-example")
+    add_subdirectory(Projects/aws-iot-example)
+endif()
