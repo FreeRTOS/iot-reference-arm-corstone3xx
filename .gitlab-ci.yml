@@ -1,0 +1,104 @@
+# Copyright 2023 Arm Limited and/or its affiliates
+# <open-source-office@arm.com>
+# SPDX-License-Identifier: MIT
+
+default:
+  # cancel the job if a new pipeline is triggered on the same branch
+  interruptible: true
+  image: ${OPEN_IOT_SDK_DOCKER_REGISTRY}/open-iot-sdk:${OPEN_IOT_SDK_DOCKER_VERSION}
+
+variables:
+  OPEN_IOT_SDK_DOCKER_VERSION: v1
+  KUBERNETES_CPU_REQUEST: 1
+  KUBERNETES_MEMORY_REQUEST: 1Gi
+  GIT_SUBMODULE_STRATEGY: recursive
+  RETRY_LIMIT: 100
+
+# Normally, workflow rules are enabled for all the below and "main" branch
+# Since, main branch is already tested and quite heavy, we do not need to run
+# most jobs already run. The below rule skips the job on main branch.
+.base-job-rules:
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_REF_NAME =~ /^release-.*/
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $GITLAB_CI_LOCAL == "true"
+
+stages:
+  - build
+  - test
+  - cleanup
+
+workflow:
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_REF_NAME =~ /^release-.*/
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# This base job load the right docker image and sets some default variables
+.base_job:
+  extends: .base-job-rules
+  tags:
+    - iotmsw-amd64
+  parallel:
+    matrix:
+      - TARGET: [Corstone-300]
+  variables:
+    PYTHONUNBUFFERED: 1
+
+
+# The test job extends .basejob. It add rules to map targets to AVH binaries,
+# require the application to be built and retrieve the artifacts.
+.test_job:
+  stage: test
+  extends: .base_job
+  needs:
+    - job: build-applications
+      artifacts: true
+  before_script:
+    - |
+      if [ $TARGET == "Corstone-300" ];then
+        AVH=/opt/VHT/VHT_Corstone_SSE-300_Ethos-U55
+      fi
+    - |
+      if [ $TARGET == "Corstone-310" ];then
+        AVH=/opt/VHT/VHT_Corstone_SSE-310
+      fi
+
+# Build all the applications which later are tested. Build of the various binaries
+# is described in ./ci/build_examples.sh
+build-applications:
+  stage: build
+  extends: .base_job
+  script:
+    - ./ci/generate_credentials.sh -f -p Config/aws_configs
+    - git config --global user.email "ci@example.com"
+    - git config --global user.name "ci"
+    - ./Tools/scripts/build.sh aws-iot-example
+  artifacts:
+    paths:
+      - build/bootloader/bl2.axf
+      - build/secure_partition/tfm_s_signed.bin
+      - build/Projects/aws-iot-example/aws-iot-example.axf
+      - build/Projects/aws-iot-example/aws-iot-example_signed.bin
+      - build/Projects/aws-iot-example/aws-iot-example-update_signed.bin
+      - build/Projects/aws-iot-example/update-signature.txt
+      - Config/aws_configs
+    expire_in: 1 week
+
+# Test connection to the AWS cloud
+test-ota-aws:
+  extends: .test_job
+  script:
+    - pytest -s Tools/tests/test_ota.py --build-path "build" --avh $AVH --credentials-path "Config/aws_configs"
+
+aws-cleanup:
+  stage: cleanup
+  tags:
+    - iotmsw-amd64
+  rules:
+    - if: $GARBAGE_COLLECT == "true"
+  script:
+    - python -u ./ci/aws_cleanup.py
