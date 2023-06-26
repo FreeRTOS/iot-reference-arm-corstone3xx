@@ -31,6 +31,12 @@ target_sources(awsIoT
         ${MQTT_SERIALIZER_SOURCES}
 )
 
+target_compile_definitions(awsIoT
+    PUBLIC
+        MQTT_DO_NOT_USE_CUSTOM_CONFIG=1
+        MQTT_AGENT_DO_NOT_USE_CUSTOM_CONFIG=1
+)
+
 # coreJSON
 include(coreJSON/jsonFilePaths.cmake)
 

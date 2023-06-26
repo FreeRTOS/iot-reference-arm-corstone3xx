@@ -68,14 +68,14 @@ dependencies:
       path: "Middleware/ARM/freertos-ota-pal-psa-lib/freertos-ota-pal-psa"
   - name: "coreMQTT-Agent"
     license: "MIT"
-    version: "505dd2343af5ffd84f865ae83938edc45b4f2baa"
+    version: "v1.2.0"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/coreMQTT-Agent.git"
       path: "Middleware/AWS/coreMQTT-Agent"
   - name: "coreMQTT"
     license: "MIT"
-    version: "33031789a12dad96892ad5008c8cd7ef8558e8ac"
+    version: "v2.1.1"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/coreMQTT.git"
