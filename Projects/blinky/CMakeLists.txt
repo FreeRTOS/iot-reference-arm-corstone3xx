@@ -102,11 +102,21 @@ target_link_libraries(blinky
     fri-bsp
 )
 
-target_link_options(blinky
-    PRIVATE
-        "--scatter=${PRJ_DIR}/Bsp/an552_ns.sct"
-        "--map"
-)
+if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+    target_link_options(blinky
+        PRIVATE
+            "-T" "${PRJ_DIR}/Bsp/an552_ns.ld"
+            "--specs=nosys.specs"
+    )
+    set(elf_to_bin_cmd ${GCC_ELF2BIN} -O binary ${CMAKE_CURRENT_BINARY_DIR}/blinky${CMAKE_EXECUTABLE_SUFFIX} ${CMAKE_CURRENT_BINARY_DIR}/blinky_unsigned.bin)
+else()
+    target_link_options(blinky
+        PRIVATE
+            "--scatter=${PRJ_DIR}/Bsp/an552_ns.sct"
+            "--map"
+    )
+    set(elf_to_bin_cmd ${ARM_ELF2BIN} --bin --output ${CMAKE_CURRENT_BINARY_DIR}/blinky_unsigned.bin ${CMAKE_CURRENT_BINARY_DIR}/blinky${CMAKE_EXECUTABLE_SUFFIX} --bincombined)
+endif()
 
 add_custom_command(
     TARGET
@@ -120,7 +130,7 @@ add_custom_command(
         ${CMAKE_CURRENT_BINARY_DIR}/blinky_signed.bin
 
     COMMAND
-        ${ARM_ELF2BIN} --bin --output ${CMAKE_CURRENT_BINARY_DIR}/blinky_unsigned.bin ${CMAKE_CURRENT_BINARY_DIR}/blinky${CMAKE_EXECUTABLE_SUFFIX} --bincombined
+        ${elf_to_bin_cmd}
 
     COMMAND
         python3 ${BINARY_DIR}/install/image_signing/scripts/wrapper/wrapper.py
