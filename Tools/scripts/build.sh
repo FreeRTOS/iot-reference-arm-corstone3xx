@@ -14,6 +14,8 @@ CLEAN=0
 BUILD_PATH="$ROOT/build"
 TARGET="corstone300"
 TARGET_PROCESSOR=""
+TOOLCHAIN="ARMCLANG"
+TOOLCHAIN_FILE=""
 BUILD=1
 
 set -e
@@ -36,7 +38,7 @@ function build_with_cmake {
         set -ex
 
         # Note: A bug in CMake force us to set the toolchain here
-        cmake -G Ninja -S . -B $BUILD_PATH --toolchain=toolchains/toolchain-armclang.cmake -DCMAKE_SYSTEM_PROCESSOR=$TARGET_PROCESSOR -DARM_CORSTONE_BSP_TARGET_PLATFORM=$TARGET -DEXAMPLE=$EXAMPLE
+        cmake -G Ninja -S . -B $BUILD_PATH --toolchain=$TOOLCHAIN_FILE -DCMAKE_SYSTEM_PROCESSOR=$TARGET_PROCESSOR -DARM_CORSTONE_BSP_TARGET_PLATFORM=$TARGET -DEXAMPLE=$EXAMPLE
         if [[ $BUILD -ne 0 ]]; then
             cmake --build $BUILD_PATH --target $EXAMPLE
         fi
@@ -53,6 +55,7 @@ Options:
     -h,--help        Show this help
     -c,--clean       Clean build
     -t,--target      Build target (corstone300 or corstone310)
+    --toolchain      Compiler (GNU or ARMCLANG)
     --configure-only Create build tree but do not build
 
 Examples:
@@ -66,7 +69,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 SHORT=t:,c,h
-LONG=target:,clean,help,configure-only
+LONG=target:,toolchain:,clean,help,configure-only
 OPTS=$(getopt -n build --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -84,6 +87,10 @@ do
       ;;
     -t | --target )
       TARGET=$2
+      shift 2
+      ;;
+    --toolchain )
+      TOOLCHAIN=$2
       shift 2
       ;;
     --configure-only )
@@ -125,6 +132,20 @@ case "$TARGET" in
       ;;
     *)
       echo "Invalid target <corstone300|corstone310>"
+      show_usage
+      exit 2
+      ;;
+esac
+
+case "$TOOLCHAIN" in
+    ARMCLANG )
+      TOOLCHAIN_FILE="toolchains/toolchain-armclang.cmake"
+      ;;
+    GNU )
+      TOOLCHAIN_FILE="toolchains/toolchain-arm-none-eabi-gcc.cmake"
+      ;;
+    * )
+      echo "Invalid toolchain <ARMCLANG|GNU>"
       show_usage
       exit 2
       ;;
