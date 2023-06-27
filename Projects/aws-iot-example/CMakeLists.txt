@@ -19,11 +19,6 @@ else()
     message(FATAL_ERROR "Invalid ARM_CORSTONE_BSP_TARGET_PLATFORM (${ARM_CORSTONE_BSP_TARGET_PLATFORM}) set. It should be corstone300")
 endif()
 
-# Set build type
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "The build type" FORCE)
-endif()
-
 set(TFM_PLATFORM "${TFM_PLATFORM_LOCAL_PATH}")
 set(TFM_PARTITION_FIRMWARE_UPDATE ON)
 set(TFM_PSA_FIRMWARE_UPDATE ON)
@@ -49,6 +44,14 @@ set(TFM_CMAKE_ARGS "-DPROJECT_CONFIG_HEADER_FILE=${PRJ_DIR}/Config/tfm-config/pr
 # Configuration of executable
 set(EXE_SUFFIX ".axf")
 set(CMAKE_EXECUTABLE_SUFFIX ${EXE_SUFFIX})
+
+# Set global optimization level to reduce code size while keeping the debug experience.
+# ARMClang does not have -Og but officially recommends -O1 for debug.
+if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+    add_compile_options(-Og)
+else()
+    add_compile_options(-O1)
+endif()
 
 add_subdirectory(../../Middleware/ARM ${CMAKE_BINARY_DIR}/Middleware/ARM)
 add_subdirectory(../../Bsp ${CMAKE_BINARY_DIR}/Bsp)
