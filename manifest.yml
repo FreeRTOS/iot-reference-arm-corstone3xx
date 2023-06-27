@@ -124,7 +124,7 @@ dependencies:
       path: "toolchains"
   - name: "FreeRTOS-Libraries-Integration-Tests"
     license: "MIT"
-    version: "19603d26e396a6c9c45147333209ae3578b08e26"
+    version: "202210.01"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests"
