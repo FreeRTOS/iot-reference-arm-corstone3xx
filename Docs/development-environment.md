@@ -26,7 +26,7 @@ python3 -m venv ~/fri-venv
 source ~/fri-venv/bin/activate
 ```
 
-* Install required python 3 modules
+* Installing required python 3 modules
 ```bash
 sudo apt update
 sudo apt install python3-pip
