@@ -34,6 +34,12 @@ Run the command below to perform a clean build:
 ./Tools/scripts/build.sh blinky -c
 ```
 
+This will build the example with the Arm Compiler (armclang) by default, which is
+included in the [Arm Virtual Hardware instance](./setting-up-arm-virtual-hardware.md)
+on AWS. If you would like to build it with the Arm GNU Toolchain (arm-none-eabi-gcc)
+[installed by yourself](./development-environment.md), append the extra option
+`--toolchain GNU` to the build command above.
+
 # Running the application
 
 To run the blinky example, run the following command:
