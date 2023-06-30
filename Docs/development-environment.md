@@ -21,22 +21,23 @@ git submodule update --init --recursive
 * Ubuntu 20.04 or higher. Please note that the following instructions are
   validated on Ubuntu 20.04.
 * Setting up python 3 virtual environment
-```bash
-python3 -m venv ~/fri-venv
-source ~/fri-venv/bin/activate
-```
+
+    ```bash
+    python3 -m venv ~/fri-venv
+    source ~/fri-venv/bin/activate
+    ```
 
 * Installing required python 3 modules
-```bash
-sudo apt update
-sudo apt install python3-pip
-python3 -m pip install ninja imgtool cffi intelhex cbor2 cbor jinja2 PyYaml
-```
 
-***NOTE***  
-The virtual environment can be deactivated when not needed anymore by executing
-the command below:
+    ```bash
+    sudo apt update
+    sudo apt install python3-pip
+    python3 -m pip install ninja imgtool cffi intelhex cbor2 cbor jinja2 PyYaml
+    ```
 
-```bash
-deactivate
-```
+    **NOTE**: The virtual environment can be deactivated when not needed anymore
+    by executing the command below:
+
+    ```bash
+    deactivate
+    ```
