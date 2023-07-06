@@ -1277,7 +1277,7 @@ static BaseType_t prvSocketDisconnect( NetworkContext_t * pxNetworkContext )
 
 static MQTTStatus_t prvMQTTInit( void )
 {
-    TransportInterface_t xTransport;
+    TransportInterface_t xTransport = {0};
     MQTTStatus_t xReturn;
     MQTTFixedBuffer_t xFixedBuffer = { .pBuffer = xNetworkBuffer, .size = MQTT_AGENT_NETWORK_BUFFER_SIZE };
     static uint8_t staticQueueStorageArea[ MQTT_AGENT_COMMAND_QUEUE_LENGTH * sizeof( MQTTAgentCommand_t * ) ];
