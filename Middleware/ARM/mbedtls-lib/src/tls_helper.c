@@ -83,86 +83,6 @@ static const char * pNoLowLevelMbedTlsCodeStr = "<No-Low-Level-Code>";
 
 /*-----------------------------------------------------------*/
 
-/*
- * Helper routines.
- */
-
-#if defined( MBEDTLS_BASE64_C )
-
-    int convert_pem_to_der( const unsigned char * input,
-                            size_t ilen,
-                            unsigned char * output,
-                            size_t * olen )
-    {
-        int ret;
-        const unsigned char * s1, * s2, * end = input + ilen;
-        size_t len = 0;
-
-        s1 = ( unsigned char * ) strstr( ( const char * ) input, "-----BEGIN" );
-
-        if( s1 == NULL )
-        {
-            return( -1 );
-        }
-
-        s2 = ( unsigned char * ) strstr( ( const char * ) input, "-----END" );
-
-        if( s2 == NULL )
-        {
-            return( -1 );
-        }
-
-        s1 += 10;
-
-        while( s1 < end && *s1 != '-' )
-        {
-            s1++;
-        }
-
-        while( s1 < end && *s1 == '-' )
-        {
-            s1++;
-        }
-
-        if( *s1 == '\r' )
-        {
-            s1++;
-        }
-
-        if( *s1 == '\n' )
-        {
-            s1++;
-        }
-
-        if( ( s2 <= s1 ) || ( s2 > end ) )
-        {
-            return( -1 );
-        }
-
-        ret = mbedtls_base64_decode( NULL, 0, &len, ( const unsigned char * ) s1, s2 - s1 );
-
-        if( ret == MBEDTLS_ERR_BASE64_INVALID_CHARACTER )
-        {
-            return( ret );
-        }
-
-        if( len > *olen )
-        {
-            return( -1 );
-        }
-
-        if( ( ret = mbedtls_base64_decode( output, len, &len, ( const unsigned char * ) s1,
-                                           s2 - s1 ) ) != 0 )
-        {
-            return( ret );
-        }
-
-        *olen = len;
-
-        return( 0 );
-    }
-#endif /* defined(MBEDTLS_BASE64_C) */
-
 /**
  * @brief TLS internal context rundown helper routine.
  *
@@ -189,6 +109,7 @@ static void prvFreeContext( TLSContext_t * pxContext )
         }
     }
 }
+
 /*-----------------------------------------------------------*/
 
 /**
