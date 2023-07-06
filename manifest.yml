@@ -1,7 +1,7 @@
-name : "IoT Reference Integration for Corstone-300"
-version: "v202306.00"
+name : "IoT Reference Integration for Corstone-3xx"
+version: "v202306.00-alpha"
 description: |-
-  "Reference IoT integration project using the Arm Corstone-300 and FreeRTOS libraries"
+  "Reference IoT integration projects using the Arm Corstone platforms and FreeRTOS libraries"
 dependencies:
   - name: "FreeRTOS-Kernel"
     license: "MIT"
