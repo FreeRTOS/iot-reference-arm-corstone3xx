@@ -32,6 +32,18 @@
 /* Standard includes. */
 #include <string.h>
 
+/* Include header that defines log levels. */
+#include "logging_levels.h"
+
+/* Configure name and log level. */
+#ifndef LIBRARY_LOG_NAME
+    #define LIBRARY_LOG_NAME     "SUB MGR"
+#endif
+#ifndef LIBRARY_LOG_LEVEL
+    #define LIBRARY_LOG_LEVEL    LOG_INFO
+#endif
+#include "logging_stack.h"
+
 /* Subscription manager header include. */
 #include "subscription_manager.h"
 

@@ -20,9 +20,11 @@ target_include_directories(mqtt-agent-task
 )
 
 target_link_libraries(mqtt-agent-task
-    freertos_kernel
-    freertos-ota-pal-psa
-    awsIoT
-    iot-vsocket
-    app-config
+    PRIVATE
+        freertos_kernel
+        freertos-ota-pal-psa
+        awsIoT
+        iot-vsocket
+        app-config
+        app-logging
 )

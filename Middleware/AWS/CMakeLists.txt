@@ -2,6 +2,9 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
+# Logging
+add_subdirectory(logging)
+
 # coreMQTT-Agent
 add_library(awsIoT STATIC)
 
