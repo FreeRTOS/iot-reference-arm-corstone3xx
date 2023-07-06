@@ -26,7 +26,7 @@
 
 
 /**
- * @file aws_dev_mode_key_provisioning.c
+ * @file dev_mode_key_provisioning.c
  * @brief Simple key provisioning example using PKCS #11
  *
  * A simple example to demonstrate key and certificate provisioning in
@@ -51,7 +51,7 @@
 #include "iot_default_root_certificates.h"
 
 /* Key provisioning include. */
-#include "aws_dev_mode_key_provisioning.h"
+#include "dev_mode_key_provisioning.h"
 
 /* Utilities include. */
 #include "core_pki_utils.h"

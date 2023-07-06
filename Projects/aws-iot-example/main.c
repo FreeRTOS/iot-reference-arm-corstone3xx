@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 #include "app_config.h"
-#include "aws_dev_mode_key_provisioning.h"
+#include "dev_mode_key_provisioning.h"
 
 #include "ota_provision.h"
 
