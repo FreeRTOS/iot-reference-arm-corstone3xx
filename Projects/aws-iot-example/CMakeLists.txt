@@ -47,10 +47,13 @@ set(CMAKE_EXECUTABLE_SUFFIX ${EXE_SUFFIX})
 
 # Set global optimization level to reduce code size while keeping the debug experience.
 # ARMClang does not have -Og but officially recommends -O1 for debug.
-if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
-    add_compile_options(-Og)
+if (INTEGRATION_TESTS)
 else()
-    add_compile_options(-O1)
+    if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+        add_compile_options(-Og)
+    else()
+        add_compile_options(-O1)
+    endif()
 endif()
 
 add_subdirectory(../../Middleware/ARM ${CMAKE_BINARY_DIR}/Middleware/ARM)
