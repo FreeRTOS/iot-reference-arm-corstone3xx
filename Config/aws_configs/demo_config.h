@@ -29,6 +29,7 @@
 
 #include "core_mqtt.h"
 #include "aws_clientcredential.h"
+#include "iot_default_root_certificates.h"
 
 /**
  * To use this demo, please configure the client's certificate and private key
@@ -72,9 +73,10 @@
  */
 #define democonfigMQTT_USERNAME_LENGTH    ( ( uint16_t ) ( sizeof( democonfigMQTT_USERNAME ) - 1 ) )
 
-/* these are set in "aws_clientcredential.h" */
+/* these are set in "aws_clientcredential.h and iot_default_root_certificates.h" */
 #define democonfigCLIENT_IDENTIFIER clientcredentialIOT_THING_NAME
 #define democonfigMQTT_BROKER_ENDPOINT clientcredentialMQTT_BROKER_ENDPOINT
 #define democonfigMQTT_BROKER_PORT clientcredentialMQTT_BROKER_PORT
+#define democonfigROOT_CA_PEM tlsATS1_ROOT_CERTIFICATE_PEM
 
 #endif /* DEMO_CONFIG_H */
