@@ -49,3 +49,6 @@
 [submodule "Middleware/AWS/tinycbor"]
 	path = Middleware/AWS/tinycbor
 	url = https://github.com/intel/tinycbor
+[submodule "Middleware/Unity"]
+	path = Middleware/Unity
+	url = https://github.com/ThrowTheSwitch/Unity.git

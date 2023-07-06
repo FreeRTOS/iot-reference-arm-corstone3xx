@@ -129,3 +129,10 @@ dependencies:
       type: "git"
       url: "https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests"
       path: "Middleware/FreeRTOS/FreeRTOS-Libraries-Integration-Tests"
+  - name: "Unity"
+    license: "MIT"
+    version: "v2.5.2"
+    repository:
+      type: "git"
+      url: "https://github.com/ThrowTheSwitch/Unity.git"
+      path: "Middleware/Unity"
