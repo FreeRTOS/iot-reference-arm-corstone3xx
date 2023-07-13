@@ -258,14 +258,32 @@ static uint32_t prvGetTimeMs( void )
     return ulTimeMs;
 }
 
-static BaseType_t prvSocketConnect( NetworkContext_t * pxNetworkContext )
+static UBaseType_t prvGetRandomNumber( void )
 {
     psa_status_t xPsaStatus = PSA_ERROR_PROGRAMMER_ERROR;
+    UBaseType_t uxRandomValue = 0U;
+
+    xPsaStatus = psa_generate_random( ( uint8_t * ) ( &uxRandomValue ), sizeof( UBaseType_t ) );
+
+    if( xPsaStatus != PSA_SUCCESS )
+    {
+        LogError( ( "psa_generate_random failed with %d.", xPsaStatus ) );
+        LogError( ( "Using xTaskGetTickCount() as random number generator" ) );
+    }
+    else
+    {
+        uxRandomValue = xTaskGetTickCount();
+    }
+
+    return uxRandomValue;
+}
+
+static BaseType_t prvSocketConnect( NetworkContext_t * pxNetworkContext )
+{
     BaseType_t xConnected = pdFAIL;
     BackoffAlgorithmStatus_t xBackoffAlgStatus = BackoffAlgorithmSuccess;
     BackoffAlgorithmContext_t xReconnectParams = { 0 };
     uint16_t usNextRetryBackOff = 0U;
-    UBaseType_t uxRandomValue = 0U;
 
     TransportStatus_t xNetworkStatus = TRANSPORT_STATUS_CONNECT_FAILURE;
     TLSParams_t xTLSParams = { 0 };
@@ -301,62 +319,27 @@ static BaseType_t prvSocketConnect( NetworkContext_t * pxNetworkContext )
     xTLSParams.disableSni = false;
     xTLSParams.pLoginPIN = configPKCS11_DEFAULT_USER_PIN;
 
+    /* Establish a TCP connection with the MQTT broker. This example connects to
+     * the MQTT broker as specified in democonfigMQTT_BROKER_ENDPOINT and
+     * democonfigMQTT_BROKER_PORT */
+    LogInfo( ( "Creating a TLS connection to %s:%d.",
+               democonfigMQTT_BROKER_ENDPOINT,
+               democonfigMQTT_BROKER_PORT ) );
 
-    /* We will use a retry mechanism with an exponential backoff mechanism and
-     * jitter.  That is done to prevent a fleet of IoT devices all trying to
-     * reconnect at exactly the same time should they become disconnected at
-     * the same time. We initialize reconnect attempts and interval here. */
-    BackoffAlgorithm_InitializeParams( &xReconnectParams,
-                                       RETRY_BACKOFF_BASE_MS,
-                                       RETRY_MAX_BACKOFF_DELAY_MS,
-                                       BACKOFF_ALGORITHM_RETRY_FOREVER );
+    xNetworkStatus = Transport_Connect( pxNetworkContext,
+                                        &xServerInfo,
+                                        &xTLSParams,
+                                        MQTT_AGENT_TRANSPORT_SEND_RECV_TIMEOUT_MS,
+                                        MQTT_AGENT_TRANSPORT_SEND_RECV_TIMEOUT_MS );
 
-    /* Attempt to connect to MQTT broker. If connection fails, retry after a
-     * timeout. Timeout value will exponentially increase until the maximum
-     * number of attempts are reached.
-     */
-    do
+    xConnected = ( xNetworkStatus == TRANSPORT_STATUS_SUCCESS ) ? pdPASS : pdFAIL;
+
+    if( xConnected )
     {
-        /* Establish a TCP connection with the MQTT broker. This example connects to
-         * the MQTT broker as specified in democonfigMQTT_BROKER_ENDPOINT and
-         * democonfigMQTT_BROKER_PORT at the top of this file. */
-        LogInfo( ( "Creating a TLS connection to %s:%d.",
+        LogInfo( ( "Successfully created a TLS connection to %s:%d.",
                    democonfigMQTT_BROKER_ENDPOINT,
                    democonfigMQTT_BROKER_PORT ) );
-
-        xNetworkStatus = Transport_Connect( pxNetworkContext,
-                                            &xServerInfo,
-                                            &xTLSParams,
-                                            MQTT_AGENT_TRANSPORT_SEND_RECV_TIMEOUT_MS,
-                                            MQTT_AGENT_TRANSPORT_SEND_RECV_TIMEOUT_MS );
-
-        xConnected = ( xNetworkStatus == TRANSPORT_STATUS_SUCCESS ) ? pdPASS : pdFAIL;
-
-        if( !xConnected )
-        {
-            xPsaStatus = psa_generate_random( ( uint8_t * ) ( &uxRandomValue ), sizeof( UBaseType_t ) );
-
-            if( xPsaStatus != PSA_SUCCESS )
-            {
-                LogError( ( "psa_generate_random failed with %d.", xPsaStatus ) );
-                LogError( ( "Using xTaskGetTickCount() as random number generator" ) );
-            }
-            else
-            {
-                uxRandomValue = xTaskGetTickCount();
-            }
-
-            xBackoffAlgStatus = BackoffAlgorithm_GetNextBackoff( &xReconnectParams, uxRandomValue, &usNextRetryBackOff );
-
-            if( xBackoffAlgStatus == BackoffAlgorithmSuccess )
-            {
-                LogWarn( ( "Connection to the broker failed. "
-                           "Retrying connection in %hu ms.",
-                           usNextRetryBackOff ) );
-                vTaskDelay( pdMS_TO_TICKS( usNextRetryBackOff ) );
-            }
-        }
-    } while( ( xConnected != pdPASS ) && ( xBackoffAlgStatus == BackoffAlgorithmSuccess ) );
+    }
 
     return xConnected;
 }
@@ -368,6 +351,8 @@ static BaseType_t prvSocketDisconnect( NetworkContext_t * pxNetworkContext )
     LogInfo( ( "Disconnecting TLS connection.\n" ) );
     Transport_Disconnect( pxNetworkContext );
     xDisconnected = pdPASS;
+
+    ( void ) xEventGroupClearBits( xSystemEvents, EVENT_MASK_MQTT_CONNECTED );
 
     return xDisconnected;
 }
@@ -650,20 +635,53 @@ static void prvMQTTAgentTask( void * pParam )
 {
     BaseType_t xResult = pdFAIL;
     MQTTStatus_t xMQTTStatus = MQTTSuccess;
+    BackoffAlgorithmStatus_t xBackoffAlgStatus = BackoffAlgorithmSuccess;
+    BackoffAlgorithmContext_t xReconnectParams = { 0 };
+    uint16_t usNextRetryBackOff = 0U;
 
     ( void ) pParam;
 
     /* Initialize the MQTT context with the buffer and transport interface. */
     xMQTTStatus = prvMQTTInit();
 
-    if( xMQTTStatus == MQTTSuccess )
+    if( xMQTTStatus != MQTTSuccess )
+    {
+        LogError( ( "MQTT agent init failed." ) );
+        configASSERT( 0 );
+    }
+
+    /* We will use a retry mechanism with an exponential backoff mechanism and
+     * jitter.  That is done to prevent a fleet of IoT devices all trying to
+     * reconnect at exactly the same time should they become disconnected at
+     * the same time. We initialize reconnect attempts and interval here. */
+    BackoffAlgorithm_InitializeParams( &xReconnectParams,
+                                       RETRY_BACKOFF_BASE_MS,
+                                       RETRY_MAX_BACKOFF_DELAY_MS,
+                                       BACKOFF_ALGORITHM_RETRY_FOREVER );
+
+    while( true )
     {
         /* Connect a TCP socket to the broker. */
         xResult = prvSocketConnect( &xNetworkContextMqtt );
 
         if( xResult != pdPASS )
         {
-            LogError( ( "Failed to establish TLS connection to mqtt broker." ) );
+            xBackoffAlgStatus = BackoffAlgorithm_GetNextBackoff( &xReconnectParams, prvGetRandomNumber(), &usNextRetryBackOff );
+
+            if( xBackoffAlgStatus == BackoffAlgorithmSuccess )
+            {
+                LogWarn( ( "TLS connection to the broker failed. "
+                           "Retrying connection in %hu ms.",
+                           usNextRetryBackOff ) );
+                vTaskDelay( pdMS_TO_TICKS( usNextRetryBackOff ) );
+            }
+            else
+            {
+                LogError( ( "BackoffAlgorithm_GetNextBackoff failed with %d. ",
+                            usNextRetryBackOff ) );
+            }
+
+            continue;
         }
 
         /* Start with a clean session i.e. direct the MQTT broker to discard any
@@ -677,17 +695,27 @@ static void prvMQTTAgentTask( void * pParam )
 
         if( xMQTTStatus != MQTTSuccess )
         {
-            LogError( ( "Failed to establish connection to mqtt broker." ) );
-        }
-    }
-    else
-    {
-        LogError( ( "MQTT agent init failed." ) );
-        configASSERT( false );
-    }
+            /* End TLS session, then close TCP connection. */
+            prvSocketDisconnect( &xNetworkContextMqtt );
 
-    do
-    {
+            xBackoffAlgStatus = BackoffAlgorithm_GetNextBackoff( &xReconnectParams, prvGetRandomNumber(), &usNextRetryBackOff );
+
+            if( xBackoffAlgStatus == BackoffAlgorithmSuccess )
+            {
+                LogWarn( ( "Connection to the MQTT broker failed. "
+                           "Retrying connection in %hu ms.",
+                           usNextRetryBackOff ) );
+                vTaskDelay( pdMS_TO_TICKS( usNextRetryBackOff ) );
+            }
+            else
+            {
+                LogError( ( "BackoffAlgorithm_GetNextBackoff failed with %d. ",
+                            usNextRetryBackOff ) );
+            }
+
+            continue;
+        }
+
         /* MQTTAgent_CommandLoop() is effectively the agent implementation.  It
          * will manage the MQTT protocol until such time that an error occurs,
          * which could be a disconnect.  If an error occurs the MQTT context on
@@ -695,38 +723,27 @@ static void prvMQTTAgentTask( void * pParam )
          * clean up and reconnect however the application writer prefers. */
         xMQTTStatus = MQTTAgent_CommandLoop( &xGlobalMqttAgentContext );
 
-        /* Clear Agent queue so that no any pending MQTT operations are processed. */
-        xQueueReset( xCommandQueue.queue );
+        ( void ) xEventGroupClearBits( xSystemEvents, EVENT_MASK_MQTT_CONNECTED );
 
-        /* Success is returned for application intiated disconnect or termination. The socket will also be disconnected by the caller. */
-        if( xMQTTStatus != MQTTSuccess )
+
+        LogError( ( "MQTTAgent_CommandLoop returned with status: %s.",
+                    MQTT_Status_strerror( xMQTTStatus ) ) );
+
+        ( void ) MQTTAgent_CancelAll( &( xGlobalMqttAgentContext ) );
+
+        /* Success is returned for application initiated disconnect or termination. The socket will also be disconnected by the caller. */
+        if( xMQTTStatus == MQTTSuccess )
         {
-            /* End TLS session, then close TCP connection. */
-            prvSocketDisconnect( &xNetworkContextMqtt );
-
-            ( void ) xEventGroupClearBits( xSystemEvents, EVENT_MASK_MQTT_CONNECTED );
-
-            /* Connect a TCP socket to the broker. */
-            xResult = prvSocketConnect( &xNetworkContextMqtt );
-
-            if( xResult != pdPASS )
-            {
-                LogError( ( "Failed to establish TLS connection to mqtt broker." ) );
-                xMQTTStatus = MQTTBadResponse;
-                continue;
-            }
-
-            /* Form an MQTT connection without a persistent session. */
-            xMQTTStatus = prvMQTTConnect();
-
-            if( xMQTTStatus != MQTTSuccess )
-            {
-                LogError( ( "Failed to establish connection to mqtt broker." ) );
-            }
+            break;
         }
-    } while( xMQTTStatus != MQTTSuccess );
+
+        /* End TLS session, then close TCP connection. */
+        prvSocketDisconnect( &xNetworkContextMqtt );
+    }
 
     ( void ) xEventGroupClearBits( xSystemEvents, EVENT_MASK_MQTT_INIT | EVENT_MASK_MQTT_CONNECTED );
+
+    LogError( ( "Terminating MqttAgentTask." ) );
 
     vTaskDelete( NULL );
 }
