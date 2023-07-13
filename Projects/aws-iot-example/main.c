@@ -10,6 +10,8 @@
 #include "app_config.h"
 #include "dev_mode_key_provisioning.h"
 
+#include "mqtt_agent_task.h"
+
 #include "ota_provision.h"
 
 #include "bsp_serial.h"
@@ -168,6 +170,9 @@ int main()
                          tskIDLE_PRIORITY + 1,
                          NULL );
         #else
+            /* Start MQTT agent task */
+            vStartMqttAgentTask();
+
             /* Start OTA task*/
             vStartOtaTask();
 

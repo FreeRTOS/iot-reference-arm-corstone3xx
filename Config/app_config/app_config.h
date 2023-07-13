@@ -31,9 +31,9 @@
  * as work is being produced.
  */
 #define appCONFIG_OTA_MQTT_AGENT_TASK_STACK_SIZE    ( 4096 )
-#define appCONFIG_OTA_MQTT_AGENT_TASK_PRIORITY      ( tskIDLE_PRIORITY + 2 )
+#define appCONFIG_OTA_MQTT_AGENT_TASK_PRIORITY      ( tskIDLE_PRIORITY + 1 )
 
 /** @brief Set logging task as high priority task */
 #define appCONFIG_LOGGING_TASK_PRIORITY             ( configMAX_PRIORITIES - 1 )
-#define appCONFIG_LOGGING_TASK_STACK_SIZE           ( 1440 )
-#define appCONFIG_LOGGING_MESSAGE_QUEUE_LENGTH      ( 15 )
+#define appCONFIG_LOGGING_TASK_STACK_SIZE           ( 2048 )
+#define appCONFIG_LOGGING_MESSAGE_QUEUE_LENGTH      ( 32 )

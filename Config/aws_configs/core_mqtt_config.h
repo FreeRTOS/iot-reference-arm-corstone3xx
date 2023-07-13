@@ -52,7 +52,7 @@
 // #define MQTT_RECV_POLLING_TIMEOUT_MS                 ( 250 )
 
 /*_RB_ To document and add to the mqtt config defaults header file. */
-// #define MQTT_AGENT_COMMAND_QUEUE_LENGTH              ( 32 )
+#define MQTT_AGENT_COMMAND_QUEUE_LENGTH              ( 32 )
 #define MQTT_COMMAND_CONTEXTS_POOL_SIZE              ( 32 )
 
 /**

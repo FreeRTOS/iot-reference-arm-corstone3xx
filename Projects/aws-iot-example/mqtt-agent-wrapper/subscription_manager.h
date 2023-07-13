@@ -85,8 +85,7 @@ typedef struct subscriptionElement
  *
  * @return `true` if subscription added or exists, `false` if insufficient memory.
  */
-bool addSubscription( SubscriptionElement_t * pxSubscriptionList,
-                      const char * pcTopicFilterString,
+bool addSubscription( const char * pcTopicFilterString,
                       uint16_t usTopicFilterLength,
                       IncomingPubCallback_t pxIncomingPublishCallback,
                       void * pvIncomingPublishCallbackContext );
@@ -101,8 +100,7 @@ bool addSubscription( SubscriptionElement_t * pxSubscriptionList,
  * @param[in] pcTopicFilterString Topic filter of subscription.
  * @param[in] usTopicFilterLength Length of topic filter.
  */
-void removeSubscription( SubscriptionElement_t * pxSubscriptionList,
-                         const char * pcTopicFilterString,
+void removeSubscription( const char * pcTopicFilterString,
                          uint16_t usTopicFilterLength );
 
 /**
@@ -115,7 +113,6 @@ void removeSubscription( SubscriptionElement_t * pxSubscriptionList,
  * @return `true` if an application callback could be invoked;
  *  `false` otherwise.
  */
-bool handleIncomingPublishes( SubscriptionElement_t * pxSubscriptionList,
-                              MQTTPublishInfo_t * pxPublishInfo );
+bool handleIncomingPublishes( MQTTPublishInfo_t * pxPublishInfo );
 
 #endif /* SUBSCRIPTION_MANAGER_H */

@@ -1,6 +1,8 @@
 /*
  * FreeRTOS V202012.00
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright 2023 Arm Limited and/or its affiliates
+ * <open-source-office@arm.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,23 +26,6 @@
  *
  */
 
-/**
- * @file OtaOverMqttDemoExample.c
- * @brief Over The Air Update demo using coreMQTT Agent.
- *
- * The file demonstrates how to perform Over The Air update using OTA agent and coreMQTT Agent
- * library. It creates an OTA agent task which manages the OTA firmware update
- * for the device. The example also provides implementations to subscribe, publish,
- * and receive data from an MQTT broker. The implementation uses coreMQTT agent which manages
- * thread safety of the MQTT operations and allows OTA agent to share the same MQTT
- * broker connection with other tasks. OTA agent invokes the callback implementations to
- * publish job related control information, as well as receive chunks
- * of pre-signed firmware image from the MQTT broker.
- *
- * See https://freertos.org/mqtt/mqtt-agent-demo.html
- * See https://freertos.org/ota/ota-mqtt-agent-demo.html
- */
-
 /* Standard includes. */
 #include <string.h>
 #include <stdio.h>
@@ -48,6 +33,8 @@
 #include <assert.h>
 
 #include "app_config.h"
+
+#include "mqtt_agent_task.h"
 
 /* includes for TFM */
 #include "psa/update.h"
@@ -67,23 +54,8 @@
 /* Library config includes. */
 #include "ota_config.h"
 
-#include "core_pkcs11_config.h"
-
-/* MQTT library includes. */
-#include "core_mqtt_agent.h"
-
-/* MQTT Agent ports. */
-#include "freertos_agent_message.h"
-#include "freertos_command_pool.h"
-
-/* Transport interface header file. */
-#include "transport_interface_api.h"
-
 /* Subscription manager header include. */
 #include "subscription_manager.h"
-
-/* Exponential backoff retry include. */
-#include "backoff_algorithm.h"
 
 /* OTA Library include. */
 #include "ota.h"
@@ -196,101 +168,14 @@
 #define otaexampleMAX_UINT32                     ( 0xffffffff )
 
 /**
- * @brief Dimensions the buffer used to serialize and deserialize MQTT packets.
- * @note Specified in bytes.  Must be large enough to hold the maximum
- * anticipated MQTT payload.
- */
-#ifndef MQTT_AGENT_NETWORK_BUFFER_SIZE
-    #define MQTT_AGENT_NETWORK_BUFFER_SIZE    ( 10240 )
-#endif
-
-/**
- * @brief The length of the queue used to hold commands for the agent.
- */
-#ifndef MQTT_AGENT_COMMAND_QUEUE_LENGTH
-    #define MQTT_AGENT_COMMAND_QUEUE_LENGTH    ( 10 )
-#endif
-
-/**
- * @brief The maximum amount of time in milliseconds to wait for the commands
- * to be posted to the MQTT agent should the MQTT agent's command queue be full.
- * Tasks wait in the Blocked state, so don't use any CPU time.
- */
-#define MQTT_AGENT_SEND_BLOCK_TIME_MS               ( 200U )
-
-/**
- * @brief This demo uses task notifications to signal tasks from MQTT callback
- * functions.  mqttexampleMS_TO_WAIT_FOR_NOTIFICATION defines the time, in ticks,
- * to wait for such a callback.
- */
-#define MQTT_AGENT_MS_TO_WAIT_FOR_NOTIFICATION      ( 5000U )
-
-/**
- * @brief The maximum number of retries for network operation with server.
- */
-#define RETRY_MAX_ATTEMPTS                          ( 5U )
-
-/**
- * @brief The maximum back-off delay (in milliseconds) for retrying failed operation
- *  with server.
- */
-#define RETRY_MAX_BACKOFF_DELAY_MS                  ( 5000U )
-
-/**
- * @brief The base back-off delay (in milliseconds) to use for network operation retry
- * attempts.
- */
-#define RETRY_BACKOFF_BASE_MS                       ( 500U )
-
-/**
- * @brief The maximum time interval in seconds which is allowed to elapse
- *  between two Control Packets.
- *
- *  It is the responsibility of the Client to ensure that the interval between
- *  Control Packets being sent does not exceed the this Keep Alive value. In the
- *  absence of sending any other Control Packets, the Client MUST send a
- *  PINGREQ Packet.
- */
-#define otaexampleKEEP_ALIVE_INTERVAL_SECONDS       ( 60U )
-
-/**
- * @brief Socket send and receive timeouts to use.  Specified in milliseconds.
- */
-#define otaexampleTRANSPORT_SEND_RECV_TIMEOUT_MS    ( 750 )
-
-/**
- * @brief Timeout for receiving CONNACK after sending an MQTT CONNECT packet.
- * Defined in milliseconds.
- */
-#define otaexampleCONNACK_RECV_TIMEOUT_MS           ( 1000U )
-
-/**
- * @brief Stack size required for MQTT agent task.
- * MQTT agent task takes care of TLS connection and reconnection, keeping task stack size
- * to high enough required for TLS connection.
- */
-#define MQTT_AGENT_TASK_STACK_SIZE                  ( 6000U )
-
-/**
- * @brief Priority required for OTA statistics task.
- */
-#define MQTT_AGENT_TASK_PRIORITY                    ( tskIDLE_PRIORITY )
-
-/**
  * @brief Stack size required for OTA agent task.
  */
-#define OTA_AGENT_TASK_STACK_SIZE                   ( 5000U )
+#define OTA_AGENT_TASK_STACK_SIZE                ( 5000U )
 
 /**
  * @brief Priority required for OTA agent task.
  */
-#define OTA_AGENT_TASK_PRIORITY                     ( tskIDLE_PRIORITY )
-
-/**
- * @brief Used to convert times to/from ticks and milliseconds.
- */
-#define otaexampleMILLISECONDS_PER_SECOND           ( 1000U )
-#define otaexampleMILLISECONDS_PER_TICK             ( otaexampleMILLISECONDS_PER_SECOND / configTICK_RATE_HZ )
+#define OTA_AGENT_TASK_PRIORITY                  ( tskIDLE_PRIORITY + 1 )
 
 /**
  * @brief The timeout for waiting for the agent to get suspended after closing the
@@ -300,7 +185,7 @@
  * and suspend itself.
  *
  */
-#define OTA_SUSPEND_TIMEOUT_MS                      ( 10000U )
+#define OTA_SUSPEND_TIMEOUT_MS                   ( 10000U )
 
 /*---------------------------------------------------------*/
 
@@ -314,54 +199,7 @@ typedef struct OtaTopicFilterCallback
     IncomingPubCallback_t callback;
 } OtaTopicFilterCallback_t;
 
-/**
- * @brief Defines the structure to use as the command callback context in this
- * demo.
- */
-struct MQTTAgentCommandContext
-{
-    MQTTStatus_t xReturnStatus;
-    TaskHandle_t xTaskToNotify;
-    void * pArgs;
-};
-
 /*---------------------------------------------------------*/
-
-/**
- * @brief Global entry time into the application to use as a reference timestamp
- * in the #prvGetTimeMs function. #prvGetTimeMs will always return the difference
- * between the current time and the global entry time. This will reduce the chances
- * of overflow for the 32 bit unsigned integer used for holding the timestamp.
- */
-static uint32_t ulGlobalEntryTimeMs;
-
-/**
- * @brief The buffer is used to hold the serialized packets for transmission to and from
- * the transport interface.
- */
-static uint8_t xNetworkBuffer[ MQTT_AGENT_NETWORK_BUFFER_SIZE ];
-
-/**
- * @brief FreeRTOS blocking queue to be used as MQTT Agent context.
- */
-static MQTTAgentMessageContext_t xCommandQueue;
-
-/**
- * @brief The network context used by the MQTT library transport interface.
- * See https://www.freertos.org/network-interface.html
- */
-static NetworkContext_t xNetworkContextMqtt;
-
-/**
- * @brief The global array of subscription elements.
- *
- * @note No thread safety is required to this array, since the updates the array
- * elements are done only from one task at a time. The subscription manager
- * implementation expects that the array of the subscription elements used for
- * storing subscriptions to be initialized to 0. As this is a global array, it
- * will be intialized to 0 by default.
- */
-static SubscriptionElement_t xGlobalSubscriptionList[ SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS ];
 
 /**
  * @brief Buffer used to store the firmware image file path.
@@ -407,83 +245,15 @@ static OtaEventData_t eventBuffer[ otaconfigMAX_NUM_OTA_DATA_BUFFERS ] = { 0 };
  */
 static SemaphoreHandle_t xBufferSemaphore;
 
-/**
- * @brief Static handle used for MQTT agent context.
- */
-MQTTAgentContext_t xGlobalMqttAgentContext;
-
 /*---------------------------------------------------------*/
 
 /**
- * @brief Task for MQTT agent.
- * Task runs MQTT agent command loop, which returns only when the user disconnects
- * MQTT, terminates agent, or the mqtt connection is broken. If the mqtt connection is broken, the task
- * suspends OTA agent reconnects to the broker and then resumes OTA agent.
- *
- * @param[in] pParam Can be used to pass down functionality to the agent task
+ * @brief The MQTT agent manages the MQTT contexts.  This set the handle to the
+ * context used by this demo.
  */
-static void prvMQTTAgentTask( void * pParam );
+extern MQTTAgentContext_t xGlobalMqttAgentContext;
 
-/**
- * @brief Function used by OTA agent to publish control messages to the MQTT broker.
- *
- * The implementation uses MQTT agent to queue a publish request. It then waits
- * for the request complete notification from the agent. The notification along with result of the
- * operation is sent back to the caller task using xTaksNotify API. For publishes involving QOS 1 and
- * QOS2 the operation is complete once an acknowledgment (PUBACK) is received. OTA agent uses this function
- * to fetch new job, provide status update and send other control related messges to the MQTT broker.
- *
- * @param[in] pacTopic Topic to publish the control packet to.
- * @param[in] topicLen Length of the topic string.
- * @param[in] pMsg Message to publish.
- * @param[in] msgSize Size of the message to publish.
- * @param[in] qos Qos for the publish.
- * @return OtaMqttSuccess if successful. Appropriate error code otherwise.
- */
-static OtaMqttStatus_t prvMQTTPublish( const char * const pacTopic,
-                                       uint16_t topicLen,
-                                       const char * pMsg,
-                                       uint32_t msgSize,
-                                       uint8_t qos );
-
-/**
- * @brief Function used by OTA agent to subscribe for a control or data packet from the MQTT broker.
- *
- * The implementation queues a SUBSCRIBE request for the topic filter with the MQTT agent. It then waits for
- * a notification of the request completion. Notification will be sent back to caller task,
- * using xTaskNotify APIs. MQTT agent also stores a callback provided by this function with
- * the associated topic filter. The callback will be used to
- * route any data received on the matching topic to the OTA agent. OTA agent uses this function
- * to subscribe to all topic filters necessary for receiving job related control messages as
- * well as firmware image chunks from MQTT broker.
- *
- * @param[in] pTopicFilter The topic filter used to subscribe for packets.
- * @param[in] topicFilterLength Length of the topic filter string.
- * @param[in] ucQoS Intended qos value for the messages received on this topic.
- * @return OtaMqttSuccess if successful. Appropriate error code otherwise.
- */
-static OtaMqttStatus_t prvMQTTSubscribe( const char * pTopicFilter,
-                                         uint16_t topicFilterLength,
-                                         uint8_t ucQoS );
-
-/**
- * @brief Function is used by OTA agent to unsubscribe a topicfilter from MQTT broker.
- *
- * The implementation queues an UNSUBSCRIBE request for the topic filter with the MQTT agent. It then waits
- * for a successful completion of the request from the agent. Notification along with results of
- * operation is sent using xTaskNotify API to the caller task. MQTT agent also removes the topic filter
- * subscription from its memory so any future
- * packets on this topic will not be routed to the OTA agent.
- *
- * @param[in] pTopicFilter Topic filter to be unsubscribed.
- * @param[in] topicFilterLength Length of the topic filter.
- * @param[in] ucQos Qos value for the topic.
- * @return OtaMqttSuccess if successful. Appropriate error code otherwise.
- *
- */
-static OtaMqttStatus_t prvMQTTUnsubscribe( const char * pTopicFilter,
-                                           uint16_t topicFilterLength,
-                                           uint8_t ucQoS );
+/*---------------------------------------------------------*/
 
 /**
  * @brief Fetch an unused OTA event buffer from the pool.
@@ -575,50 +345,6 @@ static void prvMqttDataCallback( void * pContext,
  */
 static void prvMqttDefaultCallback( void * pvIncomingPublishCallbackContext,
                                     MQTTPublishInfo_t * pxPublishInfo );
-
-
-/**
- * @brief Attempt to connect to the MQTT broker.
- *
- */
-static void prvConnectToMQTTBroker( void );
-
-/**
- * @brief Retry logic to establish a connection to the MQTT broker.
- *
- * If the connection fails, keep retrying with exponentially increasing
- * timeout value, until max retries, max timeout or successful connect.
- *
- * @param[in] pNetworkContext Network context to connect on.
- * @return int pdFALSE if connection failed after retries.
- */
-static BaseType_t prvSocketConnect( NetworkContext_t * pNetworkContext );
-
-/**
- * @brief Disconnects from the MQTT broker.
- * Initiates an MQTT disconnect and then teardown underlying TCP connection.
- *
- */
-static void prvDisconnectFromMQTTBroker( void );
-
-/**
- * @brief Initializes an MQTT context, including transport interface and
- * network buffer.
- *
- * @return `MQTTSuccess` if the initialization succeeds, else `MQTTBadParameter`.
- */
-static MQTTStatus_t prvMqttInit( void );
-
-/**
- * @brief Sends an MQTT Connect packet over the already connected TCP socket.
- *
- * @param[in] pxMQTTContext MQTT context pointer.
- * @param[in] xCleanSession If a clean session should be established.
- *
- * @return `MQTTSuccess` if connection succeeds, else appropriate error code
- * from MQTT_Connect.
- */
-static MQTTStatus_t prvMQTTConnect( bool xCleanSession );
 
 /**
  * @brief Register OTA callbacks with the subscription manager.
@@ -919,211 +645,6 @@ static void prvMqttDataCallback( void * pvIncomingPublishCallbackContext,
 
 /*-----------------------------------------------------------*/
 
-static void prvCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
-                                MQTTAgentReturnInfo_t * pxReturnInfo )
-{
-    pxCommandContext->xReturnStatus = pxReturnInfo->returnCode;
-
-    if( pxCommandContext->xTaskToNotify != NULL )
-    {
-        xTaskNotify( pxCommandContext->xTaskToNotify, ( uint32_t ) ( pxReturnInfo->returnCode ), eSetValueWithOverwrite );
-    }
-}
-
-static void prvMQTTSubscribeCompleteCallback( MQTTAgentCommandContext_t * pxCommandContext,
-                                              MQTTAgentReturnInfo_t * pxReturnInfo )
-{
-    MQTTAgentSubscribeArgs_t * pSubsribeArgs;
-
-    if( pxReturnInfo->returnCode == MQTTSuccess )
-    {
-        pSubsribeArgs = ( MQTTAgentSubscribeArgs_t * ) ( pxCommandContext->pArgs );
-        prvRegisterOTACallback( pSubsribeArgs->pSubscribeInfo->pTopicFilter, pSubsribeArgs->pSubscribeInfo->topicFilterLength );
-    }
-
-    /* Store the result in the application defined context so the task that
-     * initiated the publish can check the operation's status. */
-    pxCommandContext->xReturnStatus = pxReturnInfo->returnCode;
-
-    if( pxCommandContext->xTaskToNotify != NULL )
-    {
-        /* Send the context's ulNotificationValue as the notification value so
-         * the receiving task can check the value it set in the context matches
-         * the value it receives in the notification. */
-        xTaskNotify( pxCommandContext->xTaskToNotify, ( uint32_t ) ( pxReturnInfo->returnCode ), eSetValueWithOverwrite );
-    }
-}
-
-/*-----------------------------------------------------------*/
-
-static void prvMQTTUnsubscribeCompleteCallback( MQTTAgentCommandContext_t * pxCommandContext,
-                                                MQTTAgentReturnInfo_t * pxReturnInfo )
-{
-    /* Store the result in the application defined context so the task that
-     * initiated the publish can check the operation's status. */
-    pxCommandContext->xReturnStatus = pxReturnInfo->returnCode;
-
-    if( pxCommandContext->xTaskToNotify != NULL )
-    {
-        /* Send the context's ulNotificationValue as the notification value so
-         * the receiving task can check the value it set in the context matches
-         * the value it receives in the notification. */
-        xTaskNotify( pxCommandContext->xTaskToNotify, ( uint32_t ) ( pxReturnInfo->returnCode ), eSetValueWithOverwrite );
-    }
-}
-
-/*-----------------------------------------------------------*/
-
-static uint32_t prvGetTimeMs( void )
-{
-    TickType_t xTickCount = 0;
-    uint32_t ulTimeMs = 0UL;
-
-    /* Get the current tick count. */
-    xTickCount = xTaskGetTickCount();
-
-    /* Convert the ticks to milliseconds. */
-    ulTimeMs = ( uint32_t ) xTickCount * otaexampleMILLISECONDS_PER_TICK;
-
-    /* Reduce ulGlobalEntryTimeMs from obtained time so as to always return the
-     * elapsed time in the application. */
-    ulTimeMs = ( uint32_t ) ( ulTimeMs - ulGlobalEntryTimeMs );
-
-    return ulTimeMs;
-}
-
-/*-----------------------------------------------------------*/
-
-static void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
-                                        uint16_t packetId,
-                                        MQTTPublishInfo_t * pxPublishInfo )
-{
-    bool xPublishHandled = false;
-    char cOriginalChar, * pcLocation;
-
-    ( void ) packetId;
-
-    /* Fan out the incoming publishes to the callbacks registered using
-     * subscription manager. */
-    xPublishHandled = handleIncomingPublishes( ( SubscriptionElement_t * ) pMqttAgentContext->pIncomingCallbackContext,
-                                               pxPublishInfo );
-
-    /* If there are no callbacks to handle the incoming publishes,
-     * handle it as an unsolicited publish. */
-    if( xPublishHandled != true )
-    {
-        /* Ensure the topic string is terminated for printing.  This will over-
-         * write the message ID, which is restored afterwards. */
-        pcLocation = ( char * ) &( pxPublishInfo->pTopicName[ pxPublishInfo->topicNameLength ] );
-        cOriginalChar = *pcLocation;
-        *pcLocation = 0x00;
-        LogWarn( ( "Received an unsolicited publish from topic %s", pxPublishInfo->pTopicName ) );
-        *pcLocation = cOriginalChar;
-    }
-}
-
-/*-----------------------------------------------------------*/
-
-
-
-static void prvSubscriptionCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
-                                            MQTTAgentReturnInfo_t * pxReturnInfo )
-{
-    size_t xIndex = 0;
-    MQTTAgentSubscribeArgs_t * pxSubscribeArgs = ( MQTTAgentSubscribeArgs_t * ) pxCommandContext;
-
-    /* If the return code is success, no further action is required as all the topic filters
-     * are already part of the subscription list. */
-    if( pxReturnInfo->returnCode != MQTTSuccess )
-    {
-        /* Check through each of the suback codes and determine if there are any failures. */
-        for( xIndex = 0; xIndex < pxSubscribeArgs->numSubscriptions; xIndex++ )
-        {
-            /* This demo doesn't attempt to resubscribe in the event that a SUBACK failed. */
-            if( pxReturnInfo->pSubackCodes[ xIndex ] == MQTTSubAckFailure )
-            {
-                LogError( ( "Failed to resubscribe to topic %.*s.",
-                            pxSubscribeArgs->pSubscribeInfo[ xIndex ].topicFilterLength,
-                            pxSubscribeArgs->pSubscribeInfo[ xIndex ].pTopicFilter ) );
-                /* Remove subscription callback for unsubscribe. */
-                removeSubscription( xGlobalSubscriptionList,
-                                    pxSubscribeArgs->pSubscribeInfo[ xIndex ].pTopicFilter,
-                                    pxSubscribeArgs->pSubscribeInfo[ xIndex ].topicFilterLength );
-            }
-        }
-
-        /* Hit an assert as some of the tasks won't be able to proceed correctly without
-         * the subscriptions. This logic will be updated with exponential backoff and retry.  */
-        configASSERT( pdTRUE );
-    }
-}
-
-
-
-/*-----------------------------------------------------------*/
-
-static MQTTStatus_t prvHandleResubscribe( void )
-{
-    MQTTStatus_t xResult = MQTTBadParameter;
-    uint32_t ulIndex = 0U;
-    uint16_t usNumSubscriptions = 0U;
-
-    /* These variables need to stay in scope until command completes. */
-    static MQTTAgentSubscribeArgs_t xSubArgs = { 0 };
-    static MQTTSubscribeInfo_t xSubInfo[ SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS ] = { 0 };
-    static MQTTAgentCommandInfo_t xCommandParams = { 0 };
-
-    /* Loop through each subscription in the subscription list and add a subscribe
-     * command to the command queue. */
-    for( ulIndex = 0U; ulIndex < SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS; ulIndex++ )
-    {
-        /* Check if there is a subscription in the subscription list. This demo
-         * doesn't check for duplicate subscriptions. */
-        if( xGlobalSubscriptionList[ ulIndex ].usFilterStringLength != 0 )
-        {
-            xSubInfo[ usNumSubscriptions ].pTopicFilter = xGlobalSubscriptionList[ ulIndex ].pcSubscriptionFilterString;
-            xSubInfo[ usNumSubscriptions ].topicFilterLength = xGlobalSubscriptionList[ ulIndex ].usFilterStringLength;
-
-            /* QoS1 is used for all the subscriptions in this demo. */
-            xSubInfo[ usNumSubscriptions ].qos = MQTTQoS1;
-
-            LogInfo( ( "Resubscribe to the topic %.*s will be attempted.",
-                       xSubInfo[ usNumSubscriptions ].topicFilterLength,
-                       xSubInfo[ usNumSubscriptions ].pTopicFilter ) );
-
-            usNumSubscriptions++;
-        }
-    }
-
-    if( usNumSubscriptions > 0U )
-    {
-        xSubArgs.pSubscribeInfo = xSubInfo;
-        xSubArgs.numSubscriptions = usNumSubscriptions;
-
-        /* The block time can be 0 as the command loop is not running at this point. */
-        xCommandParams.blockTimeMs = 0U;
-        xCommandParams.cmdCompleteCallback = prvSubscriptionCommandCallback;
-        xCommandParams.pCmdCompleteCallbackContext = ( void * ) &xSubArgs;
-
-        /* Enqueue subscribe to the command queue. These commands will be processed only
-         * when command loop starts. */
-        xResult = MQTTAgent_Subscribe( &xGlobalMqttAgentContext, &xSubArgs, &xCommandParams );
-    }
-    else
-    {
-        /* Mark the resubscribe as success if there is nothing to be subscribed. */
-        xResult = MQTTSuccess;
-    }
-
-    if( xResult != MQTTSuccess )
-    {
-        LogError( ( "Failed to enqueue the MQTT subscribe command. xResult=%s.",
-                    MQTT_Status_strerror( xResult ) ) );
-    }
-
-    return xResult;
-}
-
 static void prvRegisterOTACallback( const char * pTopicFilter,
                                     uint16_t topicFilterLength )
 {
@@ -1151,8 +672,7 @@ static void prvRegisterOTACallback( const char * pTopicFilter,
         if( isMatch )
         {
             /* Add subscription so that incoming publishes are routed to the application callback. */
-            subscriptionAdded = addSubscription( ( SubscriptionElement_t * ) xGlobalMqttAgentContext.pIncomingCallbackContext,
-                                                 pTopicFilter,
+            subscriptionAdded = addSubscription( pTopicFilter,
                                                  topicFilterLength,
                                                  otaTopicFilterCallbacks[ index ].callback,
                                                  NULL );
@@ -1167,282 +687,44 @@ static void prvRegisterOTACallback( const char * pTopicFilter,
     }
 }
 
-static BaseType_t prvSocketConnect( NetworkContext_t * pxNetworkContext )
+static void prvMQTTSubscribeCompleteCallback( MQTTAgentCommandContext_t * pxCommandContext,
+                                              MQTTAgentReturnInfo_t * pxReturnInfo )
 {
-    BaseType_t xConnected = pdFAIL;
-    BackoffAlgorithmStatus_t xBackoffAlgStatus = BackoffAlgorithmSuccess;
-    BackoffAlgorithmContext_t xReconnectParams = { 0 };
-    uint16_t usNextRetryBackOff = 0U;
+    MQTTAgentSubscribeArgs_t * pSubsribeArgs;
 
-    TransportStatus_t xNetworkStatus = TRANSPORT_STATUS_CONNECT_FAILURE;
-    TLSParams_t xTLSParams = { 0 };
-    ServerInfo_t xServerInfo = { 0 };
-
-    #ifdef democonfigUSE_AWS_IOT_CORE_BROKER
-
-    /* ALPN protocols must be a NULL-terminated list of strings. Therefore,
-     * the first entry will contain the actual ALPN protocol string while the
-     * second entry must remain NULL. */
-    const char * pcAlpnProtocols[] = { NULL, NULL };
-
-    /* The ALPN string changes depending on whether username/password authentication is used. */
-    #ifdef democonfigCLIENT_USERNAME
-        pcAlpnProtocols[ 0 ] = AWS_IOT_CUSTOM_AUTH_ALPN;
-    #else
-        pcAlpnProtocols[ 0 ] = AWS_IOT_MQTT_ALPN;
-    #endif
-    xTLSParams.pAlpnProtos = pcAlpnProtocols;
-    #endif /* ifdef democonfigUSE_AWS_IOT_CORE_BROKER */
-
-
-    /* Initializer server information. */
-    xServerInfo.pHostName = democonfigMQTT_BROKER_ENDPOINT;
-    xServerInfo.hostNameLength = strlen( democonfigMQTT_BROKER_ENDPOINT );
-    xServerInfo.port = democonfigMQTT_BROKER_PORT;
-
-    /* Set the credentials for establishing a TLS connection. */
-    xTLSParams.pRootCa = tlsATS1_ROOT_CERTIFICATE_PEM;
-    xTLSParams.rootCaSize = tlsATS1_ROOT_CERTIFICATE_LENGTH;
-    xTLSParams.pClientCertLabel = pkcs11configLABEL_DEVICE_CERTIFICATE_FOR_TLS;
-    xTLSParams.pPrivateKeyLabel = pkcs11configLABEL_DEVICE_PRIVATE_KEY_FOR_TLS;
-    xTLSParams.disableSni = false;
-    xTLSParams.pLoginPIN = configPKCS11_DEFAULT_USER_PIN;
-
-
-    /* We will use a retry mechanism with an exponential backoff mechanism and
-     * jitter.  That is done to prevent a fleet of IoT devices all trying to
-     * reconnect at exactly the same time should they become disconnected at
-     * the same time. We initialize reconnect attempts and interval here. */
-    BackoffAlgorithm_InitializeParams( &xReconnectParams,
-                                       RETRY_BACKOFF_BASE_MS,
-                                       RETRY_MAX_BACKOFF_DELAY_MS,
-                                       RETRY_MAX_ATTEMPTS );
-
-    /* Attempt to connect to MQTT broker. If connection fails, retry after a
-     * timeout. Timeout value will exponentially increase until the maximum
-     * number of attempts are reached.
-     */
-    do
+    if( pxReturnInfo->returnCode == MQTTSuccess )
     {
-        /* Establish a TCP connection with the MQTT broker. This example connects to
-         * the MQTT broker as specified in democonfigMQTT_BROKER_ENDPOINT and
-         * democonfigMQTT_BROKER_PORT at the top of this file. */
-        LogInfo( ( "Creating a TLS connection to %s:%d.",
-                   democonfigMQTT_BROKER_ENDPOINT,
-                   democonfigMQTT_BROKER_PORT ) );
-
-        xNetworkStatus = Transport_Connect( pxNetworkContext,
-                                            &xServerInfo,
-                                            &xTLSParams,
-                                            otaexampleTRANSPORT_SEND_RECV_TIMEOUT_MS,
-                                            otaexampleTRANSPORT_SEND_RECV_TIMEOUT_MS );
-
-        xConnected = ( xNetworkStatus == TRANSPORT_STATUS_SUCCESS ) ? pdPASS : pdFAIL;
-
-        if( !xConnected )
-        {
-            /* Get back-off value (in milliseconds) for the next connection retry. */
-            xBackoffAlgStatus = BackoffAlgorithm_GetNextBackoff( &xReconnectParams, xTaskGetTickCount(), &usNextRetryBackOff );
-
-            if( xBackoffAlgStatus == BackoffAlgorithmSuccess )
-            {
-                LogWarn( ( "Connection to the broker failed. "
-                           "Retrying connection in %hu ms.",
-                           usNextRetryBackOff ) );
-                vTaskDelay( pdMS_TO_TICKS( usNextRetryBackOff ) );
-            }
-        }
-
-        if( xBackoffAlgStatus == BackoffAlgorithmRetriesExhausted )
-        {
-            LogError( ( "Connection to the broker failed, all attempts exhausted." ) );
-        }
-    } while( ( xConnected != pdPASS ) && ( xBackoffAlgStatus == BackoffAlgorithmSuccess ) );
-
-    return xConnected;
-}
-
-/*-----------------------------------------------------------*/
-
-static BaseType_t prvSocketDisconnect( NetworkContext_t * pxNetworkContext )
-{
-    BaseType_t xDisconnected = pdFAIL;
-
-    LogInfo( ( "Disconnecting TLS connection.\n" ) );
-    Transport_Disconnect( pxNetworkContext );
-    xDisconnected = pdPASS;
-
-    return xDisconnected;
-}
-
-static MQTTStatus_t prvMQTTInit( void )
-{
-    TransportInterface_t xTransport = {0};
-    MQTTStatus_t xReturn;
-    MQTTFixedBuffer_t xFixedBuffer = { .pBuffer = xNetworkBuffer, .size = MQTT_AGENT_NETWORK_BUFFER_SIZE };
-    static uint8_t staticQueueStorageArea[ MQTT_AGENT_COMMAND_QUEUE_LENGTH * sizeof( MQTTAgentCommand_t * ) ];
-    static StaticQueue_t staticQueueStructure;
-    MQTTAgentMessageInterface_t messageInterface =
-    {
-        .pMsgCtx        = NULL,
-        .send           = Agent_MessageSend,
-        .recv           = Agent_MessageReceive,
-        .getCommand     = Agent_GetCommand,
-        .releaseCommand = Agent_ReleaseCommand
-    };
-
-    LogDebug( ( "Creating command queue." ) );
-    xCommandQueue.queue = xQueueCreateStatic( MQTT_AGENT_COMMAND_QUEUE_LENGTH,
-                                              sizeof( MQTTAgentCommand_t * ),
-                                              staticQueueStorageArea,
-                                              &staticQueueStructure );
-    configASSERT( xCommandQueue.queue );
-    messageInterface.pMsgCtx = &xCommandQueue;
-
-    /* Initialize the task pool. */
-    Agent_InitializePool();
-
-    /* Fill in Transport Interface send and receive function pointers. */
-    xTransport.pNetworkContext = &xNetworkContextMqtt;
-    xTransport.send = Transport_Send;
-    xTransport.recv = Transport_Recv;
-
-    /* Initialize MQTT library. */
-    xReturn = MQTTAgent_Init( &xGlobalMqttAgentContext,
-                              &messageInterface,
-                              &xFixedBuffer,
-                              &xTransport,
-                              prvGetTimeMs,
-                              prvIncomingPublishCallback,
-                              /* Context to pass into the callback. Passing the pointer to subscription array. */
-                              xGlobalSubscriptionList );
-
-    return xReturn;
-}
-
-static MQTTStatus_t prvMQTTConnect( bool xCleanSession )
-{
-    MQTTStatus_t xResult;
-    MQTTConnectInfo_t xConnectInfo;
-    bool xSessionPresent = false;
-
-    /* Many fields are not used in this demo so start with everything at 0. */
-    memset( &xConnectInfo, 0x00, sizeof( xConnectInfo ) );
-
-    /* Start with a clean session i.e. direct the MQTT broker to discard any
-     * previous session data. Also, establishing a connection with clean session
-     * will ensure that the broker does not store any data when this client
-     * gets disconnected. */
-    xConnectInfo.cleanSession = xCleanSession;
-
-    /* The client identifier is used to uniquely identify this MQTT client to
-     * the MQTT broker. In a production device the identifier can be something
-     * unique, such as a device serial number. */
-    xConnectInfo.pClientIdentifier = democonfigCLIENT_IDENTIFIER;
-    xConnectInfo.clientIdentifierLength = ( uint16_t ) strlen( democonfigCLIENT_IDENTIFIER );
-
-    /* Set MQTT keep-alive period. It is the responsibility of the application
-     * to ensure that the interval between Control Packets being sent does not
-     * exceed the Keep Alive value. In the absence of sending any other Control
-     * Packets, the Client MUST send a PINGREQ Packet.  This responsibility will
-     * be moved inside the agent. */
-    xConnectInfo.keepAliveSeconds = otaexampleKEEP_ALIVE_INTERVAL_SECONDS;
-
-    /* Append metrics when connecting to the AWS IoT Core broker. */
-    #ifdef democonfigUSE_AWS_IOT_CORE_BROKER
-        #ifdef democonfigCLIENT_USERNAME
-            xConnectInfo.pUserName = CLIENT_USERNAME_WITH_METRICS;
-            xConnectInfo.userNameLength = ( uint16_t ) strlen( CLIENT_USERNAME_WITH_METRICS );
-            xConnectInfo.pPassword = democonfigCLIENT_PASSWORD;
-            xConnectInfo.passwordLength = ( uint16_t ) strlen( democonfigCLIENT_PASSWORD );
-        #else
-            xConnectInfo.pUserName = AWS_IOT_METRICS_STRING;
-            xConnectInfo.userNameLength = AWS_IOT_METRICS_STRING_LENGTH;
-            /* Password for authentication is not used. */
-            xConnectInfo.pPassword = NULL;
-            xConnectInfo.passwordLength = 0U;
-        #endif
-    #else /* ifdef democonfigUSE_AWS_IOT_CORE_BROKER */
-        #ifdef democonfigCLIENT_USERNAME
-            xConnectInfo.pUserName = democonfigCLIENT_USERNAME;
-            xConnectInfo.userNameLength = ( uint16_t ) strlen( democonfigCLIENT_USERNAME );
-            xConnectInfo.pPassword = democonfigCLIENT_PASSWORD;
-            xConnectInfo.passwordLength = ( uint16_t ) strlen( democonfigCLIENT_PASSWORD );
-        #endif /* ifdef democonfigCLIENT_USERNAME */
-    #endif /* ifdef democonfigUSE_AWS_IOT_CORE_BROKER */
-
-    LogInfo( ( "Creating an MQTT connection to the broker. \n" ) );
-
-    /* Send MQTT CONNECT packet to broker. MQTT's Last Will and Testament feature
-     * is not used in this demo, so it is passed as NULL. */
-    xResult = MQTT_Connect( &( xGlobalMqttAgentContext.mqttContext ),
-                            &xConnectInfo,
-                            NULL,
-                            otaexampleCONNACK_RECV_TIMEOUT_MS,
-                            &xSessionPresent );
-
-    LogInfo( ( "Session present: %d\n", xSessionPresent ) );
-
-    /* Resume a session if desired. */
-    if( ( xResult == MQTTSuccess ) && ( xCleanSession == false ) )
-    {
-        xResult = MQTTAgent_ResumeSession( &xGlobalMqttAgentContext, xSessionPresent );
-
-        /* Resubscribe to all the subscribed topics. */
-        if( ( xResult == MQTTSuccess ) && ( xSessionPresent == false ) )
-        {
-            xResult = prvHandleResubscribe();
-        }
+        pSubsribeArgs = ( MQTTAgentSubscribeArgs_t * ) ( pxCommandContext->pArgs );
+        prvRegisterOTACallback( pSubsribeArgs->pSubscribeInfo->pTopicFilter, pSubsribeArgs->pSubscribeInfo->topicFilterLength );
     }
 
-    return xResult;
+    /* Store the result in the application defined context so the task that
+     * initiated the publish can check the operation's status. */
+    pxCommandContext->xReturnStatus = pxReturnInfo->returnCode;
+
+    if( pxCommandContext->xTaskToNotify != NULL )
+    {
+        /* Send the context's ulNotificationValue as the notification value so
+         * the receiving task can check the value it set in the context matches
+         * the value it receives in the notification. */
+        xTaskNotify( pxCommandContext->xTaskToNotify, ( uint32_t ) ( pxReturnInfo->returnCode ), eSetValueWithOverwrite );
+    }
 }
 
-static void prvConnectToMQTTBroker( void )
+static void prvMQTTUnsubscribeCompleteCallback( MQTTAgentCommandContext_t * pxCommandContext,
+                                                MQTTAgentReturnInfo_t * pxReturnInfo )
 {
-    BaseType_t xNetworkStatus = pdFAIL;
-    MQTTStatus_t xMQTTStatus;
+    /* Store the result in the application defined context so the task that
+     * initiated the publish can check the operation's status. */
+    pxCommandContext->xReturnStatus = pxReturnInfo->returnCode;
 
-    /* Connect a TCP socket to the broker. */
-    xNetworkStatus = prvSocketConnect( &xNetworkContextMqtt );
-    configASSERT( xNetworkStatus == pdPASS );
-
-    /* Initialize the MQTT context with the buffer and transport interface. */
-    xMQTTStatus = prvMQTTInit();
-    configASSERT( xMQTTStatus == MQTTSuccess );
-
-    /* Form an MQTT connection without a persistent session. */
-    xMQTTStatus = prvMQTTConnect( true );
-    configASSERT( xMQTTStatus == MQTTSuccess );
-}
-
-static void prvDisconnectFromMQTTBroker( void )
-{
-    MQTTAgentCommandContext_t xCommandContext = { 0 };
-    MQTTAgentCommandInfo_t xCommandParams = { 0 };
-    MQTTStatus_t xCommandStatus;
-
-    /* Disconnect from broker. */
-    LogInfo( ( "Disconnecting the MQTT connection with %s.", democonfigMQTT_BROKER_ENDPOINT ) );
-
-    xCommandParams.blockTimeMs = MQTT_AGENT_SEND_BLOCK_TIME_MS;
-    xCommandParams.cmdCompleteCallback = prvCommandCallback;
-    xCommandParams.pCmdCompleteCallbackContext = &xCommandContext;
-    xCommandContext.xTaskToNotify = xTaskGetCurrentTaskHandle();
-    xCommandContext.pArgs = NULL;
-    xCommandContext.xReturnStatus = MQTTSendFailed;
-
-    /* Disconnect MQTT session. */
-    xCommandStatus = MQTTAgent_Disconnect( &xGlobalMqttAgentContext, &xCommandParams );
-    configASSERT( xCommandStatus == MQTTSuccess );
-
-    xTaskNotifyWait( 0,
-                     0,
-                     NULL,
-                     pdMS_TO_TICKS( MQTT_AGENT_MS_TO_WAIT_FOR_NOTIFICATION ) );
-
-    /* End TLS session, then close TCP connection. */
-    prvSocketDisconnect( &xNetworkContextMqtt );
+    if( pxCommandContext->xTaskToNotify != NULL )
+    {
+        /* Send the context's ulNotificationValue as the notification value so
+         * the receiving task can check the value it set in the context matches
+         * the value it receives in the notification. */
+        xTaskNotify( pxCommandContext->xTaskToNotify, ( uint32_t ) ( pxReturnInfo->returnCode ), eSetValueWithOverwrite );
+    }
 }
 
 static OtaMqttStatus_t prvMQTTSubscribe( const char * pTopicFilter,
@@ -1451,11 +733,11 @@ static OtaMqttStatus_t prvMQTTSubscribe( const char * pTopicFilter,
 {
     MQTTStatus_t mqttStatus;
     uint32_t ulNotifiedValue;
-    MQTTAgentSubscribeArgs_t xSubscribeArgs = { 0 };
-    MQTTSubscribeInfo_t xSubscribeInfo = { 0 };
+    static MQTTAgentSubscribeArgs_t xSubscribeArgs = { 0 };
+    static MQTTSubscribeInfo_t xSubscribeInfo = { 0 };
     BaseType_t result;
-    MQTTAgentCommandInfo_t xCommandParams = { 0 };
-    MQTTAgentCommandContext_t xApplicationDefinedContext = { 0 };
+    static MQTTAgentCommandInfo_t xCommandParams = { 0 };
+    static MQTTAgentCommandContext_t xApplicationDefinedContext = { 0 };
     OtaMqttStatus_t otaRet = OtaMqttSuccess;
 
     configASSERT( pTopicFilter != NULL );
@@ -1501,7 +783,6 @@ static OtaMqttStatus_t prvMQTTSubscribe( const char * pTopicFilter,
     {
         LogError( ( "Failed to SUBSCRIBE to topic with error = %u.",
                     mqttStatus ) );
-
         otaRet = OtaMqttSubscribeFailed;
     }
     else
@@ -1509,11 +790,21 @@ static OtaMqttStatus_t prvMQTTSubscribe( const char * pTopicFilter,
         LogInfo( ( "Subscribed to topic %.*s.\n",
                    topicFilterLength,
                    pTopicFilter ) );
-
         otaRet = OtaMqttSuccess;
     }
 
     return otaRet;
+}
+
+static void prvOTAPublishCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
+                                          MQTTAgentReturnInfo_t * pxReturnInfo )
+{
+    pxCommandContext->xReturnStatus = pxReturnInfo->returnCode;
+
+    if( pxCommandContext->xTaskToNotify != NULL )
+    {
+        xTaskNotify( pxCommandContext->xTaskToNotify, ( uint32_t ) ( pxReturnInfo->returnCode ), eSetValueWithOverwrite );
+    }
 }
 
 static OtaMqttStatus_t prvMQTTPublish( const char * const pacTopic,
@@ -1522,12 +813,12 @@ static OtaMqttStatus_t prvMQTTPublish( const char * const pacTopic,
                                        uint32_t msgSize,
                                        uint8_t qos )
 {
-    OtaMqttStatus_t otaRet = OtaMqttSuccess;
     BaseType_t result;
     MQTTStatus_t mqttStatus = MQTTBadParameter;
-    MQTTPublishInfo_t publishInfo = { 0 };
-    MQTTAgentCommandInfo_t xCommandParams = { 0 };
-    MQTTAgentCommandContext_t xCommandContext = { 0 };
+    static MQTTPublishInfo_t publishInfo = { 0 };
+    static MQTTAgentCommandInfo_t xCommandParams = { 0 };
+    static MQTTAgentCommandContext_t xCommandContext = { 0 };
+    OtaMqttStatus_t otaRet = OtaMqttSuccess;
 
     publishInfo.pTopicName = pacTopic;
     publishInfo.topicNameLength = topicLen;
@@ -1539,7 +830,7 @@ static OtaMqttStatus_t prvMQTTPublish( const char * const pacTopic,
     xTaskNotifyStateClear( NULL );
 
     xCommandParams.blockTimeMs = otaexampleMQTT_TIMEOUT_MS;
-    xCommandParams.cmdCompleteCallback = prvCommandCallback;
+    xCommandParams.cmdCompleteCallback = prvOTAPublishCommandCallback;
     xCommandParams.pCmdCompleteCallbackContext = ( void * ) &xCommandContext;
 
     mqttStatus = MQTTAgent_Publish( &xGlobalMqttAgentContext,
@@ -1572,7 +863,6 @@ static OtaMqttStatus_t prvMQTTPublish( const char * const pacTopic,
         LogInfo( ( "Sent PUBLISH packet to broker %.*s to broker.\n",
                    topicLen,
                    pacTopic ) );
-
         otaRet = OtaMqttSuccess;
     }
 
@@ -1585,11 +875,11 @@ static OtaMqttStatus_t prvMQTTUnsubscribe( const char * pTopicFilter,
 {
     MQTTStatus_t mqttStatus;
     uint32_t ulNotifiedValue;
-    MQTTAgentSubscribeArgs_t xSubscribeArgs = { 0 };
-    MQTTSubscribeInfo_t xSubscribeInfo = { 0 };
+    static MQTTAgentSubscribeArgs_t xSubscribeArgs = { 0 };
+    static MQTTSubscribeInfo_t xSubscribeInfo = { 0 };
     BaseType_t result;
-    MQTTAgentCommandInfo_t xCommandParams = { 0 };
-    MQTTAgentCommandContext_t xApplicationDefinedContext = { 0 };
+    static MQTTAgentCommandInfo_t xCommandParams = { 0 };
+    static MQTTAgentCommandContext_t xApplicationDefinedContext = { 0 };
     OtaMqttStatus_t otaRet = OtaMqttSuccess;
 
     configASSERT( pTopicFilter != NULL );
@@ -1638,7 +928,6 @@ static OtaMqttStatus_t prvMQTTUnsubscribe( const char * pTopicFilter,
                     topicFilterLength,
                     pTopicFilter,
                     mqttStatus ) );
-
         otaRet = OtaMqttUnsubscribeFailed;
     }
     else
@@ -1646,14 +935,11 @@ static OtaMqttStatus_t prvMQTTUnsubscribe( const char * pTopicFilter,
         LogInfo( ( "UNSUBSCRIBED from topic %.*s.\n",
                    topicFilterLength,
                    pTopicFilter ) );
-
         otaRet = OtaMqttSuccess;
     }
 
     return otaRet;
 }
-
-/*-----------------------------------------------------------*/
 
 static void setOtaInterfaces( OtaInterfaces_t * pOtaInterfaces )
 {
@@ -1693,49 +979,6 @@ static void prvOTAAgentTask( void * pParam )
     /* Calling OTA agent task. */
     OTA_EventProcessingTask( pParam );
     LogInfo( ( "OTA Agent stopped." ) );
-
-    vTaskDelete( NULL );
-}
-
-static void prvMQTTAgentTask( void * pParam )
-{
-    BaseType_t xResult = pdFAIL;
-    MQTTStatus_t xMQTTStatus = MQTTSuccess;
-
-    ( void ) pParam;
-
-    do
-    {
-        /* MQTTAgent_CommandLoop() is effectively the agent implementation.  It
-         * will manage the MQTT protocol until such time that an error occurs,
-         * which could be a disconnect.  If an error occurs the MQTT context on
-         * which the error happened is returned so there can be an attempt to
-         * clean up and reconnect however the application writer prefers. */
-        xMQTTStatus = MQTTAgent_CommandLoop( &xGlobalMqttAgentContext );
-
-        /* Clear Agent queue so that no any pending MQTT operations are processed. */
-        xQueueReset( xCommandQueue.queue );
-
-        /* Success is returned for application intiated disconnect or termination. The socket will also be disconnected by the caller. */
-        if( xMQTTStatus != MQTTSuccess )
-        {
-            xResult = prvSuspendOTA();
-            configASSERT( xResult == pdPASS );
-
-            LogInfo( ( "Suspended OTA agent." ) );
-
-            /* End TLS session, then close TCP connection. */
-            prvSocketDisconnect( &xNetworkContextMqtt );
-
-            /* Connect to MQTT broker. */
-            prvConnectToMQTTBroker();
-
-            xResult = prvResumeOTA();
-            configASSERT( xResult == pdPASS );
-
-            LogInfo( ( "Resumed OTA agent." ) );
-        }
-    } while( xMQTTStatus != MQTTSuccess );
 
     vTaskDelete( NULL );
 }
@@ -1833,6 +1076,9 @@ static BaseType_t prvRunOTADemo( void )
     /* Set OTA Library interfaces.*/
     setOtaInterfaces( &otaInterfaces );
 
+    vWaitUntilMQTTAgentReady();
+    vWaitUntilMQTTAgentConnected();
+
     /****************************** Init OTA Library. ******************************/
 
     if( xStatus == pdPASS )
@@ -1899,16 +1145,33 @@ static BaseType_t prvRunOTADemo( void )
                            otaStatistics.otaPacketsDropped ) );
             }
 
+            if( !xIsMqttAgentConnected() )
+            {
+                xStatus = prvSuspendOTA();
+                configASSERT( xStatus == pdPASS );
+
+                LogInfo( ( "Suspended OTA agent." ) );
+            }
+            else
+            {
+                if( OTA_GetState() == OtaAgentStateSuspended )
+                {
+                    xStatus = prvResumeOTA();
+                    configASSERT( xStatus == pdPASS );
+
+                    LogInfo( ( "Resumed OTA agent." ) );
+                }
+            }
+
             vTaskDelay( pdMS_TO_TICKS( otaexampleTASK_DELAY_MS ) );
         }
     }
 
     /**
-     * Remvove callback for receiving messages intended for OTA agent from broker,
+     * Remove callback for receiving messages intended for OTA agent from broker,
      * for which the topic has not been subscribed for.
      */
-    removeSubscription( ( SubscriptionElement_t * ) xGlobalMqttAgentContext.pIncomingCallbackContext,
-                        OTA_DEFAULT_TOPIC_FILTER,
+    removeSubscription( OTA_DEFAULT_TOPIC_FILTER,
                         OTA_DEFAULT_TOPIC_FILTER_LENGTH );
 
     return xStatus;
@@ -1929,9 +1192,7 @@ static void vOtaDemoTask( void * pvParam )
 {
     /* Return error status. */
     BaseType_t xReturnStatus = pdPASS;
-
-    /* Flag for MQTT init status. */
-    bool mqttInitialized = false;
+    MQTTStatus_t xMQTTStatus;
 
     ( void ) pvParam;
 
@@ -1956,49 +1217,19 @@ static void vOtaDemoTask( void * pvParam )
         xReturnStatus = pdFAIL;
     }
 
-    /****************************** Init MQTT ******************************/
-
-    if( xReturnStatus == pdPASS )
-    {
-        /* Create the TCP connection to the broker, then the MQTT connection to the
-         * same. */
-        prvConnectToMQTTBroker();
-    }
-
-    /****************************** Create MQTT Agent Task. ******************************/
-
-    if( xReturnStatus == pdPASS )
-    {
-        if( xTaskCreate( prvMQTTAgentTask,
-                         "MQTT Agent Task ",
-                         MQTT_AGENT_TASK_STACK_SIZE,
-                         NULL,
-                         MQTT_AGENT_TASK_PRIORITY,
-                         NULL ) != pdPASS )
-        {
-            xReturnStatus = pdFAIL;
-            LogError( ( "Failed to create MQTT agent task:" ) );
-        }
-    }
-
     /****************************** Start OTA Demo. ******************************/
 
     if( xReturnStatus == pdPASS )
     {
         /* Start OTA demo. The function returns only if OTA completes successfully and a
-         * shutdown of OTA is triggered for a manual restart of the device.*/
+         * shutdown of OTA is triggered for a manual restart of the device. */
         if( prvRunOTADemo() != pdPASS )
         {
             xReturnStatus = pdFAIL;
         }
     }
 
-    /****************************** Cleanup ******************************/
-
-    if( mqttInitialized )
-    {
-        prvDisconnectFromMQTTBroker();
-    }
+    /* / ****************************** Cleanup ****************************** / */
 
     if( xBufferSemaphore != NULL )
     {
@@ -2012,12 +1243,6 @@ static void vOtaDemoTask( void * pvParam )
  */
 void vStartOtaTask( void )
 {
-    /*
-     * vOtaDemoTask() connects to the MQTT broker, creates the
-     * MQTT Agent task and calls the Ota demo loop prvRunOTADemo()
-     * which creates the OTA Agent task.
-     */
-
     xTaskCreate( vOtaDemoTask,                             /* Function that implements the task. */
                  "OTA Task ",                              /* Text name for the task - only used for debugging. */
                  appCONFIG_OTA_MQTT_AGENT_TASK_STACK_SIZE, /* Size of stack (in words, not bytes) to allocate for the task. */

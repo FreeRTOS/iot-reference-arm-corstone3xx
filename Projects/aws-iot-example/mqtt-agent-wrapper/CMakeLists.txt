@@ -8,7 +8,8 @@ add_library(mqtt-agent-task STATIC)
 
 target_sources(mqtt-agent-task
     PRIVATE
-        ota_mqtt_agent.c
+        ota_agent_task.c
+        mqtt_agent_task.c
         subscription_manager.c
         freertos_command_pool.c
         freertos_agent_message.c

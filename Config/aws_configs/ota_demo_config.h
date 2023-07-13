@@ -88,20 +88,8 @@
  * bytes are read from network interface. Keeping this timeout to a sufficiently
  * large value so as to account for delay of receipt of a large block of message.
  */
-#undef MQTT_RECV_POLLING_TIMEOUT_MS                  /* Override the one from "core_mqtt_config_defaults.h" */
-#define MQTT_RECV_POLLING_TIMEOUT_MS       ( 1000U ) /* TODO Set a timeout in msecs for data received from MQTT. Recommend values > 1 s. */
-
-/**
- * @brief The length of the queue used to hold commands for the agent.
- */
-#define MQTT_AGENT_COMMAND_QUEUE_LENGTH    ( 25 )      /* TODO */
-
-/**
- * @brief Dimensions the buffer used to serialise and deserialise MQTT packets.
- * @note Specified in bytes. Must be large enough to hold the maximum
- * anticipated MQTT payload.
- */
-#define MQTT_AGENT_NETWORK_BUFFER_SIZE     ( 5000 )      /* TODO */
+#undef MQTT_RECV_POLLING_TIMEOUT_MS               /* Override the one from "core_mqtt_config_defaults.h" */
+#define MQTT_RECV_POLLING_TIMEOUT_MS    ( 1000U ) /* TODO Set a timeout in msecs for data received from MQTT. Recommend values > 1 s. */
 
 /**
  * @brief Maximum time MQTT agent waits in the queue for any pending MQTT
