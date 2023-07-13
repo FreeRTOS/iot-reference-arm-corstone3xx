@@ -17,6 +17,7 @@
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
+#include "event_groups.h"
 #include "task.h"
 
 #include "mbedtls/threading.h"
@@ -36,16 +37,20 @@
 
 psa_key_handle_t xOTACodeVerifyKeyHandle = NULL;
 
-#ifdef INTEGRATION_TESTS
-extern void RunQualificationTest(void);
+/* System events group. */
+EventGroupHandle_t xSystemEvents = NULL;
+StaticEventGroup_t xSystemEventsGroup;
 
-static void qual_task(void *arg)
-{
-    (void)arg;
-    RunQualificationTest();
-    LogInfo( ( "RunQualificationTest returned\n" ) );
-    vTaskDelete(NULL);
-}
+#ifdef INTEGRATION_TESTS
+    extern void RunQualificationTest( void );
+
+    static void qual_task( void * arg )
+    {
+        ( void ) arg;
+        RunQualificationTest();
+        LogInfo( ( "RunQualificationTest returned\n" ) );
+        vTaskDelete( NULL );
+    }
 #endif // INTEGRATION_TESTS
 
 extern void vStartOtaTask( void );
@@ -122,6 +127,9 @@ int main()
         LogInfo( ( "PSA Framework version is: %d\n", psa_framework_version() ) );
     }
 
+    /* Create system events group. */
+    xSystemEvents = xEventGroupCreateStatic( &xSystemEventsGroup );
+
     xRetVal = vDevModeKeyProvisioning();
 
     if( xRetVal != CKR_OK )
@@ -152,22 +160,22 @@ int main()
                                    mbedtls_platform_mutex_lock,
                                    mbedtls_platform_mutex_unlock );
 
-#ifdef INTEGRATION_TESTS
-        xTaskCreate( qual_task,
-                    "qual",
-                    configMINIMAL_STACK_SIZE,
-                    NULL,
-                    tskIDLE_PRIORITY + 1,
-                    NULL );
-#else
-        /* Start OTA task*/
-        vStartOtaTask();
+        #ifdef INTEGRATION_TESTS
+            xTaskCreate( qual_task,
+                         "qual",
+                         configMINIMAL_STACK_SIZE,
+                         NULL,
+                         tskIDLE_PRIORITY + 1,
+                         NULL );
+        #else
+            /* Start OTA task*/
+            vStartOtaTask();
 
-        /*Start demo task once agent task is started. */
-        ( void ) xStartPubSubTasks( appCONFIG_MQTT_NUM_PUBSUB_TASKS,
-                                    appCONFIG_MQTT_PUBSUB_TASK_STACK_SIZE,
-                                    appCONFIG_MQTT_PUBSUB_TASK_PRIORITY );
-#endif // INTEGRATION_TESTS
+            /*Start demo task once agent task is started. */
+            ( void ) xStartPubSubTasks( appCONFIG_MQTT_NUM_PUBSUB_TASKS,
+                                        appCONFIG_MQTT_PUBSUB_TASK_STACK_SIZE,
+                                        appCONFIG_MQTT_PUBSUB_TASK_PRIORITY );
+        #endif // INTEGRATION_TESTS
 
         vTaskStartScheduler();
 
