@@ -17,6 +17,7 @@ TARGET_PROCESSOR=""
 TOOLCHAIN="ARMCLANG"
 TOOLCHAIN_FILE=""
 BUILD=1
+INTEGRATION_TESTS=0
 
 set -e
 
@@ -38,7 +39,8 @@ function build_with_cmake {
         set -ex
 
         # Note: A bug in CMake force us to set the toolchain here
-        cmake -G Ninja -S . -B $BUILD_PATH --toolchain=$TOOLCHAIN_FILE -DCMAKE_SYSTEM_PROCESSOR=$TARGET_PROCESSOR -DARM_CORSTONE_BSP_TARGET_PLATFORM=$TARGET -DEXAMPLE=$EXAMPLE
+        cmake -G Ninja -S . -B $BUILD_PATH --toolchain=$TOOLCHAIN_FILE -DCMAKE_SYSTEM_PROCESSOR=$TARGET_PROCESSOR -DARM_CORSTONE_BSP_TARGET_PLATFORM=$TARGET -DEXAMPLE=$EXAMPLE -DINTEGRATION_TESTS=$INTEGRATION_TESTS
+
         if [[ $BUILD -ne 0 ]]; then
             cmake --build $BUILD_PATH --target $EXAMPLE
         fi
@@ -52,10 +54,11 @@ Usage: $0 [options] example
 Download dependencies, apply patches and build an example.
 
 Options:
-    -h,--help        Show this help
-    -c,--clean       Clean build
-    -t,--target      Build target (corstone300 or corstone310)
-    --toolchain      Compiler (GNU or ARMCLANG)
+    -h,--help                   Show this help
+    -c,--clean                  Clean build
+    -t,--target                 Build target (corstone300 or corstone310)
+    --toolchain                 Compiler (GNU or ARMCLANG)
+    -q, --integration-tests     Build FreeRTOS integration tests
     --configure-only Create build tree but do not build
 
 Examples:
@@ -68,8 +71,8 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-SHORT=t:,c,h
-LONG=target:,toolchain:,clean,help,configure-only
+SHORT=t:,c,h,q
+LONG=target:,toolchain:,clean,help,configure-only,integration-tests
 OPTS=$(getopt -n build --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -92,6 +95,10 @@ do
     --toolchain )
       TOOLCHAIN=$2
       shift 2
+      ;;
+    -q | --integration-tests )
+      INTEGRATION_TESTS=1
+      shift
       ;;
     --configure-only )
       BUILD=0
