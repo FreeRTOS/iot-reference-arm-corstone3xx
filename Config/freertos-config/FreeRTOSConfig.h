@@ -60,6 +60,7 @@ extern uint32_t SystemCoreClock;
 #define configTICK_RATE_HZ    ( ( uint32_t ) 100 ) /* Scheduler polling rate of 1000 Hz */
 
 #define pdMS_TO_TICKS( xTimeInMs )    ( ( TickType_t ) xTimeInMs )
+#define TICKS_TO_pdMS( xTics )        ( ( uint32_t ) xTics )
 
 #define configMINIMAL_STACK_SIZE                   4096
 #define configUSE_16_BIT_TICKS                     0

@@ -39,7 +39,22 @@ set(MCUBOOT_IMAGE_VERSION_NS "0.0.1+10")
 set(MCUBOOT_IMAGE_VERSION_NS_UPDATE "0.0.1+20")
 
 # Extra arguments for TF-M and ML
-set(TFM_CMAKE_ARGS "-DPROJECT_CONFIG_HEADER_FILE=${PRJ_DIR}/Config/tfm-config/project_config.h;-DCONFIG_TFM_ENABLE_CP10CP11=ON;-DTFM_EXCEPTION_INFO_DUMP=ON;-DNS=ON;-DPLATFORM_DEFAULT_UART_STDOUT=ON;-DMCUBOOT_SIGNATURE_KEY_LEN=2048;-DMCUBOOT_LOG_LEVEL=INFO;-DTFM_SPM_LOG_LEVEL=TFM_SPM_LOG_LEVEL_INFO;-DTFM_PARTITION_CRYPTO=ON;-DTFM_PARTITION_FIRMWARE_UPDATE=ON;-DTFM_PARTITION_INITIAL_ATTESTATION=ON;-DTFM_PARTITION_INTERNAL_TRUSTED_STORAGE=ON;-DTFM_PARTITION_PLATFORM=ON;-DTFM_PARTITION_PROTECTED_STORAGE=ON")
+set(TFM_CMAKE_ARGS
+    -DPROJECT_CONFIG_HEADER_FILE=${PRJ_DIR}/Config/tfm-config/project_config.h
+    -DCONFIG_TFM_ENABLE_CP10CP11=ON
+    -DTFM_EXCEPTION_INFO_DUMP=ON
+    -DNS=ON
+    -DPLATFORM_DEFAULT_UART_STDOUT=ON
+    -DMCUBOOT_SIGNATURE_KEY_LEN=2048
+    -DMCUBOOT_LOG_LEVEL=INFO
+    -DTFM_SPM_LOG_LEVEL=TFM_SPM_LOG_LEVEL_INFO
+    -DTFM_PARTITION_CRYPTO=ON
+    -DTFM_PARTITION_FIRMWARE_UPDATE=ON
+    -DTFM_PARTITION_INITIAL_ATTESTATION=ON
+    -DTFM_PARTITION_INTERNAL_TRUSTED_STORAGE=ON
+    -DTFM_PARTITION_PLATFORM=ON
+    -DTFM_PARTITION_PROTECTED_STORAGE=ON
+)
 
 # Configuration of executable
 set(EXE_SUFFIX ".axf")
@@ -56,7 +71,9 @@ else()
     endif()
 endif()
 
-add_subdirectory(../../Middleware/ARM ${CMAKE_BINARY_DIR}/Middleware/ARM)
+set(MIDDLEWARE_DIR "../../Middleware")
+
+add_subdirectory(${MIDDLEWARE_DIR}/ARM ${CMAKE_BINARY_DIR}/Middleware/ARM)
 add_subdirectory(../../Bsp ${CMAKE_BINARY_DIR}/Bsp)
 add_subdirectory(../../Config ${CMAKE_BINARY_DIR}/Config)
 
@@ -88,9 +105,77 @@ set( FREERTOS_HEAP "3" CACHE STRING "" FORCE)
 # Select the native compile PORT
 set( FREERTOS_PORT "GCC_ARM_CM55_TFM" CACHE STRING "" FORCE)
 
-add_subdirectory(../../Middleware/FreeRTOS ${CMAKE_BINARY_DIR}/Middleware/FreeRTOS)
+add_subdirectory(${MIDDLEWARE_DIR}/FreeRTOS ${CMAKE_BINARY_DIR}/Middleware/FreeRTOS)
 
-add_subdirectory(../../Middleware/AWS ${CMAKE_BINARY_DIR}/Middleware/AWS)
+# integration tests
+include(${MIDDLEWARE_DIR}/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/qualification_test.cmake)
+include(${MIDDLEWARE_DIR}/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/src/transport_interface_test.cmake)
+include(${MIDDLEWARE_DIR}/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/src/ota_pal_test.cmake)
+include(${MIDDLEWARE_DIR}/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/src/mqtt_test.cmake)
+# overrride provisioning in PKCS11 tests with our provisioning
+set(PKCS11_TEST_SOURCES
+    "${MIDDLEWARE_DIR}/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/src/pkcs11/core_pkcs11_test.c")
+set(PKCS11_TEST_INCLUDE_DIRS
+    "${MIDDLEWARE_DIR}/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/src/pkcs11"
+    "${MIDDLEWARE_DIR}/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/src/common")
+
+add_library(unity STATIC)
+
+target_sources(unity
+    PRIVATE
+        ${MIDDLEWARE_DIR}/Unity/src/unity.c
+        ${MIDDLEWARE_DIR}/Unity/extras/fixture/src/unity_fixture.c
+        ${MIDDLEWARE_DIR}/Unity/extras/memory/src/unity_memory.c
+)
+
+target_include_directories(unity
+    PUBLIC
+        ${MIDDLEWARE_DIR}/Unity/src
+        ${MIDDLEWARE_DIR}/Unity/extras/fixture/src
+        ${MIDDLEWARE_DIR}/Unity/extras/memory/src
+)
+
+add_library(integration-test-task STATIC)
+
+target_sources(integration-test-task
+    PRIVATE
+        ${TRANSPORT_TEST_SOURCES}
+        ${PKCS11_TEST_SOURCES}
+        ${OTA_PAL_TEST_SOURCES}
+        ${MQTT_TEST_SOURCES}
+        ${QUALIFICATION_TEST_SOURCES}
+        freertos-integration-tests/integration_tests_platform_function.c
+)
+
+target_include_directories(integration-test-task
+    PRIVATE
+        freertos-integration-tests/include
+        ${TRANSPORT_TEST_INCLUDE_DIRS}
+        ${PKCS11_TEST_INCLUDE_DIRS}
+        ${OTA_PAL_TEST_INCLUDE_DIRS}
+        ${MQTT_TEST_INCLUDE_DIRS}
+        ${QUALIFICATION_TEST_INCLUDE_DIRS}
+        ${MIDDLEWARE_DIR}/AWS/aws-iot-device-sdk-lib/corePKCS11/source/include
+        ${MIDDLEWARE_DIR}/AWS/aws-iot-device-sdk-lib/corePKCS11/source/dependency/3rdparty/pkcs11
+        ${MIDDLEWARE_DIR}/ARM/mbedtls-lib/mbedtls/include
+        ${MIDDLEWARE_DIR}/AWS/aws-iot-device-sdk-lib/ota-for-aws-iot-embedded-sdk/source/include/
+        ${MIDDLEWARE_DIR}/ARM/freertos-ota-pal-psa-lib/freertos-ota-pal-psa
+        ${MIDDLEWARE_DIR}/AWS/aws-iot-device-sdk-lib/corePKCS11/source/dependency/3rdparty/mbedtls_utils
+)
+
+target_link_libraries(integration-test-task
+    PRIVATE
+        freertos_kernel
+        aws-configs
+        app-logging
+        unity
+        awsIoT
+        iot-vsocket
+        mbedtls
+        fri-bsp
+)
+
+add_subdirectory(${MIDDLEWARE_DIR}/AWS ${CMAKE_BINARY_DIR}/Middleware/AWS)
 
 # Copy tf-m binaries at the root
 ExternalProject_Get_Property(tf-m-build BINARY_DIR)
@@ -116,26 +201,43 @@ add_dependencies(tfm-binaries tf-m-build)
 add_dependencies(tfm-ns-interface tfm-binaries)
 
 add_subdirectory(mqtt-agent-wrapper)
-add_subdirectory(logging)
 
 # Declare the aws-iot-example executable
-add_executable(aws-iot-example main.c mqtt_demo_pub_sub.c aws_dev_mode_key_provisioning.c)
+add_executable(aws-iot-example
+    main.c
+    mqtt_demo_pub_sub.c
+    dev_mode_key_provisioning.c
+    ${MIDDLEWARE_DIR}/AWS/corePKCS11/source/dependency/3rdparty/mbedtls_utils/mbedtls_utils.c
+)
+
+target_include_directories(aws-iot-example
+    PRIVATE
+        freertos-integration-tests/include
+)
+
+if (INTEGRATION_TESTS)
+    target_compile_definitions(aws-iot-example
+        PRIVATE
+            INTEGRATION_TESTS=1
+    )
+endif()
 
 target_link_libraries(aws-iot-example
-    app-config
-    app-logging
+    PRIVATE
+        app-config
+        app-logging
+        awsIoT
+        mqtt-agent-task
 
-    awsIoT
-    mqtt-agent-task
+        freertos-ota-pal-psa
 
-    freertos-ota-pal-psa
+        mbedtls
+        mbedtls-threading-freertos
 
-    mbedtls
-    mbedtls-threading-freertos
-
-    freertos_kernel
-    tfm-ns-interface
-    fri-bsp
+        freertos_kernel
+        tfm-ns-interface
+        fri-bsp
+        $<$<BOOL:${INTEGRATION_TESTS}>:integration-test-task>
 )
 
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")

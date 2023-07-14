@@ -36,6 +36,18 @@
 
 psa_key_handle_t xOTACodeVerifyKeyHandle = NULL;
 
+#ifdef INTEGRATION_TESTS
+extern void RunQualificationTest(void);
+
+static void qual_task(void *arg)
+{
+    (void)arg;
+    RunQualificationTest();
+    LogInfo( ( "RunQualificationTest returned\n" ) );
+    vTaskDelete(NULL);
+}
+#endif // INTEGRATION_TESTS
+
 extern void vStartOtaTask( void );
 extern int32_t network_startup( void );
 extern BaseType_t xStartPubSubTasks( uint32_t ulNumPubsubTasks,
@@ -140,6 +152,14 @@ int main()
                                    mbedtls_platform_mutex_lock,
                                    mbedtls_platform_mutex_unlock );
 
+#ifdef INTEGRATION_TESTS
+        xTaskCreate( qual_task,
+                    "qual",
+                    configMINIMAL_STACK_SIZE,
+                    NULL,
+                    tskIDLE_PRIORITY + 1,
+                    NULL );
+#else
         /* Start OTA task*/
         vStartOtaTask();
 
@@ -147,6 +167,7 @@ int main()
         ( void ) xStartPubSubTasks( appCONFIG_MQTT_NUM_PUBSUB_TASKS,
                                     appCONFIG_MQTT_PUBSUB_TASK_STACK_SIZE,
                                     appCONFIG_MQTT_PUBSUB_TASK_PRIORITY );
+#endif // INTEGRATION_TESTS
 
         vTaskStartScheduler();
 

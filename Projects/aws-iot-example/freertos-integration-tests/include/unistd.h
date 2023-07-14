@@ -1,0 +1,1 @@
+/* dummy file for workaround missing ifdefs in AWS qual tests */
