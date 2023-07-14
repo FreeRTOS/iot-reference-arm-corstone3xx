@@ -17,7 +17,7 @@ variables:
 # Normally, workflow rules are enabled for all the below and "main" branch
 # Since, main branch is already tested and quite heavy, we do not need to run
 # most jobs already run. The below rule skips the job on main branch.
-.base-job-rules:
+.base_job_rules:
   rules:
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_REF_NAME =~ /^release-.*/
@@ -39,25 +39,9 @@ workflow:
 
 # This base job load the right docker image and sets some default variables
 .base_job:
-  extends: .base-job-rules
+  extends: .base_job_rules
   tags:
     - iotmsw-amd64
-  parallel:
-    matrix:
-      - TARGET: [Corstone-300]
-        TOOLCHAIN: [GNU, ARMCLANG]
-  variables:
-    PYTHONUNBUFFERED: 1
-
-
-# The test job extends .basejob. It add rules to map targets to AVH binaries,
-# require the application to be built and retrieve the artifacts.
-.test_job:
-  stage: test
-  extends: .base_job
-  needs:
-    - job: build-applications
-      artifacts: true
   before_script:
     - |
       if [ $TARGET == "Corstone-300" ];then
@@ -67,6 +51,21 @@ workflow:
       if [ $TARGET == "Corstone-310" ];then
         AVH=/opt/VHT/VHT_Corstone_SSE-310
       fi
+  parallel:
+    matrix:
+      - TARGET: [Corstone-300]
+        TOOLCHAIN: [GNU, ARMCLANG]
+  variables:
+    PYTHONUNBUFFERED: 1
+
+# The test job extends .basejob. It add rules to map targets to AVH binaries,
+# require the application to be built and retrieve the artifacts.
+.test_job:
+  stage: test
+  extends: .base_job
+  needs:
+    - job: build-applications
+      artifacts: true
 
 # Build all the applications which later are tested. Build of the various binaries
 # is described in ./ci/build_examples.sh
@@ -98,6 +97,24 @@ test-ota-aws:
   script:
     - tar xf ${TOOLCHAIN}_build.tar.gz
     - pytest -s Tools/tests/test_ota.py --build-path "build" --avh $AVH --credentials-path "Config/aws_configs"
+
+integration-tests:
+  stage: test
+  extends: .base_job
+  rules:
+    - if: ( $SCHEDULED_JOB_TO_RUN == "integration-tests" )
+  script:
+    - ./ci/generate_credentials.sh -f -p Config/aws_configs
+    - git config --global user.email "ci@example.com"
+    - git config --global user.name "ci"
+    - ./Tools/scripts/build.sh -q aws-iot-example
+    - apt update
+    - apt install golang-go -y
+    - pushd Middleware/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tools/echo_server
+    - go run echo_server.go&
+    - popd
+    - sleep 1
+    - pytest -s Tools/tests/test_integration.py --build-path "build" --avh $AVH --credentials-path "Config/aws_configs"
 
 aws-cleanup:
   stage: cleanup
