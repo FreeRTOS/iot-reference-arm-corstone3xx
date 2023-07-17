@@ -121,6 +121,6 @@ aws-cleanup:
   tags:
     - iotmsw-amd64
   rules:
-    - if: $GARBAGE_COLLECT == "true"
+    - if: $SCHEDULED_JOB_TO_RUN == "cleanup"
   script:
     - python -u ./ci/aws_cleanup.py
