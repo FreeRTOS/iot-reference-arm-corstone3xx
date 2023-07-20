@@ -76,7 +76,7 @@ TransportStatus_t Transport_Connect( NetworkContext_t * pNetworkContext,
         /* Create a TCP connection to the host. */
         if( status == TRANSPORT_STATUS_SUCCESS )
         {
-            LogInfo( ( "Initiating TCP connection with host: %s:%d\r\n", pServerInfo->pHostName, pServerInfo->port ) );
+            LogDebug( ( "Initiating TCP connection with host: %s:%d\r\n", pServerInfo->pHostName, pServerInfo->port ) );
             socketStatus = iotSocketConnect( pNetworkContext->socket, ipAddr, ipAddrLen, pServerInfo->port );
 
             if( socketStatus < 0 )
@@ -110,7 +110,7 @@ TransportStatus_t Transport_Connect( NetworkContext_t * pNetworkContext,
                 if( TLS_Init( &tlsHelperParams,
                               ( TLSContext_t * ) ( pNetworkContext->pTLSContext ) ) == pdPASS )
                 {
-                    LogInfo( ( "Initiating TLS handshake with host: %s:%d\r\n", pServerInfo->pHostName, pServerInfo->port ) );
+                    LogDebug( ( "Initiating TLS handshake with host: %s:%d\r\n", pServerInfo->pHostName, pServerInfo->port ) );
 
                     /* Initiate TLS handshake */
                     if( TLS_Connect( ( TLSContext_t * ) ( pNetworkContext->pTLSContext ) ) != 0 )
