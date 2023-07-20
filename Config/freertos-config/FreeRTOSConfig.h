@@ -33,6 +33,8 @@
 /* #include "aws_secure_sockets_config.h" */
 /* #include "RTOS_config.h" */
 
+#include "app_config.h"
+
 #ifndef   __USED
     #define __USED    __attribute__( ( used ) )
 #endif
@@ -171,8 +173,11 @@ void vLoggingPrintf( const char * pcFormat,
 
 /* Sets the length of the buffers into which logging messages are written - so
  * also defines the maximum length of each log message. */
-#define configLOGGING_MAX_MESSAGE_LENGTH            160
-
+#if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
+    #define configLOGGING_MAX_MESSAGE_LENGTH        20480
+#else
+    #define configLOGGING_MAX_MESSAGE_LENGTH        1024
+#endif
 /* Prepend each log message with a message number, the task name and a time stamp. */
 #define configLOGGING_INCLUDE_TIME_AND_TASK_NAME    1
 

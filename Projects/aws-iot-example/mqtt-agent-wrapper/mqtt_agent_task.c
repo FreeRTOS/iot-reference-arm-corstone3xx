@@ -85,7 +85,9 @@
  * @note Specified in bytes.  Must be large enough to hold the maximum
  * anticipated MQTT payload.
  */
-#ifndef MQTT_AGENT_NETWORK_BUFFER_SIZE
+#if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
+    #define MQTT_AGENT_NETWORK_BUFFER_SIZE    ( 20480 )
+#else
     #define MQTT_AGENT_NETWORK_BUFFER_SIZE    ( 10240 )
 #endif
 
@@ -94,20 +96,24 @@
  * to be posted to the MQTT agent should the MQTT agent's command queue be full.
  * Tasks wait in the Blocked state, so don't use any CPU time.
  */
-#define MQTT_AGENT_SEND_BLOCK_TIME_MS                ( 200U )
+#define MQTT_AGENT_SEND_BLOCK_TIME_MS             ( 200U )
 
 /**
  * @brief This demo uses task notifications to signal tasks from MQTT callback
  * functions.  mqttexampleMS_TO_WAIT_FOR_NOTIFICATION defines the time, in ticks,
  * to wait for such a callback.
  */
-#define MQTT_AGENT_MS_TO_WAIT_FOR_NOTIFICATION       ( 5000U )
+#define MQTT_AGENT_MS_TO_WAIT_FOR_NOTIFICATION    ( 5000U )
 
 /**
  * @brief The maximum back-off delay (in milliseconds) for retrying failed operation
  *  with server.
  */
-#define RETRY_MAX_BACKOFF_DELAY_MS                   ( 20000U )
+#if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
+    #define RETRY_MAX_BACKOFF_DELAY_MS    ( 10000U )
+#else
+    #define RETRY_MAX_BACKOFF_DELAY_MS    ( 20000U )
+#endif
 
 /**
  * @brief The base back-off delay (in milliseconds) to use for network operation retry
@@ -670,6 +676,10 @@ static void prvMQTTAgentTask( void * pParam )
 
             if( xBackoffAlgStatus == BackoffAlgorithmSuccess )
             {
+                #if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
+                    usNextRetryBackOff += 8000U;
+                #endif
+
                 LogWarn( ( "TLS connection to the broker failed. "
                            "Retrying connection in %hu ms.",
                            usNextRetryBackOff ) );
@@ -702,6 +712,10 @@ static void prvMQTTAgentTask( void * pParam )
 
             if( xBackoffAlgStatus == BackoffAlgorithmSuccess )
             {
+                #if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
+                    usNextRetryBackOff += 8000U;
+                #endif
+
                 LogWarn( ( "Connection to the MQTT broker failed. "
                            "Retrying connection in %hu ms.",
                            usNextRetryBackOff ) );

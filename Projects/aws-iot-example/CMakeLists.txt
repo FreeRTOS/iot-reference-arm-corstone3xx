@@ -99,6 +99,7 @@ target_compile_definitions(freertos_config
 target_link_libraries(freertos_config
     INTERFACE
         tfm-ns-interface
+        app-config
 )
 
 set( FREERTOS_HEAP "3" CACHE STRING "" FORCE)
