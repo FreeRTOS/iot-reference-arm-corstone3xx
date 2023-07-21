@@ -100,7 +100,12 @@
 /**
  * @brief Size of statically allocated buffers for holding payloads.
  */
-#define mqttexampleSTRING_BUFFER_LENGTH                   ( 100 )
+#if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
+    #define mqttexampleSTRING_BUFFER_LENGTH    ( 20480 )
+#else
+    #define mqttexampleSTRING_BUFFER_LENGTH    ( 512 )
+
+#endif
 
 /**
  * @brief Format of the loop-back topic.
@@ -116,35 +121,41 @@
  * this demo this can be a task number, when more than one tasks are publishing within a device.
  *
  */
-#define mqttexampleLOOPBACK_TOPIC_FORMAT                  "pubsub/%s/task_%u"
+#define mqttexampleLOOPBACK_TOPIC_FORMAT         "pubsub/%s/task_%u"
 
 /**
  * @brief Format for the topic to which demo task sends PUBLISH messages to broker.
  * The topic is set by default as the loopback topic, so that device will receive the same message which is sent to the
  * broker.
  */
-#define mqttexampleOUTPUT_TOPIC_FORMAT                    mqttexampleLOOPBACK_TOPIC_FORMAT
+#define mqttexampleOUTPUT_TOPIC_FORMAT           mqttexampleLOOPBACK_TOPIC_FORMAT
 
 /**
  * @brief Size of the static buffer to hold the output topic name.
  * The buffer should accommodate the topic format string, thing name and the task number which is a 32bit integer.
  */
-#define mqttexampleOUTPUT_TOPIC_BUFFER_LENGTH             ( sizeof( mqttexampleOUTPUT_TOPIC_FORMAT ) + mqttexampleTHING_NAME_MAX_LENGTH + 10U )
+#define mqttexampleOUTPUT_TOPIC_BUFFER_LENGTH    ( sizeof( mqttexampleOUTPUT_TOPIC_FORMAT ) + mqttexampleTHING_NAME_MAX_LENGTH + 10U )
 
 /**
  * @brief Format for the topic to receive incoming messages from the MQTT broker.
  * Topic is set by default as the loopback topic so that the device will receive the same message which is published to the
  * broker.
  */
-#define mqttexampleINPUT_TOPIC_FORMAT                     mqttexampleLOOPBACK_TOPIC_FORMAT
+#define mqttexampleINPUT_TOPIC_FORMAT            mqttexampleLOOPBACK_TOPIC_FORMAT
 
 /**
  * @brief Size of the static buffer to hold the topic name.
  * The buffer should accommodate the topic format string, thing name and the task number which is a 32bit integer.
  */
-#define mqttexampleINPUT_TOPIC_BUFFER_LENGTH              ( sizeof( mqttexampleINPUT_TOPIC_FORMAT ) + mqttexampleTHING_NAME_MAX_LENGTH + 10U )
+#define mqttexampleINPUT_TOPIC_BUFFER_LENGTH     ( sizeof( mqttexampleINPUT_TOPIC_FORMAT ) + mqttexampleTHING_NAME_MAX_LENGTH + 10U )
 
 static char cTopicFilter[ appCONFIG_MQTT_NUM_PUBSUB_TASKS ][ mqttexampleINPUT_TOPIC_BUFFER_LENGTH ];
+
+#if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
+    #define mqttexampleDEVICE_ADVISOR_TOPIC_FORMAT           "device_advisor_test"
+    #define mqttexampleDEVICE_ADVISOR_TOPIC_BUFFER_LENGTH    ( strlen( mqttexampleDEVICE_ADVISOR_TOPIC_FORMAT ) )
+    static char cDeviceAdvisorTopicFilter[] = mqttexampleDEVICE_ADVISOR_TOPIC_FORMAT;
+#endif
 
 /*-----------------------------------------------------------*/
 
@@ -306,9 +317,8 @@ static void prvRegisterSubscribeCallback( const char * pTopicFilter,
                                       cTopicFilter[ usIndex ],
                                       xTopicFilterLen,
                                       &isMatch );
-        assert( mqttStatus == MQTTSuccess );
 
-        if( isMatch )
+        if( ( mqttStatus == MQTTSuccess ) && isMatch )
         {
             /* Add subscription so that incoming publishes are routed to the application callback. */
             subscriptionAdded = addSubscription( pTopicFilter,
@@ -323,6 +333,30 @@ static void prvRegisterSubscribeCallback( const char * pTopicFilter,
                             topicFilterLength ) );
             }
         }
+
+        #if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
+            mqttStatus = MQTT_MatchTopic( pTopicFilter,
+                                          topicFilterLength,
+                                          cDeviceAdvisorTopicFilter,
+                                          mqttexampleDEVICE_ADVISOR_TOPIC_BUFFER_LENGTH,
+                                          &isMatch );
+
+            if( ( mqttStatus == MQTTSuccess ) && isMatch )
+            {
+                /* Add subscription so that incoming publishes are routed to the application callback. */
+                subscriptionAdded = addSubscription( pTopicFilter,
+                                                     topicFilterLength,
+                                                     prvIncomingPublishCallback,
+                                                     NULL );
+
+                if( subscriptionAdded == false )
+                {
+                    LogError( ( "Failed to register a publish callback for topic %.*s.",
+                                pTopicFilter,
+                                topicFilterLength ) );
+                }
+            }
+        #endif /* if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 ) */
     }
 }
 
@@ -578,7 +612,34 @@ void vSimpleSubscribePublishTask( void * pvParameters )
         }
     }
 
-    if( xStatus == pdTRUE )
+    #if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
+        if( xStatus == pdPASS )
+        {
+            /* Subscribe to the same topic to which this task will publish.  That will
+             * result in each published message being published from the server back to
+             * the target. */
+
+            LogDebug( ( "Sending subscribe request to agent for topic filter: %.*s\n", mqttexampleDEVICE_ADVISOR_TOPIC_BUFFER_LENGTH, cDeviceAdvisorTopicFilter ) );
+
+            xMQTTStatus = prvSubscribeToTopic( MQTTQoS1, cDeviceAdvisorTopicFilter, mqttexampleDEVICE_ADVISOR_TOPIC_BUFFER_LENGTH );
+
+            if( xMQTTStatus != MQTTSuccess )
+            {
+                LogError( ( "Failed to subscribe to topic: %.*s\n",
+                            mqttexampleDEVICE_ADVISOR_TOPIC_BUFFER_LENGTH,
+                            cDeviceAdvisorTopicFilter ) );
+                xStatus = pdFALSE;
+            }
+            else
+            {
+                LogInfo( ( "Successfully subscribed to topic: %.*s\n",
+                           mqttexampleDEVICE_ADVISOR_TOPIC_BUFFER_LENGTH,
+                           cDeviceAdvisorTopicFilter ) );
+            }
+        }
+    #endif /* if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 ) */
+
+    if( xStatus == pdPASS )
     {
         /* Create a topic name for this task to publish to. */
         xOutTopicLength = snprintf( cOutTopicBuf,
