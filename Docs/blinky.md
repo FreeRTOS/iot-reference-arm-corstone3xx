@@ -1,5 +1,7 @@
 # Blinky example
 
+## Introduction
+
 This blinky example demonstrates the integration of FreeRTOS kernel and
 [TrustedFirmware-M](https://www.trustedfirmware.org/projects/tf-m/). The FreeRTOS application running on non-secure side uses
 PSA APIs to fetch the firmware framework version of TrustedFirmware-M running
@@ -7,7 +9,7 @@ on the secure-side and prints it on the console. In addition, to simulate LED
 blinking, `LED On` and `LED off` are printed onto the console at regular
 intervals.
 
-# Setting up Arm Virtual Hardware using Amazon Machine Images
+## Setting up Arm Virtual Hardware using Amazon Machine Images
 
 Follow the instructions described in [Launch Arm Virtual Hardware Instance](setting-up-arm-virtual-hardware.md)
 to setup your development environment.
@@ -17,12 +19,12 @@ console (either AWS-Web-Console or Local-Console) to Arm Virtual Hardware
 Instance. From now on, any command-line commands described in this document
 must be run on the console connected to Arm Virtual Hardware Instance.
 
-# Setting up development environment
+## Setting up development environment
 
 Follow the instructions described in [Setting Up your Development Environment](development-environment.md)
 to setup your development environment.
 
-# Building the application
+## Building the application
 
 To build the blinky example, run the following command:
 ```bash
@@ -40,14 +42,14 @@ on AWS. If you would like to build it with the Arm GNU Toolchain (arm-none-eabi-
 [installed by yourself](./development-environment.md), append the extra option
 `--toolchain GNU` to the build command above.
 
-# Running the application
+## Running the application
 
 To run the blinky example, run the following command:
 ```bash
 ./Tools/scripts/run.sh blinky
 ```
 
-## Expected output
+### Expected output
 
 ```bash
 [INF] Starting bootloader

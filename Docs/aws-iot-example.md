@@ -1,11 +1,48 @@
 # AWS FreeRTOS MQTT example with OTA support
 
+## Introduction
+
 This AWS FreeRTOS MQTT example demonstrates how to develop cloud connected
 applications and update them securely by integrating the modular [FreeRTOS kernel](https://www.freertos.org/RTOS.html)
 and [libraries](https://www.freertos.org/libraries/categories.html) and
 utilizing hardware enforced security based on [Arm TrustZone (Armv8-M)](https://www.arm.com/technologies/trustzone-for-cortex-m).
 This example is based on the [Corstone-300](https://developer.arm.com/Processors/Corstone-300)
 platform.
+
+### Secure TLS Connection
+
+Corstone platform communicates with the AWS IoT Core over a secure TLS
+connection. Mbed TLS running on the NSPE is used to establish the TLS
+connection. Mbed TLS makes use of the PSA Crypto APIs provided by TF-M for
+Crypto operations.
+
+[PKCS#11](https://www.freertos.org/pkcs11/index.html) APIs to perform TLS
+client authentication and import TLS client certificate and private key into
+the device. PKCS#11 has been integrated with TF-M using a thin shim. In the
+integration, the PKCS#11 APIs invoke the appropriate PSA Secure Storage API or
+Cryptographic API via the shim. This ensures the keys and certificates are
+protected and the cryptographic operations are performed securely within the
+SPE of TF-M and is isolated from the kernel, libraries and applications in the
+Non-secure Processing Environment. Keys and certificates are securely stored.
+This is enabled by TF-M’s Internal Trusted Storage (ITS) and Protected Storage
+(PS) services. Signing during TLS client authentication is performed by TF-M’s
+Crypto service.
+
+### Secure OTA Updates
+
+FreeRTOS OTA Agent provides an OTA PAL layer for platforms to integrate and
+enable OTA updates. The demo integrates and OTA PAL implementation that makes
+use of the PSA Certified Firmware Update API implemented in TF-M. This allows
+Corstone-300 to receive new images from AWS IoT Core, authenticate using TF-M
+before deploying the image as the active image. The secure (TF-M) and the
+non-secure (FreeRTOS kernel and the application) images can be updated
+separately.
+
+Every time the device boots, MCUBoot (bootloader) verifies that the image
+signature is valid before booting the image. Since the secure (TF-M) and the
+non-secure (FreeRTOS kernel and the application) images are singed separately,
+MCUBoot verifies that both image signatures are valid before booting. If either
+of the verification fails, then MCUBoot stops the booting process.
 
 ## Setting up Arm Virtual Hardware using Amazon Machine Images
 
