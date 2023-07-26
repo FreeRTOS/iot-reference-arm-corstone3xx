@@ -3274,7 +3274,3 @@ void mbedtls_platform_free( void * ptr );
 #include "mbedtls/check_config.h"
 
 /*#undef MBEDTLS_PSA_CRYPTO_C */
-
-#ifndef MBEDTLS_SVC_KEY_ID_INIT
-#define MBEDTLS_SVC_KEY_ID_INIT    ( ( psa_key_id_t ) 0 )
-#endif /* MBEDTLS_SVC_KEY_ID_INIT */
