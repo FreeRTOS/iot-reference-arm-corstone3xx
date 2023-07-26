@@ -32,7 +32,7 @@ int ota_privision_code_signing_key(psa_key_handle_t * key_handle)
     uint8_t public_key_der[310];
     size_t xLength = 310;
     int result;
-    psa_key_handle_t key_handle_tmp = NULL;
+    psa_key_handle_t key_handle_tmp = 0;
     psa_status_t status;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
 
