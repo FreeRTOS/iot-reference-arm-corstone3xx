@@ -37,7 +37,7 @@
 #endif
 #include "logging_stack.h"
 
-psa_key_handle_t xOTACodeVerifyKeyHandle = NULL;
+psa_key_handle_t xOTACodeVerifyKeyHandle = 0;
 
 /* System events group. */
 EventGroupHandle_t xSystemEvents = NULL;
@@ -221,6 +221,7 @@ int main()
  * vApplicationGetIdleTaskMemory gets called when configSUPPORT_STATIC_ALLOCATION
  * equals to 1 and is required for static memory allocation support.
  */
+
     __WEAK void vApplicationGetIdleTaskMemory( StaticTask_t ** ppxIdleTaskTCBBuffer,
                                                StackType_t ** ppxIdleTaskStackBuffer,
                                                uint32_t * pulIdleTaskStackSize )
