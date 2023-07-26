@@ -22,10 +22,10 @@
 #include "logging_stack.h"
 
 
-static int32_t Recv_Cb( void * pvCallerContext,
+static int Recv_Cb( void * pvCallerContext,
                         unsigned char * pucReceiveBuffer,
                         size_t xReceiveLength );
-static int32_t Send_Cb( void * pvCallerContext,
+static int Send_Cb( void * pvCallerContext,
                         const unsigned char * pucData,
                         size_t xDataLength );
 
@@ -198,11 +198,11 @@ int32_t Transport_Send( NetworkContext_t * pNetworkContext,
  *
  * @return The number of bytes actually read or appropirate error code.
  */
-static int32_t Recv_Cb( void * pvCallerContext,
+static int Recv_Cb( void * pvCallerContext,
                         unsigned char * pucReceiveBuffer,
                         size_t xReceiveLength )
 {
-    int32_t rc;
+    int rc;
     NetworkContext_t * pNetworkContext = ( NetworkContext_t * ) ( pvCallerContext );
 
     if( ( pNetworkContext == NULL ) || ( pucReceiveBuffer == NULL ) )
@@ -235,12 +235,12 @@ static int32_t Recv_Cb( void * pvCallerContext,
  *
  * @return The number of bytes actually sent.
  */
-static int32_t Send_Cb( void * pvCallerContext,
+static int Send_Cb( void * pvCallerContext,
                         const unsigned char * pucData,
                         size_t xDataLength )
 {
     NetworkContext_t * pNetworkContext = ( NetworkContext_t * ) ( pvCallerContext );
-    int32_t rc;
+    int rc;
 
     if( ( pNetworkContext == NULL ) || ( pucData == NULL ) )
     {

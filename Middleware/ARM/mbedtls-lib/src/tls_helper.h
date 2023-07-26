@@ -62,7 +62,7 @@ typedef struct TLSContext
  *
  * @return The number of bytes actually read.
  */
-typedef int32_t ( * NetworkRecv_t )( void * pvCallerContext,
+typedef int ( * NetworkRecv_t )( void * pvCallerContext,
                                         unsigned char * pucReceiveBuffer,
                                         size_t xReceiveLength );
 
@@ -75,7 +75,7 @@ typedef int32_t ( * NetworkRecv_t )( void * pvCallerContext,
  *
  * @return The number of bytes actually sent.
  */
-typedef int32_t ( * NetworkSend_t )( void * pvCallerContext,
+typedef int ( * NetworkSend_t )( void * pvCallerContext,
                                         const unsigned char * pucData,
                                         size_t xDataLength );
 
