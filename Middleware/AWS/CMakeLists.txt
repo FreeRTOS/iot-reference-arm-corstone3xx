@@ -54,6 +54,13 @@ target_sources(awsIoT
 )
 
 # corePKCS11
+execute_process(COMMAND git am --abort
+    COMMAND git am ${CMAKE_CURRENT_SOURCE_DIR}/patches/corePKCS11/0001-Do-not-define-__PASTE-macro-for-Arm-compiler.patch
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/corePKCS11/source/dependency/3rdparty/pkcs11"
+    OUTPUT_QUIET
+    ERROR_QUIET
+)
+
 include(corePKCS11/pkcsFilePaths.cmake)
 
 target_include_directories(awsIoT
