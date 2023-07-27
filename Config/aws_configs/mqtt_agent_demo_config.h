@@ -117,13 +117,13 @@
 /**
  * @brief The number of simple subscribe-publish tasks to create for the demo
  */
-#define democonfigNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE       1
-#define democonfigSIMPLE_SUB_PUB_TASK_STACK_SIZE           ( configMINIMAL_STACK_SIZE * 4 )
+#define democonfigNUM_SIMPLE_SUB_PUB_TASKS_TO_CREATE    1
+#define democonfigSIMPLE_SUB_PUB_TASK_STACK_SIZE        ( configMINIMAL_STACK_SIZE * 4 )
 
 
 /**
  * @brief The maximum number of times to run the demo's task creation loop.
  */
-#define democonfigMQTT_MAX_DEMO_COUNT   ( 3 )
+#define democonfigMQTT_MAX_DEMO_COUNT    ( 3 )
 
 #endif /* MQTT_DEMO_CONNECTION_SHARING_CONFIG_H */

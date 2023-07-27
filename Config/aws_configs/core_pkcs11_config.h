@@ -39,13 +39,13 @@
  * @brief Malloc API used by core_pkcs11.h
  */
 extern void * pvPortMalloc( size_t xWantedSize );
-#define PKCS11_MALLOC pvPortMalloc
+#define PKCS11_MALLOC    pvPortMalloc
 
 /**
  * @brief Free API used by core_pkcs11.h
  */
 extern void vPortFree( void * pv );
-#define PKCS11_FREE vPortFree
+#define PKCS11_FREE    vPortFree
 
 /* A non-standard version of C_INITIALIZE should be used by this port. */
 /* #define pkcs11configC_INITIALIZE_ALT */
@@ -59,19 +59,19 @@ extern void vPortFree( void * pv );
  * both of those, the user PIN is assumed to be used herein for interoperability
  * purposes only, and not as a security feature.
  */
-#define configPKCS11_DEFAULT_USER_PIN    "0000"
+#define configPKCS11_DEFAULT_USER_PIN                      "0000"
 
 /**
  * @brief Maximum length (in characters) for a PKCS #11 CKA_LABEL
  * attribute.
  */
-#define pkcs11configMAX_LABEL_LENGTH     32
+#define pkcs11configMAX_LABEL_LENGTH                       32
 
 /**
  * @brief Maximum number of token objects that can be stored
  * by the PKCS #11 module.
  */
-#define pkcs11configMAX_NUM_OBJECTS      6
+#define pkcs11configMAX_NUM_OBJECTS                        6
 
 /**
  * @brief Set to 1 if a PAL destroy object is implemented.
@@ -147,14 +147,14 @@ extern void vPortFree( void * pv );
  * Define the key ID of the device keys which will be saved as
  * persistent keys in TF-M. The key ID servers as the a name.
  */
-#define PSA_DEVICE_PRIVATE_KEY_ID	0x01
-#define PSA_DEVICE_PUBLIC_KEY_ID	0x10
+#define PSA_DEVICE_PRIVATE_KEY_ID                          0x01
+#define PSA_DEVICE_PUBLIC_KEY_ID                           0x10
 
-//
-// FIXME: are these needed?
-// extern void *MPU_pvPortMalloc( size_t xSize );
-// extern void MPU_vPortFree( void *pv );
+/* */
+/* FIXME: are these needed? */
+/* extern void *MPU_pvPortMalloc( size_t xSize ); */
+/* extern void MPU_vPortFree( void *pv ); */
 
-// #define pvPortMalloc  			MPU_pvPortMalloc
-// #define vPortFree     			MPU_vPortFree
+/* #define pvPortMalloc             MPU_pvPortMalloc */
+/* #define vPortFree                MPU_vPortFree */
 #endif /* _AWS_PKCS11_CONFIG_H_ include guard. */

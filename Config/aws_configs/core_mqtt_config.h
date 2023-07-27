@@ -48,8 +48,8 @@
  * macro sets the limit on how many simultaneous PUBLISH states an MQTT
  * context maintains.
  */
-#define MQTT_STATE_ARRAY_MAX_COUNT                   ( 20U )
-// #define MQTT_RECV_POLLING_TIMEOUT_MS                 ( 250 )
+#define MQTT_STATE_ARRAY_MAX_COUNT    ( 20U )
+/* #define MQTT_RECV_POLLING_TIMEOUT_MS                 ( 250 ) */
 
 /*_RB_ To document and add to the mqtt config defaults header file. */
 #define MQTT_AGENT_COMMAND_QUEUE_LENGTH              ( 32 )
@@ -74,15 +74,5 @@
  * will be.
  */
 #define MQTT_AGENT_MAX_SUBSCRIPTION_FILTER_LENGTH    ( 100 )
-
-/**
- * @brief Dimensions the buffer used to serialize and deserialize MQTT packets.
- * @note Specified in bytes.  Must be large enough to hold the maximum
- * anticipated MQTT payload.
- */
-// #define MQTT_AGENT_NETWORK_BUFFER_SIZE               ( 6 * 1024 )
-
-
-// #define MQTT_AGENT_MAX_EVENT_QUEUE_WAIT_TIME         ( 1 )
 
 #endif /* ifndef CORE_MQTT_CONFIG_H */

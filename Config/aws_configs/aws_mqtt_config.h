@@ -34,7 +34,7 @@
 /**
  * @brief Define assert for test project.
  */
-#define mqttconfigASSERT( x )    if( ( x ) == 0 ) __asm("b . ");
+#define mqttconfigASSERT( x )    if( ( x ) == 0 ) __asm( "b . " );
 
 /**
  * @brief Enable subscription management.
@@ -64,6 +64,6 @@
 /**
  * @brief Set this macro to 1 for enabling debug logs.
  */
-#define mqttconfigENABLE_DEBUG_LOGS                 ( 0 )
+#define mqttconfigENABLE_DEBUG_LOGS    ( 0 )
 
 #endif /* _AWS_MQTT_CONFIG_H_ */

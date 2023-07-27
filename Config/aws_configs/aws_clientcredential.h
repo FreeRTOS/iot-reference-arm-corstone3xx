@@ -20,10 +20,10 @@
  *
  */
 
-// #define clientcredentialMQTT_BROKER_ENDPOINT         ""
+/* #define clientcredentialMQTT_BROKER_ENDPOINT         "" */
 
 #ifndef clientcredentialMQTT_BROKER_ENDPOINT
-#error "Uncomment the clientcredentialMQTT_BROKER_ENDPOINT macro above and insert AWS IoT Core endpoint"
+    #error "Uncomment the clientcredentialMQTT_BROKER_ENDPOINT macro above and insert AWS IoT Core endpoint"
 #endif /* clientcredentialMQTT_BROKER_ENDPOINT */
 
 /**
@@ -34,10 +34,10 @@
  * Value is defined in "aws_clientcredential.h".
  */
 
-// #define clientcredentialIOT_THING_NAME               ""
+/* #define clientcredentialIOT_THING_NAME               "" */
 
 #ifndef clientcredentialIOT_THING_NAME
-#error "Uncomment the clientcredentialIOT_THING_NAME macro above and insert MQTT client identifier"
+    #error "Uncomment the clientcredentialIOT_THING_NAME macro above and insert MQTT client identifier"
 #endif /* clientcredentialIOT_THING_NAME */
 
 /**
@@ -55,4 +55,4 @@
 #define clientcredentialWIFI_SSID                    ""
 #define clientcredentialWIFI_PASSWORD                ""
 #define clientcredentialWIFI_SECURITY                eWiFiSecurityWPA2
-#endif
+#endif /* ifndef __AWS_CLIENTCREDENTIAL__H__ */

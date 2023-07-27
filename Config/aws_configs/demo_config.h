@@ -35,7 +35,7 @@
  * To use this demo, please configure the client's certificate and private key
  * in aws_configs/aws_clientcredential_keys.h
  * and credentials in aws_configs/aws_clientcredential.h.
- * 
+ *
  * For the AWS IoT MQTT broker, refer to the AWS documentation below for details
  * regarding client authentication.
  * https://docs.aws.amazon.com/iot/latest/developerguide/client-authentication.html
@@ -64,7 +64,7 @@
 /**
  * @brief The MQTT metrics string expected by AWS IoT.
  */
-#define democonfigMQTT_USERNAME                               \
+#define democonfigMQTT_USERNAME                                \
     "?SDK=" democonfigOS_NAME "&Version=" democonfigOS_VERSION \
     "&MQTTLib=" democonfigMQTT_LIB
 
@@ -74,9 +74,9 @@
 #define democonfigMQTT_USERNAME_LENGTH    ( ( uint16_t ) ( sizeof( democonfigMQTT_USERNAME ) - 1 ) )
 
 /* these are set in "aws_clientcredential.h and iot_default_root_certificates.h" */
-#define democonfigCLIENT_IDENTIFIER clientcredentialIOT_THING_NAME
-#define democonfigMQTT_BROKER_ENDPOINT clientcredentialMQTT_BROKER_ENDPOINT
-#define democonfigMQTT_BROKER_PORT clientcredentialMQTT_BROKER_PORT
-#define democonfigROOT_CA_PEM tlsATS1_ROOT_CERTIFICATE_PEM
+#define democonfigCLIENT_IDENTIFIER       clientcredentialIOT_THING_NAME
+#define democonfigMQTT_BROKER_ENDPOINT    clientcredentialMQTT_BROKER_ENDPOINT
+#define democonfigMQTT_BROKER_PORT        clientcredentialMQTT_BROKER_PORT
+#define democonfigROOT_CA_PEM             tlsATS1_ROOT_CERTIFICATE_PEM
 
 #endif /* DEMO_CONFIG_H */

@@ -94,7 +94,7 @@
  *
  * #define democonfigMQTT_BROKER_PORT    "...insert here..."
  */
-#define democonfigMQTT_BROKER_PORT    8883
+#define democonfigMQTT_BROKER_PORT       8883
 
 /**
  * @brief Size of the network buffer for MQTT packets.
