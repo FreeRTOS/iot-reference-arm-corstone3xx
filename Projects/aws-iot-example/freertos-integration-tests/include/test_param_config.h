@@ -41,28 +41,28 @@
  * a new on-device key pair and output public key. When set to 0, the device
  * should keep existing key pair.
  */
-#define FORCE_GENERATE_NEW_KEY_PAIR 0
+#define FORCE_GENERATE_NEW_KEY_PAIR          0
 
 /**
  * @brief Endpoint of the MQTT broker to connect to in mqtt test.
  */
-#define MQTT_SERVER_ENDPOINT clientcredentialMQTT_BROKER_ENDPOINT
+#define MQTT_SERVER_ENDPOINT                 clientcredentialMQTT_BROKER_ENDPOINT
 
 /**
  * @brief Port of the MQTT broker to connect to in mqtt test.
  */
-#define MQTT_SERVER_PORT clientcredentialMQTT_BROKER_PORT
+#define MQTT_SERVER_PORT                     clientcredentialMQTT_BROKER_PORT
 
 /**
  * @brief The client identifier for MQTT test.
  */
-#define MQTT_TEST_CLIENT_IDENTIFIER clientcredentialIOT_THING_NAME
+#define MQTT_TEST_CLIENT_IDENTIFIER          clientcredentialIOT_THING_NAME
 
 /**
  * @brief Network buffer size specified in bytes. Must be large enough to hold the maximum
  * anticipated MQTT payload.
  */
-#define MQTT_TEST_NETWORK_BUFFER_SIZE (1000)
+#define MQTT_TEST_NETWORK_BUFFER_SIZE        ( 1000 )
 
 /**
  * @brief Timeout for MQTT_ProcessLoop() function in milliseconds.
@@ -70,7 +70,7 @@
  * PUBLISH message and ack responses for QoS 1 and QoS 2 communications
  * with the broker.
  */
-#define MQTT_TEST_PROCESS_LOOP_TIMEOUT_MS (4000)
+#define MQTT_TEST_PROCESS_LOOP_TIMEOUT_MS    ( 4000 )
 
 /**
  * @brief Root certificate of the IoT Core.
@@ -114,7 +114,7 @@
  * "...base64 data...\n"\
  * "-----END CERTIFICATE-----\n"
  */
-#define MQTT_CLIENT_CERTIFICATE keyCLIENT_CERTIFICATE_PEM
+#define MQTT_CLIENT_CERTIFICATE    keyCLIENT_CERTIFICATE_PEM
 
 /**
  * @brief Client private key to connect to MQTT server.
@@ -123,17 +123,17 @@
  *
  * For qualification, the key should be generated on-device.
  */
-#define MQTT_CLIENT_PRIVATE_KEY keyCLIENT_PRIVATE_KEY_PEM
+#define MQTT_CLIENT_PRIVATE_KEY    keyCLIENT_PRIVATE_KEY_PEM
 
 /**
  * @brief Endpoint of the echo server to connect to in transport interface test.
  */
-#define ECHO_SERVER_ENDPOINT "localhost"
+#define ECHO_SERVER_ENDPOINT       "localhost"
 
 /**
  * @brief Port of the echo server to connect to in transport interface test.
  */
-#define ECHO_SERVER_PORT (9000)
+#define ECHO_SERVER_PORT           ( 9000 )
 
 /**
  * @brief Root certificate of the echo server.
@@ -179,69 +179,69 @@
  * #define TEST_START_DELAY_MS  5000
  */
 
-#define OTA_RSA_SHA1 1
-#define OTA_RSA_SHA256 2
-#define OTA_ECDSA_SHA256 3
+#define OTA_RSA_SHA1                                       1
+#define OTA_RSA_SHA256                                     2
+#define OTA_ECDSA_SHA256                                   3
 
 /**
  * @brief Certificate type for OTA PAL test.
  * Valid options are: OTA_RSA_SHA1, OTA_RSA_SHA256, OTA_ECDSA_SHA256.
  */
-#define OTA_PAL_TEST_CERT_TYPE OTA_RSA_SHA256
+#define OTA_PAL_TEST_CERT_TYPE                             OTA_RSA_SHA256
 
 /**
  * @brief Path to cert for OTA test PAL. Used to verify signature.
  * If applicable, the device must be pre-provisioned with this certificate. Please see
  * test/common/ota/test_files for the set of certificates.
  */
-#define OTA_PAL_CERTIFICATE_FILE "ecdsa-sha256-signer.crt.pem"
+#define OTA_PAL_CERTIFICATE_FILE                           "ecdsa-sha256-signer.crt.pem"
 
 /**
  * @brief Some devices have a hard-coded name for the firmware image to boot.
  */
-#define OTA_PAL_FIRMWARE_FILE "non_secure image"
+#define OTA_PAL_FIRMWARE_FILE                              "non_secure image"
 
 /**
  * @brief Some boards OTA PAL layers will use the file names passed into it for the
  * image and the certificates because their non-volatile memory is abstracted by a
  * file system. Set this to 1 if that is the case for your device.
  */
-#define OTA_PAL_USE_FILE_SYSTEM 0
+#define OTA_PAL_USE_FILE_SYSTEM                            0
 
 /**
  * @brief The PKCS #11 supports RSA key function.
  *
  * Set to 1 if RSA private keys are supported by the platform. 0 if not.
  */
-#define PKCS11_TEST_RSA_KEY_SUPPORT (1)
+#define PKCS11_TEST_RSA_KEY_SUPPORT                        ( 1 )
 
 /**
  * @brief The PKCS #11 supports EC key function.
  *
  * Set to 1 if elliptic curve private keys are supported by the platform. 0 if not.
  */
-#define PKCS11_TEST_EC_KEY_SUPPORT (0)
+#define PKCS11_TEST_EC_KEY_SUPPORT                         ( 0 )
 
 /**
  * @brief The PKCS #11 supports import key method.
  *
  * Set to 1 if importing device private key via C_CreateObject is supported. 0 if not.
  */
-#define PKCS11_TEST_IMPORT_PRIVATE_KEY_SUPPORT (0)
+#define PKCS11_TEST_IMPORT_PRIVATE_KEY_SUPPORT             ( 0 )
 
 /**
  * @brief The PKCS #11 supports generate keypair method.
  *
  * Set to 1 if generating a device private-public key pair via C_GenerateKeyPair. 0 if not.
  */
-#define PKCS11_TEST_GENERATE_KEYPAIR_SUPPORT (1)
+#define PKCS11_TEST_GENERATE_KEYPAIR_SUPPORT               ( 1 )
 
 /**
  * @brief The PKCS #11 supports preprovisioning method.
  *
  * Set to 1 if preprovisioning is supported.
  */
-#define PKCS11_TEST_PREPROVISIONED_SUPPORT (0)
+#define PKCS11_TEST_PREPROVISIONED_SUPPORT                 ( 0 )
 
 /**
  * @brief The PKCS #11 label for device private key for test.
@@ -250,7 +250,7 @@
  * For devices with secure elements or hardware limitations, this may be defined
  * to a different label to preserve AWS IoT credentials for other test suites.
  */
-#define PKCS11_TEST_LABEL_DEVICE_PRIVATE_KEY_FOR_TLS pkcs11configLABEL_DEVICE_PRIVATE_KEY_FOR_TLS
+#define PKCS11_TEST_LABEL_DEVICE_PRIVATE_KEY_FOR_TLS       pkcs11configLABEL_DEVICE_PRIVATE_KEY_FOR_TLS
 
 /**
  * @brief The PKCS #11 label for device public key.
@@ -259,7 +259,7 @@
  * For devices with secure elements or hardware limitations, this may be defined
  * to a different label to preserve AWS IoT credentials for other test suites.
  */
-#define PKCS11_TEST_LABEL_DEVICE_PUBLIC_KEY_FOR_TLS pkcs11configLABEL_DEVICE_PUBLIC_KEY_FOR_TLS
+#define PKCS11_TEST_LABEL_DEVICE_PUBLIC_KEY_FOR_TLS        pkcs11configLABEL_DEVICE_PUBLIC_KEY_FOR_TLS
 
 /**
  * @brief The PKCS #11 label for the device certificate.
@@ -268,7 +268,7 @@
  * For devices with secure elements or hardware limitations, this may be defined
  * to a different label to preserve AWS IoT credentials for other test suites.
  */
-#define PKCS11_TEST_LABEL_DEVICE_CERTIFICATE_FOR_TLS pkcs11configLABEL_DEVICE_CERTIFICATE_FOR_TLS
+#define PKCS11_TEST_LABEL_DEVICE_CERTIFICATE_FOR_TLS       pkcs11configLABEL_DEVICE_CERTIFICATE_FOR_TLS
 
 /**
  * @brief The PKCS #11 supports storage for JITP.
@@ -280,50 +280,50 @@
  * Set to 1 if PKCS #11 supports storage for JITP certificate, code verify certificate,
  * and trusted server root certificate.
  */
-#define PKCS11_TEST_JITP_CODEVERIFY_ROOT_CERT_SUPPORTED pkcs11configJITP_CODEVERIFY_ROOT_CERT_SUPPORTED
+#define PKCS11_TEST_JITP_CODEVERIFY_ROOT_CERT_SUPPORTED    pkcs11configJITP_CODEVERIFY_ROOT_CERT_SUPPORTED
 
 /**
  * @brief The PKCS #11 label for the object to be used for code verification.
  *
  * This label has to be defined if PKCS11_TEST_JITP_CODEVERIFY_ROOT_CERT_SUPPORTED is set to 1.
  */
-#define PKCS11_TEST_LABEL_CODE_VERIFICATION_KEY pkcs11configLABEL_CODE_VERIFICATION_KEY
+#define PKCS11_TEST_LABEL_CODE_VERIFICATION_KEY            pkcs11configLABEL_CODE_VERIFICATION_KEY
 
 /**
  * @brief The PKCS #11 label for Just-In-Time-Provisioning.
  *
  * This label has to be defined if PKCS11_TEST_JITP_CODEVERIFY_ROOT_CERT_SUPPORTED is set to 1.
  */
-#define PKCS11_TEST_LABEL_JITP_CERTIFICATE pkcs11configLABEL_JITP_CERTIFICATE
+#define PKCS11_TEST_LABEL_JITP_CERTIFICATE                 pkcs11configLABEL_JITP_CERTIFICATE
 
 /**
  * @brief The PKCS #11 label for the AWS Trusted Root Certificate.
  *
  * This label has to be defined if PKCS11_TEST_JITP_CODEVERIFY_ROOT_CERT_SUPPORTED is set to 1.
  */
-#define PKCS11_TEST_LABEL_ROOT_CERTIFICATE pkcs11configLABEL_ROOT_CERTIFICATE
+#define PKCS11_TEST_LABEL_ROOT_CERTIFICATE                 pkcs11configLABEL_ROOT_CERTIFICATE
 
 /**
  * @brief The IoT Thing name for the device for OTA test.
  */
-#define IOT_THING_NAME clientcredentialIOT_THING_NAME
+#define IOT_THING_NAME                                     clientcredentialIOT_THING_NAME
 
 /**
  * @brief Major version for OTA E2E test.
  */
-#define OTA_APP_VERSION_MAJOR 0
+#define OTA_APP_VERSION_MAJOR                              0
 
 /**
  * @brief Major version for OTA E2E test.
  */
-#define OTA_APP_VERSION_MINOR 9
+#define OTA_APP_VERSION_MINOR                              9
 
 /**
  * @brief Major version for OTA E2E test.
  */
-#define OTA_APP_VERSION_BUILD 1
+#define OTA_APP_VERSION_BUILD                              1
 
-#define OUTGOING_PUBLISH_RECORD_COUNT 20
-#define INCOMING_PUBLISH_RECORD_COUNT 20
+#define OUTGOING_PUBLISH_RECORD_COUNT                      20
+#define INCOMING_PUBLISH_RECORD_COUNT                      20
 
 #endif /* TEST_PARAM_CONFIG_H */
