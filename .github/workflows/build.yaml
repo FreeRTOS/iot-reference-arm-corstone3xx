@@ -1,0 +1,70 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - closed
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v2
+        with:
+          path: ${{ github.workspace }}
+          submodules: 'recursive'
+      - name: Install python 3
+        uses: actions/setup-python@v2
+        with:
+          architecture:   x64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          pip install cmake ninja imgtool cffi intelhex cbor2 cbor jinja2 PyYaml
+      - name: Install GNU Arm toolchain
+        shell: bash
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install gcc-arm-none-eabi
+      - name: Generate dummy device credentials
+        shell: bash
+        run: |
+          export IOT_OTA_ENDPOINT="dummy_endpoint"
+          export IOT_OTA_CLIENT_CERT="dummy_certificate"
+          export IOT_OTA_CLIENT_PRIV="dummy_priv_key"
+          export IOT_OTA_CLIENT_PUB="dummy_pub_key"
+          ./ci/generate_credentials.sh -f -p Config/aws_configs
+          git config --global user.email "ci@example.com"
+          git config --global user.name "ci"
+      - name: Build the project
+        shell: bash
+        run: |
+          ./Tools/scripts/build.sh aws-iot-example --toolchain GNU
+      - name: Copy artifacts
+        shell: bash
+        run: |
+          tar -czf gnu_build.tar.gz \
+          build/bootloader/bl2.axf \
+          build/secure_partition/tfm_s_signed.bin \
+          build/Projects/aws-iot-example/aws-iot-example.axf \
+          build/Projects/aws-iot-example/aws-iot-example_signed.bin \
+          build/Projects/aws-iot-example/aws-iot-example-update_signed.bin \
+          build/Projects/aws-iot-example/update-signature.txt
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: FRI-build-logs
+          path: |
+            ${{ github.workspace }}/gnu_build.tar.gz
+          retention-days: 5
