@@ -42,6 +42,7 @@ static NetworkConnectStatus_t prvTransportNetworkConnect( void * pNetworkContext
     };
 
     TransportStatus_t status = TRANSPORT_STATUS_CONNECT_FAILURE;
+
     status = Transport_Connect( pNetworkContext,
                                 &server_info,
                                 NULL,
@@ -63,6 +64,7 @@ static NetworkConnectStatus_t prvTransportNetworkConnectTLS( void * pNetworkCont
 
     /* Set the credentials for establishing a TLS connection. */
     TLSParams_t tls_params = { 0 };
+
     tls_params.pRootCa = democonfigROOT_CA_PEM;
     tls_params.rootCaSize = sizeof( democonfigROOT_CA_PEM );
     tls_params.pClientCertLabel = pkcs11configLABEL_DEVICE_CERTIFICATE_FOR_TLS;
@@ -71,6 +73,7 @@ static NetworkConnectStatus_t prvTransportNetworkConnectTLS( void * pNetworkCont
     tls_params.pLoginPIN = configPKCS11_DEFAULT_USER_PIN;
 
     TransportStatus_t status = TRANSPORT_STATUS_CONNECT_FAILURE;
+
     status = Transport_Connect( pNetworkContext,
                                 &server_info,
                                 &tls_params,
