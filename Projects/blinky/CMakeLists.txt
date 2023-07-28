@@ -42,6 +42,7 @@ endif()
 
 add_subdirectory(../../Middleware/ARM ${CMAKE_BINARY_DIR}/Middleware/ARM)
 add_subdirectory(../../Bsp ${CMAKE_BINARY_DIR}/Bsp)
+add_subdirectory(../../Config ${CMAKE_BINARY_DIR}/Config)
 
 target_compile_definitions(arm-corstone-platform-bsp
     INTERFACE
@@ -65,6 +66,7 @@ target_compile_definitions(freertos_config
 target_link_libraries(freertos_config
     INTERFACE
         tfm-ns-interface
+        app-config
 )
 
 set( FREERTOS_HEAP "3" CACHE STRING "" FORCE)
