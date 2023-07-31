@@ -1,0 +1,12 @@
+;/* Copyright 2023 Arm Limited and/or its affiliates
+; * <open-source-office@arm.com>
+; * SPDX-License-Identifier: MIT
+; */
+
+
+LR_DATA 0x210FF000 {
+    RO_DATA 0x210FF000 0x1000{
+        *
+    }
+}
+

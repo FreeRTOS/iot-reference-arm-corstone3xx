@@ -41,29 +41,7 @@
 
 #include "core_pkcs11_config.h"
 #include "core_pkcs11.h"
-
-typedef struct ProvisioningParams_t
-{
-    uint8_t * pucClientPrivateKey;      /**< Pointer to the device private key in PEM format.
-                                         *   See tools/certificate_configuration/PEMfileToCString.html
-                                         *   for help with formatting.*/
-    uint32_t ulClientPrivateKeyLength;  /**< Length of the private key data, in bytes. */
-    uint8_t * pucClientCertificate;     /**< Pointer to the device certificate in PEM format.
-                                         *   See tools/certificate_configuration/PEMfileToCString.html
-                                         *   for help with formatting.*/
-    uint32_t ulClientCertificateLength; /**< Length of the device certificate in bytes. */
-    uint8_t * pucJITPCertificate;       /**< Pointer to the Just-In-Time Provisioning (JITP) certificate in
-                                         *   PEM format.
-                                         *   - This is REQUIRED if JITP is being used.
-                                         *   - If you are not using JITP, this certificate
-                                         *   is not needed and should be set to NULL.
-                                         *   - See tools/certificate_configuration/PEMfileToCString.html
-                                         *   for help with formatting.
-                                         *   - See https://aws.amazon.com/blogs/iot/setting-up-just-in-time-provisioning-with-aws-iot-core/
-                                         *   for more information about getting started with JITP */
-    uint32_t ulJITPCertificateLength;   /**< Length of the Just-In-Time Provisioning (JITP) certificate in bytes.
-                                         *   If JITP is not being used, this value should be set to 0. */
-} ProvisioningParams_t;
+#include "provisioning_data.h"
 
 /** \brief Provisions device with default credentials.
  *
