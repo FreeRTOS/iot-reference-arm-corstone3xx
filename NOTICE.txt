@@ -1,13 +1,12 @@
-** mbedTLS; version 2.28.3 -- https://tls.mbed.org/
-** IoT_VSocket-lib; version eefaf7e1c8aa9e64410235340602f8416a0b5ad5 -- https://gitlab.arm.com/iot/aws/freertos/iot-reference-arm-corstone3xx/-/tree/main/Middleware/ARM/IoT_VSocket-lib
-** IoT_Socket; version 1e15f55ae08c2169c0e4a59216e78a4906a66af8 -- https://github.com/MDK-Packs/IoT_Socket
-** arm-corstone-platform-bsp; version ce35a01596530637b16287234788d68b0d1c75a8 -- https://git.gitlab.arm.com/iot/open-iot-sdk/arm-corstone-platform-bsp
-** AVH; version 0ff8fcfef9e3a9930f1db9fd80589fbd6b7c7976 -- https://www.arm.com/products/development-tools/simulation/virtual-hardware
-** CMSIS; version 2b7495b8535bdcb306dac29b9ded4cfb679d7e5c -- https://github.com/ARM-software/CMSIS_5
- 
+** mbedTLS; version 2.28.3 -- https://github.com/Mbed-TLS/mbedtls.git
+** IoT_VSocket-lib; version 6b1b5140242c01127f18f54aeab63c9c1cd59e03 -- https://github.com/FreeRTOS/iot-reference-arm-corstone3xx/tree/main/Middleware/ARM/IoT_VSocket-lib
+** AVH; version ab37f6126c94fee7bbd061f77716745dfbb77592 -- https://github.com/ARM-software/AVH.git
+** IoT_Socket; version 1e15f55ae08c2169c0e4a59216e78a4906a66af8 -- https://github.com/MDK-Packs/IoT_Socket.git
+** arm-corstone-platform-bsp; version v0.1.0 -- https://git.gitlab.arm.com/iot/open-iot-sdk/arm-corstone-platform-bsp.git
+** CMSIS; version 5.9.0 -- https://github.com/ARM-software/CMSIS_5.git
+
     * Package CMSIS's source code may be found at:
-      https://github.com/ARM-
-software/CMSIS_5/tree/2b7495b8535bdcb306dac29b9ded4cfb679d7e5c
+      https://github.com/ARM-software/CMSIS_5/tree/5.9.0
 
 Apache License
 Version 2.0, January 2004
@@ -193,23 +192,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 * For mbedTLS see also this required NOTICE:
-    Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+    Copyright The Mbed TLS Contributors
 * For IoT_VSocket-lib see also this required NOTICE:
     Copyright 2021-2023 Arm Limited and/or its affiliates
 * For IoT_Socket see also this required NOTICE:
-    Copyright (c) 2021 Arm Limited (or its affiliates). All rights reserved.
+    Copyright (c) 2018-2022 Arm Limited. All rights reserved.
 * For  arm-corstone-platform-bsp see also this required NOTICE:
-    Copyright Arm Limited 2020-2022. All rights reserved.
+    Copyright Arm Limited 2020-2023. All rights reserved.
 * For AVH see also this required NOTICE:
-    Copyright (C) 2021-2023, Arm Ltd.
+    Copyright (c) 2018-2022 Arm Limited. All rights reserved.
 * For CMSIS see also this required NOTICE:
     Copyright (c) 1999-2023 ARM Limited. All rights reserved.
 
 ------
 
-** TF-M; version 1.8 -- https://www.trustedfirmware.org/projects/tf-m/
-Copyright (c) 2017-2019, Arm Limited. All rights reserved.
- 
+** TF-M; version 1.8 -- https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git
+Copyright (c) 2017-2023, Arm Limited. All rights reserved.
+
 Copyright (c) <year> <owner>. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -251,14 +250,13 @@ Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
 Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
 ** ota-for-aws-iot-embedded-sdk; version 406415ef38d9f0fbabd69735623008fd090043b3 -- https://github.com/aws/ota-for-aws-iot-embedded-sdk/tree/
 Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
-** FreeRTOS-Libraries-Integration-Tests; version 19603d26e396a6c9c45147333209ae3578b08e26 -- https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tree/
+** FreeRTOS-Libraries-Integration-Tests; version 202210.01 -- https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tree/
 Copyright (C) 2022 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
 ** FreeRTOS; version d4d5e43292a57df354dcf8f33d938283f2082855 -- http://www.FreeRTOS.org
 Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- 
+
     * Package FreeRTOS's source code may be found at:
-      https://github.com/FreeRTOS/FreeRTOS-
-Kernel/tree/d4d5e43292a57df354dcf8f33d938283f2082855
+      https://github.com/FreeRTOS/FreeRTOS-Kernel/tree/d4d5e43292a57df354dcf8f33d938283f2082855
 
 MIT License
 
@@ -283,11 +281,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ------
 
-** coreMQTT-Agent; version 505dd2343af5ffd84f865ae83938edc45b4f2baa -- https://github.com/FreeRTOS/coreMQTT-Agent
+** coreMQTT-Agent; version v1.2.0 -- https://github.com/FreeRTOS/coreMQTT-Agent
 Copyright (C) Amazon Web Services, Inc. or its affiliates. All rights reserved.
- 
+
     * Package coreMQTT-Agent's source code may be found at:
-      https://github.com/FreeRTOS/coreMQTT-Agent
+      https://github.com/FreeRTOS/coreMQTT-Agent/tree/v1.2.0
 
 MIT License
 
@@ -313,7 +311,7 @@ SOFTWARE.
 
 ** tinycbor; version 9924cfed3b95ad6de299ae675064430fdb886216 -- https://github.com/intel/tinycbor
 Copyright (c) 2017 Intel Corporation
- 
+
     * Package tinycbor's source code may be found at:
 https://github.com/intel/tinycbor/tree/9924cfed3b95ad6de299ae675064430fdb886216
 
@@ -345,12 +343,12 @@ SOFTWARE.
 © 2023, Amazon Web Services, Inc. or its affiliates. All rights reserved.
 ** coreMQTT; version 33031789a12dad96892ad5008c8cd7ef8558e8ac -- https://github.com/FreeRTOS/coreMQTT/
 Copyright (C) Amazon Web Services, Inc. or its affiliates. All rights reserved.
- 
-    * Package coreMQTT's source code may be found at:
-      https://github.com/FreeRTOS/coreMQTT/
 
     * Package coreJSON's source code may be found at:
-      https://github.com/FreeRTOS/coreJSON
+      https://github.com/FreeRTOS/coreJSON/tree/a1c702e6d216222ef45a520d8ba2aba315a1ea78
+
+    * Package coreMQTT's source code may be found at:
+      https://github.com/FreeRTOS/coreMQTT/tree/33031789a12dad96892ad5008c8cd7ef8558e8ac
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
