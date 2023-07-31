@@ -208,6 +208,7 @@ add_dependencies(tfm-binaries tf-m-build)
 add_dependencies(tfm-ns-interface tfm-binaries)
 
 add_subdirectory(mqtt-agent-wrapper)
+add_subdirectory(provisioning provisioning_data)
 
 # Declare the aws-iot-example executable
 add_executable(aws-iot-example
@@ -217,9 +218,12 @@ add_executable(aws-iot-example
     ${MIDDLEWARE_DIR}/AWS/corePKCS11/source/dependency/3rdparty/mbedtls_utils/mbedtls_utils.c
 )
 
+add_dependencies(aws-iot-example provisioning_data_bin)
+
 target_include_directories(aws-iot-example
     PRIVATE
         freertos-integration-tests/include
+        provisioning
 )
 
 if (INTEGRATION_TESTS)
