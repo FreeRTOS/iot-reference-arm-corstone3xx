@@ -7,11 +7,7 @@
 #define _PROVISIONING_DATA_H_
 
 #include <stdint.h>
-
-#define PROVISIONING_MAGIC 0xC0DEFEED
-#define PROVISIONING_DATA_START (0x210FF000)
-#define PROVISIONING_DATA_HEADER_SIZE (0x4)
-#define PROVISIONING_PARAM_START (PROVISIONING_DATA_START + PROVISIONING_DATA_HEADER_SIZE)
+#include "provisioning_config.h"
 
 typedef struct ProvisioningParams_t
 {

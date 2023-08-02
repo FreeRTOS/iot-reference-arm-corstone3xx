@@ -3,10 +3,11 @@
 ; * SPDX-License-Identifier: MIT
 ; */
 
+#include "provisioning_config.h"
 
 MEMORY
 {
-    CODE (rx) : ORIGIN = 0x210FF000, LENGTH = 0x1000
+    CODE (rx) : ORIGIN = PROVISIONING_DATA_START, LENGTH = PROVISIONING_DATA_LEN
 }
 
 SECTIONS
