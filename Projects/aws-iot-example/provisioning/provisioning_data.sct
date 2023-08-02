@@ -3,9 +3,10 @@
 ; * SPDX-License-Identifier: MIT
 ; */
 
+#include "provisioning_config.h"
 
-LR_DATA 0x210FF000 {
-    RO_DATA 0x210FF000 0x1000{
+LR_DATA PROVISIONING_DATA_START {
+    RO_DATA PROVISIONING_DATA_START PROVISIONING_DATA_LEN{
         *
     }
 }
