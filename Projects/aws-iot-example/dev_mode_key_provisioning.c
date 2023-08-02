@@ -47,7 +47,6 @@
 
 /* Client credential includes. */
 /* #include "aws_clientcredential.h" */
-#include "aws_clientcredential_keys.h"
 #include "iot_default_root_certificates.h"
 
 /* Key provisioning include. */
@@ -1085,7 +1084,6 @@ CK_RV xProvisionDevice( CK_SESSION_HANDLE xSession,
     xResult = C_GetFunctionList( &pxFunctionList );
 
     #if ( pkcs11configIMPORT_PRIVATE_KEYS_SUPPORTED == 1 )
-
         /* Attempt to clean-up old crypto objects, but only if private key import is
          * supported by this application, and only if the caller has provided new
          * objects to use instead. */
@@ -1119,7 +1117,6 @@ CK_RV xProvisionDevice( CK_SESSION_HANDLE xSession,
     }
 
     #if ( pkcs11configIMPORT_PRIVATE_KEYS_SUPPORTED == 1 )
-
         /* If this application supports importing private keys, and if a private
          * key has been provided by the caller, attempt to import it. */
         if( ( xResult == CKR_OK ) && ( NULL != pxParams->pucClientPrivateKey ) )
