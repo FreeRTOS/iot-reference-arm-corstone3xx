@@ -18,6 +18,8 @@ TOOLCHAIN="ARMCLANG"
 TOOLCHAIN_FILE=""
 BUILD=1
 INTEGRATION_TESTS=0
+CERTIFICATE_PATH=""
+PRIVATE_KEY_PATH=""
 
 set -e
 
@@ -39,7 +41,7 @@ function build_with_cmake {
         set -ex
 
         # Note: A bug in CMake force us to set the toolchain here
-        cmake -G Ninja -S . -B $BUILD_PATH --toolchain=$TOOLCHAIN_FILE -DCMAKE_SYSTEM_PROCESSOR=$TARGET_PROCESSOR -DARM_CORSTONE_BSP_TARGET_PLATFORM=$TARGET -DEXAMPLE=$EXAMPLE -DINTEGRATION_TESTS=$INTEGRATION_TESTS
+        cmake -G Ninja -S . -B $BUILD_PATH --toolchain=$TOOLCHAIN_FILE -DCMAKE_SYSTEM_PROCESSOR=$TARGET_PROCESSOR -DARM_CORSTONE_BSP_TARGET_PLATFORM=$TARGET -DEXAMPLE=$EXAMPLE -DINTEGRATION_TESTS=$INTEGRATION_TESTS -DAWS_CLIENT_PRIVATE_KEY_PEM_PATH=$PRIVATE_KEY_PATH -DAWS_CLIENT_CERTIFICATE_PEM_PATH=$CERTIFICATE_PATH
 
         if [[ $BUILD -ne 0 ]]; then
             cmake --build $BUILD_PATH --target $EXAMPLE
@@ -60,7 +62,8 @@ Options:
     --toolchain                 Compiler (GNU or ARMCLANG)
     -q, --integration-tests     Build FreeRTOS integration tests
     --configure-only Create build tree but do not build
-
+    --certificate_path          The full path for the AWS device certificate
+    --private_key_path          The full path for the AWS device private key
 Examples:
     blinky, aws-iot-example
 EOF
@@ -72,7 +75,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 SHORT=t:,c,h,q
-LONG=target:,toolchain:,clean,help,configure-only,integration-tests
+LONG=target:,toolchain:,clean,help,configure-only,certificate_path:,private_key_path:,integration-tests
 OPTS=$(getopt -n build --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -94,6 +97,14 @@ do
       ;;
     --toolchain )
       TOOLCHAIN=$2
+      shift 2
+      ;;
+    --certificate_path )
+      CERTIFICATE_PATH=$2
+      shift 2
+      ;;
+    --private_key_path )
+      PRIVATE_KEY_PATH=$2
       shift 2
       ;;
     -q | --integration-tests )
@@ -157,5 +168,17 @@ case "$TOOLCHAIN" in
       exit 2
       ;;
 esac
+
+if [ ! -f "$CERTIFICATE_PATH" ]; then
+    echo "The --certificate_path must be set to an existing file."
+    show_usage
+    exit 2
+fi
+
+if [ ! -f "$PRIVATE_KEY_PATH" ]; then
+    echo "The --private_key_path must be set to an existing file."
+    show_usage
+    exit 2
+fi
 
 build_with_cmake
