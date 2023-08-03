@@ -156,7 +156,7 @@ FRTestThreadHandle_t FRTest_ThreadCreate( FRTestThreadFunction_t func,
 {
     Task_t * task = NULL;
 
-    task = malloc( sizeof( Task_t ) );
+    task = pvPortMalloc( sizeof( Task_t ) );
     task->mutex = xSemaphoreCreateBinaryStatic( &task->mutex_buf );
     task->func = func;
     task->args = pParam;
