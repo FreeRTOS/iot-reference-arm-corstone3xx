@@ -95,10 +95,10 @@ via MQTT as well as enable an over-the-air update.
      the thing and topic is attached to.
    * You will need to add the thing name later to your C code.
    * There is no need to add any **Additional configuration**
-1. On the **Configure device certificate** page, choose **Auto-generate a new certificate** and then press the **Next** button.
+1. If you want to use your own self-signed client certificate then on the **Configure device certificate** page, choose **Skip creating a certificate at this time** and then press the **Next** button. If you want to use auto-generated certificate then choose **Auto-generate a new certificate** and then press the **Next** button.
 1. Skip the **Attach policies to certificate** page for now.
    * You will attach a certificate to the thing in a later step.
-1. Download your all the keys and certificates by choosing the **Download**
+1. If you use auto-generated certificates then download all the keys and certificates by choosing the **Download**
    links for each.
    * Click on all the **Download** buttons and store these files in a secure
      location as you will use them later.
@@ -106,7 +106,38 @@ via MQTT as well as enable an over-the-air update.
      your certificate.
    * Click on **Done** once all items have downloaded.
 
-### Creating a policy and attach it to your thing
+   If you use self-signed client certificate then you will upload the certificate that is generated in the next step.
+
+
+### Generating and registering your own device certificate
+AWS IoT Core authenticates device connections with the help of X.509 certificates. The steps below describes how to generate self-signed device certificate and then register it with AWS IoT Core.
+
+1. Run the ```./Tools/scripts/generate_credentials.py``` Python script, that's going to generate a private key
+   and a certificate that's signed  with this key.
+   * Optionally you can specify metadata for the certificate. Use the ```-h``` flag for the python script to see the available options.
+  ```bash
+  python ./Tools/scripts/generate_credentials.py --certificate_valid_time <validity duration in days > \
+                                                --certificate_country_name <Country Name (2 letter code)> \
+                                                --certificate_state_province_name <State or Province Name (full name)> \
+                                                --certificate_locality_name <Locality Name (eg, city)> \
+                                                --certificate_org_name <Organization Name (eg, company)> \
+                                                --certificate_org_unit_name <Organizational Unit Name (eg, section)> \
+                                                --certificate_email_address_name <Email Address> \
+                                                --certificate_out_path <output path> \
+                                                --private_key_out_path <output path>
+  ```
+1. In the left navigation panel **Manager** section of the AWS IoT console,
+   expand **Security**, and then select **Certificates**.
+1. On the **Certificates** page, press the **Add certificates** button and select **Register certificates**.
+1. Select the **CA is not registered with AWS IoT** option and upload the **certificate.pem** that's generated in the previous step.
+1. Select the checkbox next to the uploaded certificate and then click on the **Activate** button.
+1. Click on the **Register** button.
+   * At this point, the certificate is registered and activated. In the **Security** > **Certificates** menu, you can see the new certificate.
+1. Go to the  **Security** > **Certificates** menu and select the newly registered certificate.
+1. On the **Things** tab click on the **Attach to things** button and select your Thing.
+
+
+### Creating a policy and attach it to your certificate
 
 1. In the left navigation pane **Manage** section of the AWS IoT console,
    expand **Security**, and then select **Policies**.
@@ -185,29 +216,16 @@ user defines called out below.
 
 Save and close the file.
 
-
-Next insert the keys that are in the certificates you have downloaded when you
-created the thing. Edit the file 
-`Config/aws_configs/aws_clientcredential_keys.h` replacing the existing keys
-with yours.
-
-`keyCLIENT_CERTIFICATE_PEM`
-
-* Replace with contents from
-  `<your-thing-certificate-unique-string>-certificate.pem.crt`.
-
-`keyCLIENT_PRIVATE_KEY_PEM`
-
-* Replace with contents from
-  `<your-thing-certificate-unique-string>-private.pem.key`.
+The device certificate PEM and private key PEM will be set during the build configuration.
 
 ## Building the application
 
 To build the AWS FreeRTOS MQTT example, run the following command:
 
 ```bash
-./Tools/scripts/build.sh aws-iot-example
+./Tools/scripts/build.sh aws-iot-example --certificate_path <certificate pem's path> --private_key_path <private key pem's path>
 ```
+* The `certificate pem's path` and `private key pem's path` should be the downloaded key's and certificate's path if you chose the **Auto-generate a new certificate** during the Thing creation. If you chose **Skip creating a certificate at this time** then these paths should locate the generated credential files that were created by the `./Tools/scripts/generate_credentials.py` script in the previous step.
 
 Or, run the command below to perform a clean build:
 
@@ -220,6 +238,15 @@ included in the [Arm Virtual Hardware instance](./setting-up-arm-virtual-hardwar
 on AWS. If you would like to build it with the Arm GNU Toolchain (arm-none-eabi-gcc)
 [installed by yourself](./development-environment.md), append the extra option
 `--toolchain GNU` to the build command above.
+
+
+## Provisioning the device credentials into Protected Storage
+During the build process a ```provisioning_data.bin``` is built into the ```build/Projects/aws-iot-example/provisioning_data``` directory.
+This binary contains the device credentials (private key and certificate).
+
+If the content of the .pem files that were used during the build process (passed with ```--certificate_path``` and ```--private_key_path```) changed, then ```cmake --build build -j -- provisioning_data``` rebuilds this provisioning binary.
+
+The binary has to be loaded to the ```0x210FF000``` address so the ```aws-iot-example``` can detect that a provisioning bundle is present and writes the credentials into the Protected Storage. (The run.sh script automatically does this.)
 
 ## Running the application
 
@@ -255,13 +282,13 @@ Creating an empty PS flash layout.
 [DBG][Crypto] Initialising mbed TLS 3.4.0 as PSA Crypto backend library... complete.
 0 0 [None] [INFO] PSA Framework version is: 257
 1 0 [None] Write certificate...
-2 0 [None] [INFO] Device key provisioning succeeded 
-3 0 [None] [INFO] OTA signing key provisioning succeeded 
+2 0 [None] [INFO] Device key provisioning succeeded
+3 0 [None] [INFO] OTA signing key provisioning succeeded
 4 0 [OTA Task ] [INFO] OTA over MQTT, Application version from appFirmwareVersion 0.0.10
 5 0 [OTA Task ] [INFO] Creating a TLS connection to <iot-core-endpoint>.amazonaws.com:8883.
 6 30 [OTA Task ] [INFO] Initiating TCP connection with host: <iot-core-endpoint>.amazonaws.com:8883
 7 74 [OTA Task ] [INFO] Initiating TLS handshake with host: <iot-core-endpoint>.amazonaws.com:8883
-8 1677 [OTA Task ] [INFO] Creating an MQTT connection to the broker. 
+8 1677 [OTA Task ] [INFO] Creating an MQTT connection to the broker.
 9 1768 [OTA Task ] [INFO] Packet received. ReceivedBytes=2.
 10 1768 [OTA Task ] [INFO] CONNACK session present bit not set.
 11 1768 [OTA Task ] [INFO] Connection accepted.
@@ -417,8 +444,8 @@ Creating an empty PS flash layout.
 [DBG][Crypto] Initialising mbed TLS 3.4.0 as PSA Crypto backend library... complete.
 0 0 [None] [INFO] PSA Framework version is: 257
 1 0 [None] Write certificate...
-2 0 [None] [INFO] Device key provisioning succeeded 
-3 0 [None] [INFO] OTA signing key provisioning succeeded 
+2 0 [None] [INFO] Device key provisioning succeeded
+3 0 [None] [INFO] OTA signing key provisioning succeeded
 4 0 [OTA Task ] [INFO] OTA over MQTT, Application version from appFirmwareVersion 0.0.10
 5 0 [OTA Task ] [INFO] Creating a TLS connection to <iot-core-endpoint>.amazonaws.com:8883.
 6 30 [OTA Task ] [INFO] Initiating TCP connection with host: <iot-core-endpoint>.amazonaws.com:8883
@@ -477,8 +504,8 @@ Creating an empty PS flash layout.
 [DBG][Crypto] Initialising mbed TLS 3.4.0 as PSA Crypto backend library... complete.
 0 0 [None] [INFO] PSA Framework version is: 257
 1 0 [None] Write certificate...
-2 0 [None] [INFO] Device key provisioning succeeded 
-3 0 [None] [INFO] OTA signing key provisioning succeeded 
+2 0 [None] [INFO] Device key provisioning succeeded
+3 0 [None] [INFO] OTA signing key provisioning succeeded
 4 0 [OTA Task ] [INFO] OTA over MQTT, Application version from appFirmwareVersion 0.0.20
 
 ...
