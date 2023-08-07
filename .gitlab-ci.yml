@@ -76,7 +76,7 @@ build-applications:
     - ./ci/generate_credentials.sh -f -p Config/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
-    - ./Tools/scripts/build.sh aws-iot-example --toolchain $TOOLCHAIN
+    - ./Tools/scripts/build.sh aws-iot-example --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
     - |
       tar -czf ${TOOLCHAIN}_build.tar.gz \
         build/bootloader/bl2.axf \
@@ -85,6 +85,7 @@ build-applications:
         build/Projects/aws-iot-example/aws-iot-example_signed.bin \
         build/Projects/aws-iot-example/aws-iot-example-update_signed.bin \
         build/Projects/aws-iot-example/update-signature.txt \
+        build/Projects/aws-iot-example/provisioning_data/provisioning_data.bin \
         Config/aws_configs
   artifacts:
     paths:

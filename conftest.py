@@ -64,6 +64,7 @@ def fvp(fvp_path, build_path, vsi_script_path, fvp_options):
         "-a", f"cpu0*={build_path}/bootloader/bl2.axf",
         "--data", f"{build_path}/secure_partition/tfm_s_signed.bin@0x11000000",
         "--data", f"{build_path}/Projects/aws-iot-example/aws-iot-example_signed.bin@0x01060000",
+        "--data", f"{build_path}/Projects/aws-iot-example/provisioning_data/provisioning_data.bin@0x210FF000",
         "-C", "core_clk.mul=200000000",
         "-C", "mps3_board.visualisation.disable-visualisation=1",
         "-C", "mps3_board.telnetterminal0.start_telnet=0",
