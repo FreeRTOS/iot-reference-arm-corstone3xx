@@ -21,11 +21,12 @@ if you don't already have one.
      * **Step 2: Choose an [Amazon Machine Image (AMI)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html)**
         * In the Search box, type `Arm Virtual Hardware` and then hit "enter"
           to find the item called <ins>"Arm Virtual Hardware" - "By Arm"</ins>.
-          > Select: **Arm Virtual Hardware By Arm | Version 1.2.3**
+          > Select: **Arm Virtual Hardware By Arm | Version 1.3.1**
           * NOTE: If you do not see the expected items, make sure the
             <ins>**AWS Marketplace AMIs**</ins> tab is selected.
         * Click on "Select" for that item. This image contains all the software
-          necessary to build and run the Arm IoT Total Solutions.
+          necessary to build and run the Arm FreeRTOS Featured Reference
+          Integration.
           * This will raise a subscription page/pop-up titled,
             **Arm Virtual Hardware**.
           * You will note that the subscription is free from Arm, but
@@ -60,7 +61,7 @@ if you don't already have one.
 
      * **Step 5: Configure storage** - To ensure enough disk drive space to
        contain the entire build image.  Set the amount of storage to
-       "1x **24** GiB".
+       "1x **30** GiB".
 
      * **Final Step:** From here you may select **Review and Launch** to move
        directly to the launch page or continue to configure instance details if
