@@ -20,9 +20,20 @@ git submodule update --init --recursive
 
 * Ubuntu 20.04 or higher. Please note that the following instructions are
   validated on Ubuntu 20.04.
+* Git configuration
+  * `git-am` is used to apply the required patches during CMake configuration.
+    In order for this to succeed, a minimum of `User Name` and `User Email`
+    must be configured.
+
+    ```bash
+    git config --global user.email "email@address"
+    git config --global user.name "User Name"
+    ```
 * Setting up python 3 virtual environment
 
     ```bash
+    sudo apt update
+    sudo apt install python3.8-venv -y
     python3 -m venv ~/fri-venv
     source ~/fri-venv/bin/activate
     ```
@@ -30,9 +41,8 @@ git submodule update --init --recursive
 * Installing required python 3 modules
 
     ```bash
-    sudo apt update
-    sudo apt install python3-pip
-    python3 -m pip install ninja imgtool cffi intelhex cbor2 cbor jinja2 PyYaml
+    sudo apt install python3-pip -y
+    python3 -m pip install ninja imgtool cffi intelhex cbor2 jinja2 PyYaml
     ```
 
     **NOTE**: The virtual environment can be deactivated when not needed anymore
