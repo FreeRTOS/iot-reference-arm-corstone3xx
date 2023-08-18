@@ -111,7 +111,7 @@ target_link_libraries(freertos_config
         app-config
 )
 
-set( FREERTOS_HEAP "3" CACHE STRING "" FORCE)
+set( FREERTOS_HEAP "4" CACHE STRING "" FORCE)
 # Select the native compile PORT
 set( FREERTOS_PORT "GCC_ARM_CM55_TFM" CACHE STRING "" FORCE)
 
