@@ -23,6 +23,7 @@
 #include "task.h"
 
 #include "mbedtls/threading.h"
+#include "mbedtls/platform.h"
 #include "threading_alt.h"
 
 /* Include header that defines log levels. */
@@ -131,6 +132,9 @@ int main()
 
     /* Create system events group. */
     xSystemEvents = xEventGroupCreateStatic( &xSystemEventsGroup );
+
+    /* Configure Mbed TLS memory APIs to use FreeRTOS heap APIs */
+    mbedtls_platform_set_calloc_free( mbedtls_platform_calloc, mbedtls_platform_free );
 
     xRetVal = vDevModeKeyProvisioning();
 

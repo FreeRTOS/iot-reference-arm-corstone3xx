@@ -48,8 +48,8 @@ extern uint32_t SystemCoreClock;
 /* Memory allocation related definitions. */
 #define configSUPPORT_STATIC_ALLOCATION     1
 #define configSUPPORT_DYNAMIC_ALLOCATION    1
-#define configTOTAL_HEAP_SIZE               512000 /* should be enough */
-#define configAPPLICATION_ALLOCATED_HEAP    1
+#define configTOTAL_HEAP_SIZE               720896
+#define configAPPLICATION_ALLOCATED_HEAP    0
 
 #define configENABLE_MVE                    0
 #define configENABLE_FPU                    1
