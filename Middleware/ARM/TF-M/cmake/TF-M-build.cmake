@@ -16,7 +16,7 @@ set(tfm_ns_interface_generated
     <BINARY_DIR>/install/interface/src/tfm_platform_api.c
     <BINARY_DIR>/install/interface/src/os_wrapper/tfm_ns_interface_rtos.c
 )
-if(TFM_PSA_FIRMWARE_UPDATE)
+if(TFM_CMAKE_ARGS MATCHES "TFM_PARTITION_FIRMWARE_UPDATE=ON")
     list(APPEND tfm_ns_interface_generated <BINARY_DIR>/install/interface/src/tfm_fwu_api.c)
 endif()
 
@@ -50,13 +50,6 @@ ExternalProject_Add(
 
     CMAKE_ARGS
         -D TFM_TOOLCHAIN_FILE=<SOURCE_DIR>/${tfm_toolchain_file}
-        -D TFM_PLATFORM=${TFM_PLATFORM}
-        -D TFM_PARTITION_FIRMWARE_UPDATE=${TFM_PSA_FIRMWARE_UPDATE}
-        -D PLATFORM_HAS_FIRMWARE_UPDATE_SUPPORT=${TFM_PSA_FIRMWARE_UPDATE}
-        -D MCUBOOT_UPGRADE_STRATEGY=${TFM_PLATFORM_UPGRADE_STRATEGY}
-        -D MCUBOOT_CONFIRM_IMAGE=${TFM_PLATFORM_CONFIRM_IMAGE}
-        -D MCUBOOT_DATA_SHARING=${TFM_PSA_FIRMWARE_UPDATE}
-        -D MCUBOOT_IMAGE_VERSION_NS=${MCUBOOT_IMAGE_VERSION_NS}
         -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         ${TFM_CMAKE_ARGS}
 
