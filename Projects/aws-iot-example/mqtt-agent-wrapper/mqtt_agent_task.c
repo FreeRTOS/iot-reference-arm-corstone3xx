@@ -646,6 +646,8 @@ static void prvMQTTAgentTask( void * pParam )
 
     ( void ) pParam;
 
+    vWaitUntilNetworkIsUp();
+
     /* Initialize the MQTT context with the buffer and transport interface. */
     xMQTTStatus = prvMQTTInit();
 
@@ -762,35 +764,6 @@ static void prvMQTTAgentTask( void * pParam )
 }
 
 /*-----------------------------------------------------------*/
-
-void vWaitUntilMQTTAgentReady( void )
-{
-    configASSERT( xSystemEvents != NULL );
-
-    EventBits_t uxEvents = xEventGroupWaitBits( xSystemEvents,
-                                                EVENT_MASK_MQTT_INIT,
-                                                pdFALSE,
-                                                pdFALSE,
-                                                portMAX_DELAY );
-}
-
-void vWaitUntilMQTTAgentConnected( void )
-{
-    configASSERT( xSystemEvents != NULL );
-
-    EventBits_t uxEvents = xEventGroupWaitBits( xSystemEvents,
-                                                EVENT_MASK_MQTT_CONNECTED,
-                                                pdFALSE,
-                                                pdFALSE,
-                                                portMAX_DELAY );
-}
-
-bool xIsMqttAgentConnected( void )
-{
-    EventBits_t uxEvents = xEventGroupGetBits( xSystemEvents );
-
-    return( ( bool ) ( uxEvents & EVENT_MASK_MQTT_CONNECTED ) );
-}
 
 /*
  * @brief Create MQTT agent task.

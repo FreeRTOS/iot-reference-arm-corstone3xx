@@ -24,6 +24,7 @@ target_include_directories(iot-vsocket
 target_link_libraries(iot-vsocket
     PUBLIC
         iot-socket-api
+        event-helper
         freertos_kernel
         fri-bsp
         awsIoT
