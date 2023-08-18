@@ -19,12 +19,13 @@
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
-#include "event_groups.h"
 #include "task.h"
 
 #include "mbedtls/threading.h"
 #include "mbedtls/platform.h"
 #include "threading_alt.h"
+
+#include "event_helper.h"
 
 /* Include header that defines log levels. */
 #include "logging_levels.h"
@@ -39,10 +40,6 @@
 #include "logging_stack.h"
 
 psa_key_handle_t xOTACodeVerifyKeyHandle = 0;
-
-/* System events group. */
-EventGroupHandle_t xSystemEvents = NULL;
-StaticEventGroup_t xSystemEventsGroup;
 
 #ifdef INTEGRATION_TESTS
     extern void RunQualificationTest( void );
@@ -130,8 +127,8 @@ int main()
         LogInfo( ( "PSA Framework version is: %d\n", psa_framework_version() ) );
     }
 
-    /* Create system events group. */
-    xSystemEvents = xEventGroupCreateStatic( &xSystemEventsGroup );
+    /* Initialise system events group. */
+    vEventHelperInit();
 
     /* Configure Mbed TLS memory APIs to use FreeRTOS heap APIs */
     mbedtls_platform_set_calloc_free( mbedtls_platform_calloc, mbedtls_platform_free );

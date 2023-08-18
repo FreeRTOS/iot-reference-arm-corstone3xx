@@ -187,6 +187,7 @@ target_link_libraries(integration-test-task
 
 add_subdirectory(${MIDDLEWARE_DIR}/AWS ${CMAKE_BINARY_DIR}/Middleware/AWS)
 
+add_subdirectory(event-helper)
 add_subdirectory(mqtt-agent-wrapper)
 add_subdirectory(provisioning provisioning_data)
 
@@ -202,6 +203,7 @@ add_dependencies(aws-iot-example provisioning_data_bin)
 
 target_include_directories(aws-iot-example
     PRIVATE
+        .
         freertos-integration-tests/include
         provisioning
 )
@@ -219,6 +221,8 @@ target_link_libraries(aws-iot-example
         app-logging
         awsIoT
         mqtt-agent-task
+
+        event-helper
 
         freertos-ota-pal-psa
 

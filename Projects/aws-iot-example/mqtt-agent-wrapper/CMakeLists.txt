@@ -28,4 +28,5 @@ target_link_libraries(mqtt-agent-task
         iot-vsocket
         app-config
         app-logging
+        event-helper
 )
