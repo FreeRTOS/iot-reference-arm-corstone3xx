@@ -62,7 +62,7 @@ extern uint32_t SystemCoreClock;
 #define configTICK_RATE_HZ    ( ( uint32_t ) 100 ) /* Scheduler polling rate of 1000 Hz */
 
 #define pdMS_TO_TICKS( xTimeInMs )    ( ( TickType_t ) xTimeInMs )
-#define TICKS_TO_pdMS( xTics )        ( ( uint32_t ) xTics )
+#define TICKS_TO_pdMS( xTicks )       ( ( uint32_t ) xTicks )
 
 #define configMINIMAL_STACK_SIZE                   4096
 #define configUSE_16_BIT_TICKS                     0
@@ -72,7 +72,6 @@ extern uint32_t SystemCoreClock;
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION    0
 #define configUSE_TICKLESS_IDLE                    0
 #define configCPU_CLOCK_HZ                         ( ( unsigned long ) SystemCoreClock )
-#define configMS_TO_RTOS_TICK( ms )    ( ms )          /* Tick rate is 1000 Hz, so 1 tick is 1 ms */
 #define configMAX_PRIORITIES                       56
 #define configMAX_TASK_NAME_LEN                    16
 #define configIDLE_SHOULD_YIELD                    1
