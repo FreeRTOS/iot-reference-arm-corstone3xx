@@ -80,11 +80,15 @@ else()
     endif()
 endif()
 
+# Select connectivity stack.
+set(CONNECTIVITY_STACK "IOT_VSOCKET" CACHE STRING "Choose the connectivity stack to use. Possible values are `FREERTOS_TCP_IP | IOT_VSOCKET`.")
+
 set(MIDDLEWARE_DIR "../../Middleware")
 
 add_subdirectory(${MIDDLEWARE_DIR}/ARM ${CMAKE_BINARY_DIR}/Middleware/ARM)
-add_subdirectory(../../Bsp ${CMAKE_BINARY_DIR}/Bsp)
 add_subdirectory(../../Config ${CMAKE_BINARY_DIR}/Config)
+add_subdirectory(../../Bsp ${CMAKE_BINARY_DIR}/Bsp)
+
 
 target_compile_definitions(arm-corstone-platform-bsp
     INTERFACE
@@ -116,6 +120,7 @@ set( FREERTOS_HEAP "4" CACHE STRING "" FORCE)
 set( FREERTOS_PORT "GCC_ARM_CM55_TFM" CACHE STRING "" FORCE)
 
 add_subdirectory(${MIDDLEWARE_DIR}/FreeRTOS ${CMAKE_BINARY_DIR}/Middleware/FreeRTOS)
+add_subdirectory(${MIDDLEWARE_DIR}/AWS ${CMAKE_BINARY_DIR}/Middleware/AWS)
 
 # integration tests
 include(${MIDDLEWARE_DIR}/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/qualification_test.cmake)
@@ -180,12 +185,10 @@ target_link_libraries(integration-test-task
         app-logging
         unity
         awsIoT
-        iot-vsocket
+        connectivity-stack
         mbedtls
         fri-bsp
 )
-
-add_subdirectory(${MIDDLEWARE_DIR}/AWS ${CMAKE_BINARY_DIR}/Middleware/AWS)
 
 add_subdirectory(event-helper)
 add_subdirectory(mqtt-agent-wrapper)
