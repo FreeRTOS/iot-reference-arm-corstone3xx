@@ -25,8 +25,8 @@ target_link_libraries(mqtt-agent-task
         freertos_kernel
         freertos-ota-pal-psa
         awsIoT
-        iot-vsocket
         app-config
         app-logging
         event-helper
+        connectivity-stack
 )

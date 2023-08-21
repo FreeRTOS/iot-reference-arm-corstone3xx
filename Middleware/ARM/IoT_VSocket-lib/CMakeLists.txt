@@ -15,6 +15,8 @@ add_library(iot-vsocket STATIC
     transport_tls_iot_socket.c
 )
 
+add_library(connectivity-stack ALIAS iot-vsocket)
+
 target_include_directories(iot-vsocket
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
