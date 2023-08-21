@@ -9,7 +9,10 @@ ROOT="$(realpath $HERE/..)"
 EXAMPLE=""
 BUILD_PATH="build"
 TARGET="corstone300"
+FVP_TYPE="fvp"
 FVP_BIN=""
+
+set -e
 
 function show_usage {
     cat <<EOF
@@ -21,14 +24,15 @@ Options:
     -h,--help   Show this help
     -p,--path   Build path
     -t,--target Target to run
+    -f, --fvp_type  FVP type to use (fvp, vht)
 
 Examples:
     blinky, aws-iot-example
 EOF
 }
 
-SHORT=t:,h
-LONG=target:,help
+SHORT=t:,f:,h
+LONG=target:,fvp_type:,help
 OPTS=$(getopt -n run --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -42,6 +46,10 @@ do
       ;;
     -t | --target )
       TARGET=$2
+      shift 2
+      ;;
+    -f | --fvp_type )
+      FVP_TYPE=$2
       shift 2
       ;;
     --)
@@ -58,10 +66,26 @@ done
 
 case "$TARGET" in
     corstone300 )
-      FVP_BIN="VHT_Corstone_SSE-300_Ethos-U55"
+      if [ "$FVP_TYPE" == "fvp" ]; then
+        FVP_BIN="FVP_Corstone_SSE-300_Ethos-U55"
+      elif [ "$FVP_TYPE" == "vht" ]; then
+        FVP_BIN="VHT_Corstone_SSE-300_Ethos-U55"
+      else
+        echo "Invalid FVP type <fvp|vht>"
+        show_usage
+        exit 2
+      fi
       ;;
     corstone310 )
-      FVP_BIN="VHT_Corstone_SSE-310"
+      if [ "$FVP_TYPE" == "fvp" ]; then
+        FVP_BIN="FVP_Corstone_SSE-310"
+      elif [ "$FVP_TYPE" == "vht" ]; then
+        FVP_BIN="VHT_Corstone_SSE-310"
+      else
+        echo "Invalid FVP type <fvp|vht>"
+        show_usage
+        exit 2
+      fi
       ;;
     *)
       echo "Invalid target <Corstone300|corstone310>"
