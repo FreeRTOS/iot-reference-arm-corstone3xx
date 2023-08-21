@@ -81,7 +81,7 @@ else()
 endif()
 
 # Select connectivity stack.
-set(CONNECTIVITY_STACK "IOT_VSOCKET" CACHE STRING "Choose the connectivity stack to use. Possible values are `FREERTOS_TCP_IP | IOT_VSOCKET`.")
+set(CONNECTIVITY_STACK "FREERTOS_TCP_IP" CACHE STRING "Choose the connectivity stack to use. Possible values are `FREERTOS_TCP_IP | IOT_VSOCKET`.")
 
 set(MIDDLEWARE_DIR "../../Middleware")
 

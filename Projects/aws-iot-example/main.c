@@ -103,6 +103,47 @@ int mbedtls_hardware_poll( void * data,
     return 0;
 }
 
+BaseType_t xApplicationGetRandomNumber( uint32_t * pulNumber )
+{
+    psa_status_t xPsaStatus = PSA_ERROR_PROGRAMMER_ERROR;
+
+    xPsaStatus = psa_generate_random( ( uint8_t * ) ( pulNumber ), sizeof( uint32_t ) );
+
+    if( xPsaStatus == PSA_SUCCESS )
+    {
+        return pdTRUE;
+    }
+    else
+    {
+        return pdFALSE;
+    }
+}
+
+uint32_t ulApplicationGetNextSequenceNumber( uint32_t ulSourceAddress,
+                                             uint16_t usSourcePort,
+                                             uint32_t ulDestinationAddress,
+                                             uint16_t usDestinationPort )
+{
+    psa_status_t xPsaStatus = PSA_ERROR_PROGRAMMER_ERROR;
+    uint32_t uxRandomValue = 0U;
+
+    /* Unused parameters. */
+    ( void ) ulSourceAddress;
+    ( void ) usSourcePort;
+    ( void ) ulDestinationAddress;
+    ( void ) usDestinationPort;
+
+    xPsaStatus = psa_generate_random( ( uint8_t * ) ( &uxRandomValue ), sizeof( uint32_t ) );
+
+    if( xPsaStatus != PSA_SUCCESS )
+    {
+        LogError( ( "psa_generate_random failed with %d.", xPsaStatus ) );
+        configASSERT( 0 );
+    }
+
+    return uxRandomValue;
+}
+
 int main()
 {
     UBaseType_t xRetVal;

@@ -75,12 +75,6 @@
 #include "logging_stack.h"
 
 /**
- * @brief Used to convert times to/from ticks and milliseconds.
- */
-#define MQTT_AGENT_MILLISECONDS_PER_SECOND    ( 1000U )
-#define MQTT_AGENT_MILLISECONDS_PER_TICK      TICKS_TO_pdMS( MQTT_AGENT_MILLISECONDS_PER_SECOND )
-
-/**
  * @brief Dimensions the buffer used to serialize and deserialize MQTT packets.
  * @note Specified in bytes.  Must be large enough to hold the maximum
  * anticipated MQTT payload.
@@ -255,7 +249,7 @@ static uint32_t prvGetTimeMs( void )
     xTickCount = xTaskGetTickCount();
 
     /* Convert the ticks to milliseconds. */
-    ulTimeMs = ( uint32_t ) xTickCount * MQTT_AGENT_MILLISECONDS_PER_TICK;
+    ulTimeMs = ( uint32_t ) TICKS_TO_pdMS( xTickCount );
 
     /* Reduce ulGlobalEntryTimeMs from obtained time so as to always return the
      * elapsed time in the application. */
