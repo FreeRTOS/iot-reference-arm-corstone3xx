@@ -43,6 +43,7 @@ workflow:
   tags:
     - iotmsw-amd64
   before_script:
+    - python -m pip install pyelftools
     - |
       if [ $TARGET == "Corstone-300" ];then
         AVH=/opt/VHT/VHT_Corstone_SSE-300_Ethos-U55
