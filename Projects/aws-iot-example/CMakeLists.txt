@@ -205,6 +205,10 @@ add_custom_target(tfm-binaries
     COMMAND ${CMAKE_COMMAND} -E copy
     ${BINARY_DIR}/install/outputs/tfm_s_signed.bin
     "${CMAKE_BINARY_DIR}/secure_partition/tfm_s_signed.bin"
+
+    COMMAND ${CMAKE_COMMAND} -E copy
+    ${BINARY_DIR}/install/outputs/encrypted_provisioning_bundle.bin
+    "${CMAKE_BINARY_DIR}/secure_partition/encrypted_provisioning_bundle.bin"
 )
 
 add_dependencies(tfm-binaries tf-m-build)
