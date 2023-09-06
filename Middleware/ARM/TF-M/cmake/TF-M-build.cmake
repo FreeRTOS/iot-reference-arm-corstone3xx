@@ -36,6 +36,13 @@ else()
     message(FATAL_ERROR "Unsupported compiler: ${CMAKE_C_COMPILER_ID}")
 endif()
 
+execute_process(COMMAND git am --abort
+    COMMAND git am ${CMAKE_CURRENT_SOURCE_DIR}/0001-platform-Fix-provisioning-bundle-cmake-error.patch
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/trusted-firmware-m"
+    OUTPUT_QUIET
+    ERROR_QUIET
+)
+
 ExternalProject_Add(
     tf-m-build
 

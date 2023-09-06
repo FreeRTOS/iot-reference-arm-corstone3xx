@@ -1,0 +1,34 @@
+From 1f07db1e780dd79cc5b0bd9729e8603c3ecfebb2 Mon Sep 17 00:00:00 2001
+From: Devaraj Ranganna <devaraj.ranganna@arm.com>
+Date: Wed, 6 Sep 2023 07:45:58 +0000
+Subject: [PATCH] platform: Fix provisioning bundle cmake error
+
+Direct dependency on generated_private_key_s.pem causes build failure as
+the generated file is in a different location than what CMake is
+expecting.
+
+Signed-off-by: Devaraj Ranganna <devaraj.ranganna@arm.com>
+---
+ .../ext/target/arm/mps3/an552/provisioning/CMakeLists.txt     | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/platform/ext/target/arm/mps3/an552/provisioning/CMakeLists.txt b/platform/ext/target/arm/mps3/an552/provisioning/CMakeLists.txt
+index c0ee62ad9..62f696cd6 100644
+--- a/platform/ext/target/arm/mps3/an552/provisioning/CMakeLists.txt
++++ b/platform/ext/target/arm/mps3/an552/provisioning/CMakeLists.txt
+@@ -104,10 +104,10 @@ if(NOT TFM_DUMMY_PROVISIONING)
+     add_custom_command(OUTPUT provisioning_data.c
+         # FIXME: combining the two generator prepends the current path, so two is used
+         DEPENDS $<IF:$<BOOL:${MCUBOOT_GENERATE_SIGNING_KEYPAIR}>,generated_private_key,>
+-                $<IF:$<BOOL:${MCUBOOT_GENERATE_SIGNING_KEYPAIR}>,$<TARGET_FILE_DIR:bl2>/generated_private_key_s.pem,${MCUBOOT_KEY_S}>
++                # $<IF:$<BOOL:${MCUBOOT_GENERATE_SIGNING_KEYPAIR}>,$<TARGET_FILE_DIR:bl2>/generated_private_key_s.pem,${MCUBOOT_KEY_S}>
+         # FIXME: combining the two generator prepends the current path, so two is used
+         DEPENDS $<IF:$<BOOL:${MCUBOOT_GENERATE_SIGNING_KEYPAIR}>,generated_private_key,>
+-                $<IF:$<BOOL:${MCUBOOT_GENERATE_SIGNING_KEYPAIR}>,$<TARGET_FILE_DIR:bl2>/generated_private_key_ns.pem,${MCUBOOT_KEY_NS}>
++                # $<IF:$<BOOL:${MCUBOOT_GENERATE_SIGNING_KEYPAIR}>,$<TARGET_FILE_DIR:bl2>/generated_private_key_ns.pem,${MCUBOOT_KEY_NS}>
+         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/provisioning_data_template.jinja2
+         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/create_provisioning_data.py
+         WORKING_DIRECTORY ${MCUBOOT_PATH}/scripts
+-- 
+2.41.0
+
