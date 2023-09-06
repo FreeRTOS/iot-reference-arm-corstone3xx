@@ -82,6 +82,7 @@ build-applications:
       tar -czf ${TOOLCHAIN}_build.tar.gz \
         build/bootloader/bl2.axf \
         build/secure_partition/tfm_s_signed.bin \
+        build/secure_partition/encrypted_provisioning_bundle.bin \
         build/Projects/aws-iot-example/aws-iot-example.axf \
         build/Projects/aws-iot-example/aws-iot-example_signed.bin \
         build/Projects/aws-iot-example/aws-iot-example-update_signed.bin \
