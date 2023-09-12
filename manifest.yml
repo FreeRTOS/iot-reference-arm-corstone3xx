@@ -136,3 +136,10 @@ dependencies:
       type: "git"
       url: "https://github.com/ThrowTheSwitch/Unity.git"
       path: "Middleware/Unity"
+  - name: "FreeRTOS-Plus-TCP"
+    license: "MIT"
+    version: "3d5ee0e821cab38cb6e6265fcf1ce7552a54519d"
+    repository:
+      type: "git"
+      url: "https://github.com/FreeRTOS/FreeRTOS-Plus-TCP.git"
+      path: "Middleware/FreeRTOS/FreeRTOS-Plus-TCP-lib/FreeRTOS-Plus-TCP"
