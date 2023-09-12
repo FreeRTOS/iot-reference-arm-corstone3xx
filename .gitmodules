@@ -52,3 +52,6 @@
 [submodule "Middleware/Unity"]
 	path = Middleware/Unity
 	url = https://github.com/ThrowTheSwitch/Unity.git
+[submodule "Middleware/FreeRTOS/FreeRTOS-Plus-TCP-lib/FreeRTOS-Plus-TCP"]
+	path = Middleware/FreeRTOS/FreeRTOS-Plus-TCP-lib/FreeRTOS-Plus-TCP
+	url = https://github.com/FreeRTOS/FreeRTOS-Plus-TCP.git
