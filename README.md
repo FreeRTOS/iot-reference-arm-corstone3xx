@@ -15,7 +15,7 @@ This project is based on the [Corstone-300](https://developer.arm.com/Processors
 platform.
 
 Developers and partners can use this integration as a starting point to build
-FreeRTOS kernel and libraires based software stack on top of Arm Cortex-M based
+FreeRTOS kernel and libraries based software stack on top of Arm Cortex-M based
 platforms. All the components are put together in a modular manner to make
 porting of this integration across platforms easy.
 

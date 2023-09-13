@@ -16,7 +16,7 @@ argument, you should run:
 git submodule update --init --recursive
 ```
 
-## Prerequisites
+## Build requirements
 
 * Ubuntu 20.04 or higher. Please note that the following instructions are
   validated on Ubuntu 20.04.
