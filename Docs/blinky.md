@@ -9,20 +9,10 @@ on the secure-side and prints it on the console. In addition, to simulate LED
 blinking, `LED On` and `LED off` are printed onto the console at regular
 intervals.
 
-## Setting up Arm Virtual Hardware using Amazon Machine Images
+## Prerequisites
 
-Follow the instructions described in [Launch Arm Virtual Hardware Instance](setting-up-arm-virtual-hardware.md)
-to setup your development environment.
-
-If you have successfully followed the instructions, then you should have a
-console (either AWS-Web-Console or Local-Console) to Arm Virtual Hardware
-Instance. From now on, any command-line commands described in this document
-must be run on the console connected to Arm Virtual Hardware Instance.
-
-## Setting up development environment
-
-Follow the instructions described in [Setting Up your Development Environment](development-environment.md)
-to setup your development environment.
+Follow the instructions described in [Prerequisites](Prerequisites.md) and
+ensure that all the prerequisites are met before continuing.
 
 ## Building the application
 
