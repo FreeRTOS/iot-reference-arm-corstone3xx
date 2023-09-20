@@ -8,13 +8,17 @@ cmake_minimum_required(VERSION 3.21)
 project(blinky-example LANGUAGES C CXX)
 
 # Declare the target of the total solution
-set(ARM_CORSTONE_BSP_TARGET_PLATFORM "corstone300" CACHE STRING "Featured Reference Integration target")
+set(ARM_CORSTONE_BSP_TARGET_PLATFORM "" CACHE STRING "Featured Reference Integration target")
 
 # Configure target
 if (${ARM_CORSTONE_BSP_TARGET_PLATFORM} STREQUAL "corstone300")
     set(TFM_PLATFORM_LOCAL_PATH "arm/mps3/corstone300/fvp")
+    set( FREERTOS_PORT "GCC_ARM_CM55_TFM" CACHE STRING "" FORCE)
+elseif(${ARM_CORSTONE_BSP_TARGET_PLATFORM} STREQUAL "corstone310")
+    set(TFM_PLATFORM_LOCAL_PATH "arm/mps3/corstone310/fvp")
+    set( FREERTOS_PORT "GCC_ARM_CM85_TFM" CACHE STRING "" FORCE)
 else()
-    message(FATAL_ERROR "Invalid ARM_CORSTONE_BSP_TARGET_PLATFORM (${ARM_CORSTONE_BSP_TARGET_PLATFORM}) set. It should be corstone300")
+    message(FATAL_ERROR "Invalid ARM_CORSTONE_BSP_TARGET_PLATFORM (${ARM_CORSTONE_BSP_TARGET_PLATFORM}) set. Supported are corstone300/corstone310")
 endif()
 
 # Extra arguments for TF-M and ML
@@ -80,8 +84,6 @@ target_link_libraries(freertos_config
 )
 
 set( FREERTOS_HEAP "3" CACHE STRING "" FORCE)
-# Select the native compile PORT
-set( FREERTOS_PORT "GCC_ARM_CM55_TFM" CACHE STRING "" FORCE)
 
 add_subdirectory(../../Middleware/FreeRTOS ${CMAKE_BINARY_DIR}/Middleware/FreeRTOS)
 
@@ -94,19 +96,8 @@ target_link_libraries(blinky
     fri-bsp
 )
 
-if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
-    target_link_options(blinky
-        PRIVATE
-            "-T" "${PRJ_DIR}/Bsp/corstone300/an552_ns.ld"
-            "--specs=nosys.specs"
-    )
-else()
-    target_link_options(blinky
-        PRIVATE
-            "--scatter=${PRJ_DIR}/Bsp/corstone300/an552_ns.sct"
-            "--map"
-    )
-endif()
+include(${PRJ_DIR}/Bsp/cmake/BspUtilities.cmake)
+set_linker_script(blinky)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Middleware/ARM/TF-M/cmake)
 include(SignTfmImage)
