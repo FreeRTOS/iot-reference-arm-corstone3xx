@@ -11,13 +11,16 @@ To utilize the hardware enforced security, this integration uses PSA Certified
 reference implementation [Trusted Firmware-M](https://www.trustedfirmware.org/projects/tf-m/).
 Trusted Firmware-M provides various Secure services such as Secure boot, Crypto, Secure Storage,
 Attestation and Update services meeting [PSA Certified requirements](https://www.psacertified.org/blog/psa-certified-10-security-goals-explained/).
-This project is based on the [Corstone-300](https://developer.arm.com/Processors/Corstone-300)
-platform.
 
 Developers and partners can use this integration as a starting point to build
 FreeRTOS kernel and libraries based software stack on top of Arm Cortex-M based
 platforms. All the components are put together in a modular manner to make
 porting of this integration across platforms easy.
+
+## Supported Targets
+
+* [Corstone-300](https://developer.arm.com/Processors/Corstone-300)
+* [Corstone-310](https://developer.arm.com/Processors/Corstone-310)
 
 ## Examples
 
@@ -55,8 +58,8 @@ Crypto service.
 FreeRTOS OTA Agent provides an OTA PAL layer for platforms to integrate and
 enable OTA updates. The demo integrates and OTA PAL implementation that makes
 use of the PSA Certified Firmware Update API implemented in TF-M. This allows
-Corstone-300 to receive new images from AWS IoT Core, authenticate using TF-M
-before deploying the image as the active image. The secure (TF-M) and the
+Corstone device to receive new images from AWS IoT Core, authenticate using
+TF-M before deploying the image as the active image. The secure (TF-M) and the
 non-secure (FreeRTOS kernel and the application) images can be updated
 separately.
 
