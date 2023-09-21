@@ -34,7 +34,7 @@ set(CONFIG_TFM_ENABLE_CP10CP11 ON)
 # } x;                /*!< @brief Version number of the firmware. */
 
 # AWS OTA client doesn't use the patch version. Therefore, build version from TF-M is used. Because of this,
-# if only patch version is changed then the OTA will be rejected due to same firmwrae version.
+# if only patch version is changed then the OTA will be rejected due to same firmware version.
 set(MCUBOOT_IMAGE_VERSION_NS "0.0.1+10")
 set(MCUBOOT_IMAGE_VERSION_NS_UPDATE "0.0.1+20")
 
@@ -119,7 +119,7 @@ include(${MIDDLEWARE_DIR}/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/qualific
 include(${MIDDLEWARE_DIR}/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/src/transport_interface_test.cmake)
 include(${MIDDLEWARE_DIR}/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/src/ota_pal_test.cmake)
 include(${MIDDLEWARE_DIR}/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/src/mqtt_test.cmake)
-# overrride provisioning in PKCS11 tests with our provisioning
+# override provisioning in PKCS11 tests with our provisioning
 set(PKCS11_TEST_SOURCES
     "${MIDDLEWARE_DIR}/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/src/pkcs11/core_pkcs11_test.c")
 set(PKCS11_TEST_INCLUDE_DIRS

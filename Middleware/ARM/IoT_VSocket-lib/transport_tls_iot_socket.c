@@ -196,7 +196,7 @@ int32_t Transport_Send( NetworkContext_t * pNetworkContext,
  * @param[out] pucReceiveBuffer Buffer to fill with received data.
  * @param[in] xReceiveLength Length of previous parameter in bytes.
  *
- * @return The number of bytes actually read or appropirate error code.
+ * @return The number of bytes actually read or appropriate error code.
  */
 static int Recv_Cb( void * pvCallerContext,
                         unsigned char * pucReceiveBuffer,

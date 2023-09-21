@@ -94,7 +94,7 @@ via MQTT as well as enable an over-the-air update.
    * Adding the region name to your thing name helps to remind you which region
      the thing and topic is attached to.
    * You will need to add the thing name later to your C code.
-   * There is no need to add any **Additionional configuration**
+   * There is no need to add any **Additional configuration**
 1. On the **Configure device certificate** page, choose **Auto-generate a new certificate** and then press the **Next** button.
 1. Skip the **Attach policies to certificate** page for now.
    * You will attach a certificate to the thing in a later step.
@@ -123,11 +123,11 @@ via MQTT as well as enable an over-the-air update.
        * **iot:Publish**
        * **iot:Subscribe**
        * **iot:Receive**
-   * The **Policy resource** field requries an **ARN**. Sometimes this box will
+   * The **Policy resource** field requires an **ARN**. Sometimes this box will
      be auto-filled with your credentials.
      * If no value exists, use the following format:    (arn:aws:iot:**region:account-id:\***)
        * region (e.g. eu-west-1)
-       * account-id ... This is your **Acount ID Number**.
+       * account-id ... This is your **Account ID Number**.
          * You can usually see this in the drop down on the top right corner
            where your login name is shown.
        * e.g. *arn:aws:iot:eu-west-1:012345678901:*
