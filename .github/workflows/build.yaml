@@ -31,7 +31,7 @@ jobs:
       - name: Install build dependencies
         shell: bash
         run: |
-          pip install cmake ninja imgtool cffi intelhex cbor2 cbor jinja2 PyYaml
+          pip install cmake ninja imgtool cffi intelhex cbor2 cbor jinja2 PyYaml pyelftools
       - name: Install GNU Arm toolchain
         shell: bash
         run: |
@@ -50,7 +50,7 @@ jobs:
       - name: Build the project
         shell: bash
         run: |
-          ./Tools/scripts/build.sh aws-iot-example --toolchain GNU
+          ./Tools/scripts/build.sh aws-iot-example --toolchain GNU --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
       - name: Copy artifacts
         shell: bash
         run: |
