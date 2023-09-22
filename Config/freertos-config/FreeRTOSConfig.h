@@ -112,7 +112,7 @@ extern uint32_t SystemCoreClock;
 #define configTIMER_TASK_STACK_DEPTH               configMINIMAL_STACK_SIZE
 
 /* Interrupt nesting behaviour configuration. */
-/* FIXME: these were taken forom a cortex M4 example project */
+/* FIXME: these were taken from a cortex M4 example project */
 #define configKERNEL_INTERRUPT_PRIORITY         255               /* Should be set to the lowest interrupt priority */
 
 /* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!

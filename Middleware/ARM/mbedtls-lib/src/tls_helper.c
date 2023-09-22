@@ -610,7 +610,7 @@ BaseType_t TLS_Init( TLSHelperParams_t * pxParams,
 
             if( xPKCS11Result != CKR_OK )
             {
-                LogError( ( "Failed to intialize PKCS11 session with error: %d", xPKCS11Result ) );
+                LogError( ( "Failed to initialize PKCS11 session with error: %d", xPKCS11Result ) );
                 xResult = pdFALSE;
             }
         }
@@ -721,7 +721,7 @@ BaseType_t TLS_Init( TLSHelperParams_t * pxParams,
 
             if( xPKCS11Result != CKR_OK )
             {
-                LogError( ( "Failed to intialize credentials, PKCS11 error: %d", xPKCS11Result ) );
+                LogError( ( "Failed to initialize credentials, PKCS11 error: %d", xPKCS11Result ) );
                 xResult = pdFALSE;
             }
         }

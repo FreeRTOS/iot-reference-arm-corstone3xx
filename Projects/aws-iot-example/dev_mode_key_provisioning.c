@@ -1008,7 +1008,7 @@ static CK_RV prvGetProvisionedState( CK_SESSION_HANDLE xSession,
 /*-----------------------------------------------------------*/
 
 /* Write the ASN.1 encoded bytes of the device public key to the console.
- * This is for debugging purposes as well as to faciliate developer-driven
+ * This is for debugging purposes as well as to facilitate developer-driven
  * certificate enrollment for onboard crypto hardware (i.e. if available). */
 static void prvWriteHexBytesToConsole( char * pcDescription,
                                        uint8_t * pucData,

@@ -75,7 +75,7 @@ typedef struct ProvisioningParams_t
  */
 CK_RV vDevModeKeyProvisioning( void );
 
-/** \brief Provisiong a device given a valid PKCS #11 session.
+/** \brief Provisioning a device given a valid PKCS #11 session.
  *
  * \param[in] xSession       A valid PKCS #11 session.
  * \param[in] pxParams       Pointer to an initialized provisioning
