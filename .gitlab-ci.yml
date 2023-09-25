@@ -45,16 +45,16 @@ workflow:
   before_script:
     - python -m pip install pyelftools
     - |
-      if [ $TARGET == "Corstone-300" ];then
+      if [ $TARGET == "corstone300" ];then
         AVH=/opt/VHT/VHT_Corstone_SSE-300_Ethos-U55
       fi
     - |
-      if [ $TARGET == "Corstone-310" ];then
+      if [ $TARGET == "corstone310" ];then
         AVH=/opt/VHT/VHT_Corstone_SSE-310
       fi
   parallel:
     matrix:
-      - TARGET: [Corstone-300]
+      - TARGET: [corstone300, corstone310]
         TOOLCHAIN: [GNU, ARMCLANG]
   variables:
     PYTHONUNBUFFERED: 1
@@ -77,23 +77,23 @@ build-applications:
     - ./ci/generate_credentials.sh -f -p Config/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
-    - ./Tools/scripts/build.sh aws-iot-example --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
+    - ./Tools/scripts/build.sh aws-iot-example --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
     - |
-      tar -czf ${TOOLCHAIN}_build.tar.gz \
+      tar -czf ${TARGET}_${TOOLCHAIN}_build.tar.gz \
         build/Projects/aws-iot-example/aws-iot-example_merged.elf \
         build/Projects/aws-iot-example/aws-iot-example-update_signed.bin \
         build/Projects/aws-iot-example/update-signature.txt \
         Config/aws_configs
   artifacts:
     paths:
-      - ${TOOLCHAIN}_build.tar.gz
+      - ${TARGET}_${TOOLCHAIN}_build.tar.gz
     expire_in: 1 week
 
 # Test connection to the AWS cloud
 test-ota-aws:
   extends: .test_job
   script:
-    - tar xf ${TOOLCHAIN}_build.tar.gz
+    - tar xf ${TARGET}_${TOOLCHAIN}_build.tar.gz
     - pytest -s Tools/tests/test_ota.py --build-path "build" --avh $AVH --credentials-path "Config/aws_configs"
 
 integration-tests:
