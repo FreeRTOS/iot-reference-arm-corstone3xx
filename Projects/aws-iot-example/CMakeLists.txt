@@ -113,6 +113,7 @@ target_link_libraries(freertos_config
     INTERFACE
         tfm-ns-interface
         app-config
+        fri-bsp
 )
 
 set( FREERTOS_HEAP "4" CACHE STRING "" FORCE)
@@ -241,13 +242,13 @@ target_link_libraries(aws-iot-example
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
     target_link_options(aws-iot-example
         PRIVATE
-            "-T" "${PRJ_DIR}/Bsp/an552_ns.ld"
+            "-T" "${PRJ_DIR}/Bsp/corstone300/an552_ns.ld"
             "--specs=nosys.specs"
     )
 else()
     target_link_options(aws-iot-example
         PRIVATE
-            "--scatter=${PRJ_DIR}/Bsp/an552_ns.sct"
+            "--scatter=${PRJ_DIR}/Bsp/corstone300/an552_ns.sct"
             "--map"
     )
 endif()

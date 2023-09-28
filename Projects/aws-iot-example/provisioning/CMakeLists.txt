@@ -19,6 +19,10 @@ target_include_directories(provisioning_data PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+target_link_libraries(provisioning_data PRIVATE
+    fri-bsp
+)
+
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/aws_clientcredential_keys.h
     DEPENDS ${AWS_CLIENT_PRIVATE_KEY_PEM_PATH}
     DEPENDS ${AWS_CLIENT_CERTIFICATE_PEM_PATH}

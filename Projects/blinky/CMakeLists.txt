@@ -76,6 +76,7 @@ target_link_libraries(freertos_config
     INTERFACE
         tfm-ns-interface
         app-config
+        fri-bsp
 )
 
 set( FREERTOS_HEAP "3" CACHE STRING "" FORCE)
@@ -96,13 +97,13 @@ target_link_libraries(blinky
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
     target_link_options(blinky
         PRIVATE
-            "-T" "${PRJ_DIR}/Bsp/an552_ns.ld"
+            "-T" "${PRJ_DIR}/Bsp/corstone300/an552_ns.ld"
             "--specs=nosys.specs"
     )
 else()
     target_link_options(blinky
         PRIVATE
-            "--scatter=${PRJ_DIR}/Bsp/an552_ns.sct"
+            "--scatter=${PRJ_DIR}/Bsp/corstone300/an552_ns.sct"
             "--map"
     )
 endif()

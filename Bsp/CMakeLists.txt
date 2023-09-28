@@ -19,12 +19,13 @@ add_library(fri-bsp STATIC)
 
 target_sources(fri-bsp
     PRIVATE
-        platform/bsp_serial.c
+        common/bsp_serial.c
 )
 
 target_include_directories(fri-bsp
     PUBLIC
-        platform
+        $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone300>:${CMAKE_CURRENT_LIST_DIR}/corstone300/include>
+        common
 )
 
 target_link_libraries(fri-bsp
