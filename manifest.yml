@@ -12,7 +12,7 @@ dependencies:
       path: "Middleware/FreeRTOS/kernel"
   - name: "arm-corstone-platform-bsp"
     license: "Apache-2.0"
-    version: "v0.1.0"
+    version: "v0.2.0"
     repository:
       type: "git"
       url: "https://git.gitlab.arm.com/iot/open-iot-sdk/arm-corstone-platform-bsp.git"
