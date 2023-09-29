@@ -26,7 +26,7 @@ dependencies:
       path: "Bsp/arm-corstone-platform-bsp/CMSIS/CMSIS_5"
   - name: "trusted-firmware-m"
     license: "BSD-3-Clause"
-    version: "948204fe16b0126a5fae7278c616bc7a60471bcf"
+    version: "e435409343c074ba8f00349c459a3066cf6dece1"
     repository:
       type: "git"
       url: "https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git"
