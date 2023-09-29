@@ -26,6 +26,7 @@ set(TFM_CMAKE_ARGS
     -DPROJECT_CONFIG_HEADER_FILE=${PRJ_DIR}/Config/tfm-config/project_config.h
     -DPLATFORM_DEFAULT_PROVISIONING=OFF
     -DTFM_DUMMY_PROVISIONING=OFF
+    -DMCUBOOT_GENERATE_SIGNING_KEYPAIR=ON
     -DCONFIG_TFM_ENABLE_CP10CP11=ON
     -DTFM_EXCEPTION_INFO_DUMP=ON
     -DNS=ON;
@@ -95,6 +96,11 @@ target_link_libraries(blinky
     tfm-ns-interface
     fri-bsp
 )
+
+# Trusted Firmware-M must be built before the application, because
+# the application depends on the NS interface and the BL2 signing scripts,
+# both of which are generated as parts of the Trusted Firmware-M build process.
+add_dependencies(blinky tf-m-build)
 
 include(${PRJ_DIR}/Bsp/cmake/BspUtilities.cmake)
 set_linker_script(blinky)

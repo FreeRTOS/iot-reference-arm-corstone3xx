@@ -73,14 +73,16 @@ extern void vLoggingPrint( const char * pcFormat );
 /* Internal structure for parsing RSA keys. */
 
 /* Length parameters for importing RSA-2048 private keys. */
-#define MODULUS_LENGTH        pkcs11RSA_2048_MODULUS_BITS / 8
-#define E_LENGTH              3
-#define D_LENGTH              pkcs11RSA_2048_MODULUS_BITS / 8
-#define PRIME_1_LENGTH        128
-#define PRIME_2_LENGTH        128
-#define EXPONENT_1_LENGTH     128
-#define EXPONENT_2_LENGTH     128
-#define COEFFICIENT_LENGTH    128
+#define MODULUS_LENGTH              pkcs11RSA_2048_MODULUS_BITS / 8
+#define E_LENGTH                    3
+#define D_LENGTH                    pkcs11RSA_2048_MODULUS_BITS / 8
+#define PRIME_1_LENGTH              128
+#define PRIME_2_LENGTH              128
+#define EXPONENT_1_LENGTH           128
+#define EXPONENT_2_LENGTH           128
+#define COEFFICIENT_LENGTH          128
+
+#define DER_FORMAT_BUFFER_LENGTH    512
 
 /* Adding one to all of the lengths because ASN1 may pad a leading 0 byte
  * to numbers that could be interpreted as negative */
@@ -115,9 +117,9 @@ extern int convert_pem_to_der( const unsigned char * pucInput,
                                unsigned char * pucOutput,
                                size_t * pxOlen );
 
-ProvisioningParams_t * pxProvisioningParams =
+static ProvisioningParams_t * pxProvisioningParams =
     ( struct ProvisioningParams_t * ) PROVISIONING_PARAM_START;
-ProvisioningParamsBundle_t * pxProvisioningParamsBundle =
+static ProvisioningParamsBundle_t * pxProvisioningParamsBundle =
     ( struct ProvisioningParamsBundle_t * ) PROVISIONING_DATA_START;
 
 /*-----------------------------------------------------------*/
@@ -1333,6 +1335,41 @@ CK_RV vDevModeKeyProvisioning( void )
     }
 
     return vAlternateKeyProvisioning( pxProvisioningParams );
+}
+
+int xOtaProvisionCodeSigningKey( psa_key_handle_t * pxKeyHandle,
+                                 size_t keyBits )
+{
+    uint8_t pucPubKeyDerFormatBuffer[ DER_FORMAT_BUFFER_LENGTH ];
+    size_t xPubKeyDerLength = DER_FORMAT_BUFFER_LENGTH;
+    size_t xPubKeyPemLength = strlen( pxProvisioningParamsBundle->codeSigningPublicKey );
+    int result = 0;
+    psa_status_t status = PSA_SUCCESS;
+    psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
+
+    result = convert_pem_to_der( ( const unsigned char * ) pxProvisioningParamsBundle->codeSigningPublicKey,
+                                 xPubKeyPemLength,
+                                 pucPubKeyDerFormatBuffer,
+                                 &xPubKeyDerLength );
+
+    if( result != 0 )
+    {
+        return result;
+    }
+
+    psa_set_key_usage_flags( &attributes, PSA_KEY_USAGE_VERIFY_HASH );
+    psa_set_key_algorithm( &attributes, PSA_ALG_RSA_PSS_ANY_SALT( PSA_ALG_SHA_256 ) );
+    psa_set_key_type( &attributes, PSA_KEY_TYPE_RSA_PUBLIC_KEY );
+    psa_set_key_bits( &attributes, keyBits );
+    status = psa_import_key( &attributes, ( const uint8_t * ) pucPubKeyDerFormatBuffer,
+                             xPubKeyDerLength, pxKeyHandle );
+
+    if( status != PSA_SUCCESS )
+    {
+        *pxKeyHandle = NULL;
+    }
+
+    return status;
 }
 
 /*-----------------------------------------------------------*/

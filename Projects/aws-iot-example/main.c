@@ -13,8 +13,6 @@
 
 #include "mqtt_agent_task.h"
 
-#include "ota_provision.h"
-
 #include "bsp_serial.h"
 #include "tfm_ns_interface.h"
 
@@ -204,7 +202,7 @@ int main()
     else
     {
         LogInfo( ( "Device key provisioning succeeded \n" ) );
-        status = ota_privision_code_signing_key( &xOTACodeVerifyKeyHandle );
+        status = xOtaProvisionCodeSigningKey( &xOTACodeVerifyKeyHandle, 3072 );
 
         if( status != PSA_SUCCESS )
         {

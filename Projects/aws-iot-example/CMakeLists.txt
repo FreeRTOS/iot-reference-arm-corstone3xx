@@ -49,7 +49,7 @@ set(TFM_CMAKE_ARGS
     -DPROJECT_CONFIG_HEADER_FILE=${PRJ_DIR}/Config/tfm-config/project_config.h
     -DPLATFORM_DEFAULT_PROVISIONING=OFF
     -DTFM_DUMMY_PROVISIONING=OFF
-    # -DMCUBOOT_GENERATE_SIGNING_KEYPAIR=ON
+    -DMCUBOOT_GENERATE_SIGNING_KEYPAIR=ON
     -DCONFIG_TFM_ENABLE_CP10CP11=ON
     -DTFM_EXCEPTION_INFO_DUMP=ON
     -DNS=ON
@@ -207,6 +207,12 @@ add_executable(aws-iot-example
     ${MIDDLEWARE_DIR}/AWS/corePKCS11/source/dependency/3rdparty/mbedtls_utils/mbedtls_utils.c
 )
 
+# Trusted Firmware-M must be built before the application, because
+# the application depends on the NS interface and the BL2 signing scripts,
+# both of which are generated as parts of the Trusted Firmware-M build process.
+add_dependencies(aws-iot-example tf-m-build)
+# The provision data must be built before the application because
+# it provides credentials to connect to AWS
 add_dependencies(aws-iot-example provisioning_data_bin)
 
 target_include_directories(aws-iot-example

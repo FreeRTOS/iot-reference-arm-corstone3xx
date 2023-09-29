@@ -36,6 +36,7 @@ typedef struct ProvisioningParamsBundle_t
 {
     uint32_t provisioningMagic1;
     ProvisioningParams_t provisioningParams;
+    uint8_t * codeSigningPublicKey;
     uint32_t provisioningMagic2;
 } ProvisioningParamsBundle_t;
 
