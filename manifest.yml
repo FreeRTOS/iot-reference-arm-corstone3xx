@@ -19,7 +19,7 @@ dependencies:
       path: "Bsp/arm-corstone-platform-bsp"
   - name: "trusted-firmware-m"
     license: "BSD-3-Clause"
-    version: "e435409343c074ba8f00349c459a3066cf6dece1"
+    version: "11074a2ee70583c842eba271c8532cdc74f8adae"
     repository:
       type: "git"
       url: "https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git"

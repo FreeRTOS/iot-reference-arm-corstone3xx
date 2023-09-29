@@ -8,7 +8,7 @@
 # <BINARY_DIR> is a placeholder keyword in ExternalProject_Add.
 
 set(tfm_ns_interface_generated
-    <BINARY_DIR>/install/interface/src/tfm_psa_ns_api.c
+    <BINARY_DIR>/install/interface/src/tfm_tz_psa_ns_api.c
     <BINARY_DIR>/install/interface/src/tfm_ps_api.c
     <BINARY_DIR>/install/interface/src/tfm_its_api.c
     <BINARY_DIR>/install/interface/src/tfm_crypto_api.c
