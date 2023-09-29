@@ -5,7 +5,6 @@
 add_library(freertos-ota-pal-psa STATIC
     freertos-ota-pal-psa/version/application_version.c
     freertos-ota-pal-psa/ota_pal.c
-    src/ota_provision.c
 )
 
 target_compile_definitions(freertos-ota-pal-psa
@@ -18,7 +17,6 @@ target_compile_definitions(freertos-ota-pal-psa
 target_include_directories(freertos-ota-pal-psa
     PUBLIC
         freertos-ota-pal-psa
-        src
 )
 
 target_link_libraries(freertos-ota-pal-psa

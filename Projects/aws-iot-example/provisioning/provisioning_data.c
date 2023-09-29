@@ -15,5 +15,6 @@ const ProvisioningParamsBundle_t provisioningBundle =
         .pucClientCertificate = keyCLIENT_CERTIFICATE_PEM,
         .pucClientPrivateKey  = keyCLIENT_PRIVATE_KEY_PEM
     },
+    .codeSigningPublicKey     = keyCODE_SIGNING_PUBLIC_KEY_PEM,
     .provisioningMagic2       = PROVISIONING_MAGIC
 };

@@ -44,6 +44,7 @@
 #include "core_pkcs11_config.h"
 #include "core_pkcs11.h"
 #include "provisioning_data.h"
+#include "psa/crypto.h"
 
 /** \brief Provisions device with default credentials.
  *
@@ -235,4 +236,15 @@ CK_RV xDestroyProvidedObjects( CK_SESSION_HANDLE xSession,
                                CK_OBJECT_CLASS * pxClass,
                                CK_ULONG ulCount );
 
+/**
+ * \brief Provision the code signing public key into
+ *        the Protected Storage.
+ *
+ *   \param[out] pxKeyHandle      The key handle of the code signing key.
+ *
+ *   \return 0 if provisioning was successful.
+ *   Otherwise, an mbedtls error code.
+ */
+int xOtaProvisionCodeSigningKey( psa_key_handle_t * pxKeyHandle,
+                                 size_t keyBits );
 #endif /* _AWS_DEV_MODE_KEY_PROVISIONING_H_ */

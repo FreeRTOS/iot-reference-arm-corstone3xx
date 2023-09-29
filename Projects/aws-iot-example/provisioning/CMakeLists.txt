@@ -23,12 +23,15 @@ target_link_libraries(provisioning_data PRIVATE
     fri-bsp
 )
 
+ExternalProject_Get_Property(tf-m-build BINARY_DIR)
+
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/aws_clientcredential_keys.h
     DEPENDS ${AWS_CLIENT_PRIVATE_KEY_PEM_PATH}
     DEPENDS ${AWS_CLIENT_CERTIFICATE_PEM_PATH}
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/generate_credentials_header.py
                                     --client_private_key_pem ${AWS_CLIENT_PRIVATE_KEY_PEM_PATH}
                                     --client_certificate_pem ${AWS_CLIENT_CERTIFICATE_PEM_PATH}
+                                    --code_signing_public_key_pem ${BINARY_DIR}/install/image_signing/keys/image_ns_signing_public_key.pem
 )
 
 add_custom_target(aws_clientcredential_keys_header
@@ -36,6 +39,7 @@ add_custom_target(aws_clientcredential_keys_header
         ${CMAKE_CURRENT_BINARY_DIR}/aws_clientcredential_keys.h
 )
 
+add_dependencies(aws_clientcredential_keys_header tf-m-build)
 add_dependencies(provisioning_data aws_clientcredential_keys_header)
 
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
