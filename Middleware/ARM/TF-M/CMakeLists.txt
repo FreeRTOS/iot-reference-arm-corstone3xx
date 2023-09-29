@@ -28,31 +28,3 @@ target_compile_definitions(tfm-ns-interface
         PLATFORM_DEFAULT_CRYPTO_KEYS
         MCUBOOT_IMAGE_NUMBER=2
 )
-
-# Reference NS startup files from TF-M
-# They are optional - an application can provide its own.
-
-ExternalProject_Get_Property(tf-m-build SOURCE_DIR)
-
-add_library(tfm-ns-startup-an552 OBJECT
-${SOURCE_DIR}/platform/ext/target/arm/mps3/an552/device/source/startup_an552.c
-)
-target_include_directories(tfm-ns-startup-an552
-PRIVATE
-    ${SOURCE_DIR}/platform/include
-    ${SOURCE_DIR}/platform/ext/cmsis
-    ${SOURCE_DIR}/platform/ext/target/arm/mps3/an552/device/include
-    ${SOURCE_DIR}/platform/ext/target/arm/mps3/an552/partition
-)
-
-add_library(tfm-ns-startup-an555 OBJECT
-${SOURCE_DIR}/platform/ext/target/arm/mps3/corstone310/common/device/source/startup_corstone310.c
-)
-target_include_directories(tfm-ns-startup-an555
-PRIVATE
-    ${SOURCE_DIR}/platform/include
-    ${SOURCE_DIR}/platform/ext/cmsis
-    ${SOURCE_DIR}/platform/ext/target/arm/mps3/corstone310/fvp/device/config/
-    ${SOURCE_DIR}/platform/ext/target/arm/mps3/corstone310/common/device/include/
-    ${SOURCE_DIR}/platform/ext/target/arm/mps3/corstone310/common/partition/
-)
