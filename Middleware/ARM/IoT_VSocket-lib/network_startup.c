@@ -5,8 +5,8 @@
 
 #include <stdint.h>
 
-extern int32_t socket_startup (void);
-
-int32_t network_startup (void) {
-  return socket_startup();
+int32_t network_startup( void )
+{
+    /* Assume network interface is already initialized */
+    return 0;
 }
