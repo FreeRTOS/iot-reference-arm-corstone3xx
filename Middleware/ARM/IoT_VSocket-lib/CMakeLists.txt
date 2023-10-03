@@ -11,7 +11,6 @@ execute_process(COMMAND git am --abort
 
 add_library(iot-vsocket STATIC
     AVH/interface/vsocket/iot_socket.c
-    socket_startup.c
     network_startup.c
     transport_tls_iot_socket.c
 )
