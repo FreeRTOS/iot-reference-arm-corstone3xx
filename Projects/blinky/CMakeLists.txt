@@ -84,29 +84,6 @@ set( FREERTOS_PORT "GCC_ARM_CM55_TFM" CACHE STRING "" FORCE)
 
 add_subdirectory(../../Middleware/FreeRTOS ${CMAKE_BINARY_DIR}/Middleware/FreeRTOS)
 
-# Copy tf-m binaries at the root
-ExternalProject_Get_Property(tf-m-build BINARY_DIR)
-ExternalProject_Get_Property(tf-m-build SOURCE_DIR)
-
-add_custom_target(tfm-binaries
-  BYPRODUCTS
-    ${CMAKE_BINARY_DIR}/bootloader/bl2.axf
-    ${CMAKE_BINARY_DIR}/secure_partition/tfm_s.axf
-    ${CMAKE_BINARY_DIR}/secure_partition/tfm_s_unsigned.bin
-    ${CMAKE_BINARY_DIR}/secure_partition/tfm_s_signed.bin
-
-  COMMAND ${CMAKE_COMMAND} -E copy
-    ${BINARY_DIR}/install/outputs/bl2.axf
-    "${CMAKE_BINARY_DIR}/bootloader/bl2${CMAKE_EXECUTABLE_SUFFIX}"
-
-    COMMAND ${CMAKE_COMMAND} -E copy
-    ${BINARY_DIR}/install/outputs/tfm_s_signed.bin
-    "${CMAKE_BINARY_DIR}/secure_partition/tfm_s_signed.bin"
-)
-
-add_dependencies(tfm-binaries tf-m-build)
-add_dependencies(tfm-ns-interface tfm-binaries)
-
 # Declare the blinky executable
 add_executable(blinky main.c)
 
@@ -122,42 +99,17 @@ if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
             "-T" "${PRJ_DIR}/Bsp/an552_ns.ld"
             "--specs=nosys.specs"
     )
-    set(elf_to_bin_cmd ${GCC_ELF2BIN} -O binary ${CMAKE_CURRENT_BINARY_DIR}/blinky${CMAKE_EXECUTABLE_SUFFIX} ${CMAKE_CURRENT_BINARY_DIR}/blinky_unsigned.bin)
 else()
     target_link_options(blinky
         PRIVATE
             "--scatter=${PRJ_DIR}/Bsp/an552_ns.sct"
             "--map"
     )
-    set(elf_to_bin_cmd ${ARM_ELF2BIN} --bin --output ${CMAKE_CURRENT_BINARY_DIR}/blinky_unsigned.bin ${CMAKE_CURRENT_BINARY_DIR}/blinky${CMAKE_EXECUTABLE_SUFFIX} --bincombined)
 endif()
 
-add_custom_command(
-    TARGET
-        blinky
-    POST_BUILD
-    DEPENDS
-        ${CMAKE_CURRENT_BINARY_DIR}/blinky${CMAKE_EXECUTABLE_SUFFIX}
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Middleware/ARM/TF-M/cmake)
+include(SignTfmImage)
 
-    BYPRODUCTS
-        ${CMAKE_CURRENT_BINARY_DIR}/blinky_unsigned.bin
-        ${CMAKE_CURRENT_BINARY_DIR}/blinky_signed.bin
-
-    COMMAND
-        ${elf_to_bin_cmd}
-
-    COMMAND
-        python3 ${BINARY_DIR}/install/image_signing/scripts/wrapper/wrapper.py
-            -v 0.0.1
-            --layout ${BINARY_DIR}/install/image_signing/layout_files/signing_layout_ns.o
-            -k ${BINARY_DIR}/install/image_signing/keys/root-RSA-2048_1.pem
-            --public-key-format full
-            --align 1
-            --pad
-            --pad-header
-            -H 0x400
-            -s auto
-            --measured-boot-record
-            ${CMAKE_CURRENT_BINARY_DIR}/blinky_unsigned.bin
-            ${CMAKE_CURRENT_BINARY_DIR}/blinky_signed.bin
-)
+# The non-secure application image should be padded while being signed
+# Hence, passing "TRUE" as the input parameter to the pad option of sign function.
+iot_reference_arm_corstone3xx_tf_m_sign_image(blinky blinky_signed 0.0.1 TRUE)

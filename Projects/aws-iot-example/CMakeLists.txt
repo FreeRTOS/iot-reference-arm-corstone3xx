@@ -187,33 +187,6 @@ target_link_libraries(integration-test-task
 
 add_subdirectory(${MIDDLEWARE_DIR}/AWS ${CMAKE_BINARY_DIR}/Middleware/AWS)
 
-# Copy tf-m binaries at the root
-ExternalProject_Get_Property(tf-m-build BINARY_DIR)
-ExternalProject_Get_Property(tf-m-build SOURCE_DIR)
-
-add_custom_target(tfm-binaries
-  BYPRODUCTS
-    ${CMAKE_BINARY_DIR}/bootloader/bl2.axf
-    ${CMAKE_BINARY_DIR}/secure_partition/tfm_s.axf
-    ${CMAKE_BINARY_DIR}/secure_partition/tfm_s_unsigned.bin
-    ${CMAKE_BINARY_DIR}/secure_partition/tfm_s_signed.bin
-
-  COMMAND ${CMAKE_COMMAND} -E copy
-    ${BINARY_DIR}/install/outputs/bl2.axf
-    "${CMAKE_BINARY_DIR}/bootloader/bl2${CMAKE_EXECUTABLE_SUFFIX}"
-
-    COMMAND ${CMAKE_COMMAND} -E copy
-    ${BINARY_DIR}/install/outputs/tfm_s_signed.bin
-    "${CMAKE_BINARY_DIR}/secure_partition/tfm_s_signed.bin"
-
-    COMMAND ${CMAKE_COMMAND} -E copy
-    ${BINARY_DIR}/install/outputs/encrypted_provisioning_bundle.bin
-    "${CMAKE_BINARY_DIR}/secure_partition/encrypted_provisioning_bundle.bin"
-)
-
-add_dependencies(tfm-binaries tf-m-build)
-add_dependencies(tfm-ns-interface tfm-binaries)
-
 add_subdirectory(mqtt-agent-wrapper)
 add_subdirectory(provisioning provisioning_data)
 
@@ -264,65 +237,26 @@ if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
             "-T" "${PRJ_DIR}/Bsp/an552_ns.ld"
             "--specs=nosys.specs"
     )
-    set(elf_to_bin_cmd ${GCC_ELF2BIN} -O binary ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example${CMAKE_EXECUTABLE_SUFFIX} ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example_unsigned.bin)
 else()
     target_link_options(aws-iot-example
         PRIVATE
             "--scatter=${PRJ_DIR}/Bsp/an552_ns.sct"
             "--map"
     )
-    set(elf_to_bin_cmd ${ARM_ELF2BIN} --bin --output ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example_unsigned.bin ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example${CMAKE_EXECUTABLE_SUFFIX} --bincombined)
 endif()
 
-add_custom_command(
-    TARGET
-        aws-iot-example
-    POST_BUILD
-    DEPENDS
-        ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example${CMAKE_EXECUTABLE_SUFFIX}
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Middleware/ARM/TF-M/cmake)
+include(SignTfmImage)
 
-    BYPRODUCTS
-        ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example_unsigned.bin
-        ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example-update_signed.bin
-        ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example_signed.bin
+# The non-secure application image should be padded while being signed
+# Hence, passing "TRUE" as the input parameter to the pad option of sign function.
+iot_reference_arm_corstone3xx_tf_m_sign_image(aws-iot-example aws-iot-example_signed ${MCUBOOT_IMAGE_VERSION_NS} TRUE)
 
-    COMMAND
-        ${elf_to_bin_cmd}
-
-    COMMAND
-        python3 ${BINARY_DIR}/install/image_signing/scripts/wrapper/wrapper.py
-            -v ${MCUBOOT_IMAGE_VERSION_NS}
-            --layout ${BINARY_DIR}/install/image_signing/layout_files/signing_layout_ns.o
-            -k ${BINARY_DIR}/install/image_signing/keys/root-RSA-2048_1.pem
-            --public-key-format full
-            --align 1
-            --pad
-            --pad-header
-            -H 0x400
-            -s auto
-            --measured-boot-record
-            --confirm
-            ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example_unsigned.bin
-            ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example_signed.bin
-
-    COMMAND
-            # The update image is not padded to fill the whole slot (no --pad), because
-            # 1) the image to download is smaller without padding
-            # 2) the trailer that keeps track of boot and update statuses should not be overwritten
-            python3 ${BINARY_DIR}/install/image_signing/scripts/wrapper/wrapper.py
-                -v ${MCUBOOT_IMAGE_VERSION_NS_UPDATE}
-                --layout ${BINARY_DIR}/install/image_signing/layout_files/signing_layout_ns.o
-                -k ${BINARY_DIR}/install/image_signing/keys/root-RSA-2048_1.pem
-                --public-key-format full
-                --align 1
-                --pad-header
-                -H 0x400
-                -s auto
-                --measured-boot-record
-                --confirm
-                ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example_unsigned.bin
-                ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example-update_signed.bin
-)
+# The update image is not padded to fill the whole slot (no --pad), because
+# 1) the image to download is smaller without padding
+# 2) the trailer that keeps track of boot and update statuses should not be overwritten
+# Hence, passing "FALSE" as the input parameter for the pad option to the sign function.
+iot_reference_arm_corstone3xx_tf_m_sign_image(aws-iot-example aws-iot-example-update_signed ${MCUBOOT_IMAGE_VERSION_NS_UPDATE} FALSE)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Middleware/AWS/cmake)
 include(GenerateAWSUpdateDigestAndSignature)
