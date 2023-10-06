@@ -109,7 +109,14 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Middleware/ARM/TF-M/cmake)
 include(SignTfmImage)
+include(MergeTfmImages)
 
 # The non-secure application image should be padded while being signed
 # Hence, passing "TRUE" as the input parameter to the pad option of sign function.
 iot_reference_arm_corstone3xx_tf_m_sign_image(blinky blinky_signed 0.0.1 TRUE)
+
+# A user project that consumes the ARM FRI needs to explicitly provide
+# addresses in order to merge images for TF-M. The addresses cannot
+# be easily programmatically extracted as they are defined in the linker
+# scripts.
+iot_reference_arm_corstone3xx_tf_m_merge_images(blinky ${BL2_IMAGE_LOAD_ADDRESS} ${S_IMAGE_LOAD_ADDRESS} ${NS_IMAGE_LOAD_ADDRESS} ${S_PROVISIONING_BUNDLE_LOAD_ADDRESS})

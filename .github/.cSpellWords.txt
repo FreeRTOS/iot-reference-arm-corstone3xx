@@ -84,6 +84,7 @@ RIHN
 RSAES
 RSASSA
 SECP
+srecord
 srtp
 SRTP
 tinycbor

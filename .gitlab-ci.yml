@@ -80,14 +80,9 @@ build-applications:
     - ./Tools/scripts/build.sh aws-iot-example --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
     - |
       tar -czf ${TOOLCHAIN}_build.tar.gz \
-        build/bootloader/bl2.axf \
-        build/secure_partition/tfm_s_signed.bin \
-        build/secure_partition/encrypted_provisioning_bundle.bin \
-        build/Projects/aws-iot-example/aws-iot-example.axf \
-        build/Projects/aws-iot-example/aws-iot-example_signed.bin \
+        build/Projects/aws-iot-example/aws-iot-example_merged.elf \
         build/Projects/aws-iot-example/aws-iot-example-update_signed.bin \
         build/Projects/aws-iot-example/update-signature.txt \
-        build/Projects/aws-iot-example/provisioning_data/provisioning_data.bin \
         Config/aws_configs
   artifacts:
     paths:

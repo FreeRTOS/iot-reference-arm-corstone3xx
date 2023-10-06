@@ -51,6 +51,12 @@ git submodule update --init --recursive
     ```bash
     deactivate
     ```
+* Installing required libraries
+
+    ```bash
+    sudo apt install srecord
+    sudo apt install binutils
+    ```
 * Installing a toolchain
 
   This project supports the Arm Compiler for Embedded (armclang) and the Arm
