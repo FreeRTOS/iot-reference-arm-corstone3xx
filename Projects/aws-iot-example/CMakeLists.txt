@@ -324,30 +324,7 @@ add_custom_command(
                 ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example-update_signed.bin
 )
 
-add_custom_command(
-    TARGET
-        aws-iot-example
-    POST_BUILD
-    DEPENDS
-        ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example-update_signed.bin
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Middleware/AWS/cmake)
+include(GenerateAWSUpdateDigestAndSignature)
 
-    BYPRODUCTS
-        ${CMAKE_CURRENT_BINARY_DIR}/update-digest.bin
-        ${CMAKE_CURRENT_BINARY_DIR}/update-signature.bin
-        ${CMAKE_CURRENT_BINARY_DIR}/update-signature.txt
-
-    COMMAND
-        openssl dgst -sha256 -binary -out ${CMAKE_CURRENT_BINARY_DIR}/update-digest.bin ${CMAKE_CURRENT_BINARY_DIR}/aws-iot-example-update_signed.bin
-
-    COMMAND
-        openssl pkeyutl -sign -pkeyopt digest:sha256 -pkeyopt rsa_padding_mode:pss -pkeyopt rsa_mgf1_md:sha256 -inkey ${BINARY_DIR}/install/image_signing/keys/root-RSA-2048_1.pem -in ${CMAKE_CURRENT_BINARY_DIR}/update-digest.bin -out ${CMAKE_CURRENT_BINARY_DIR}/update-signature.bin
-
-    COMMAND
-        openssl base64 -A -in ${CMAKE_CURRENT_BINARY_DIR}/update-signature.bin -out ${CMAKE_CURRENT_BINARY_DIR}/update-signature.txt
-
-    COMMAND
-        ${CMAKE_COMMAND} -E echo "Use this base 64 encoded signature in OTA job:"
-
-    COMMAND
-        ${CMAKE_COMMAND} -E cat ${CMAKE_CURRENT_BINARY_DIR}/update-signature.txt
-)
+iot_reference_arm_corstone3xx_generate_aws_update_digest_and_signature(aws-iot-example aws-iot-example-update_signed update-digest update-signature)
