@@ -32,10 +32,11 @@ jobs:
         shell: bash
         run: |
           pip install cmake ninja imgtool cffi intelhex cbor2 cbor jinja2 PyYaml pyelftools
+          sudo apt-get -y update
+          sudo apt-get -y install srecord
       - name: Install GNU Arm toolchain
         shell: bash
         run: |
-          sudo apt-get -y update
           sudo apt-get -y install gcc-arm-none-eabi
       - name: Generate dummy device credentials
         shell: bash
@@ -55,10 +56,7 @@ jobs:
         shell: bash
         run: |
           tar -czf gnu_build.tar.gz \
-          build/bootloader/bl2.axf \
-          build/secure_partition/tfm_s_signed.bin \
-          build/Projects/aws-iot-example/aws-iot-example.axf \
-          build/Projects/aws-iot-example/aws-iot-example_signed.bin \
+          build/Projects/aws-iot-example/aws-iot-example_merged.elf \
           build/Projects/aws-iot-example/aws-iot-example-update_signed.bin \
           build/Projects/aws-iot-example/update-signature.txt
       - name: Upload Build Artifacts

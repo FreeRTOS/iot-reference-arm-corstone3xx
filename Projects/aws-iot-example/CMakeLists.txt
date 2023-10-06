@@ -247,6 +247,7 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Middleware/ARM/TF-M/cmake)
 include(SignTfmImage)
+include(MergeTfmImages)
 
 # The non-secure application image should be padded while being signed
 # Hence, passing "TRUE" as the input parameter to the pad option of sign function.
@@ -257,6 +258,12 @@ iot_reference_arm_corstone3xx_tf_m_sign_image(aws-iot-example aws-iot-example_si
 # 2) the trailer that keeps track of boot and update statuses should not be overwritten
 # Hence, passing "FALSE" as the input parameter for the pad option to the sign function.
 iot_reference_arm_corstone3xx_tf_m_sign_image(aws-iot-example aws-iot-example-update_signed ${MCUBOOT_IMAGE_VERSION_NS_UPDATE} FALSE)
+
+# A user project that consumes the ARM FRI needs to explicitly provide
+# addresses in order to merge images for TF-M. The addresses cannot
+# be easily programmatically extracted as they are defined in the linker
+# scripts.
+iot_reference_arm_corstone3xx_tf_m_merge_images(aws-iot-example ${BL2_IMAGE_LOAD_ADDRESS} ${S_IMAGE_LOAD_ADDRESS} ${NS_IMAGE_LOAD_ADDRESS} ${S_PROVISIONING_BUNDLE_LOAD_ADDRESS} ${NS_PROVISIONING_BUNDLE_LOAD_ADDRESS} ${CMAKE_BINARY_DIR}/Projects/aws-iot-example/provisioning_data/provisioning_data.bin)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Middleware/AWS/cmake)
 include(GenerateAWSUpdateDigestAndSignature)
