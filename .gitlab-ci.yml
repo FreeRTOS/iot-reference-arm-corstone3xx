@@ -146,7 +146,7 @@ integration-tests:
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
     - ./Tools/scripts/build.sh -q ${APP}
-    - pushd Middleware/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tools/echo_server
+    - pushd components/tools/freertos_libraries_integration_tests/library/tools/echo_server
     - go run echo_server.go&
     - popd
     - sleep 1

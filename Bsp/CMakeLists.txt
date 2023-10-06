@@ -2,21 +2,33 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: Apache-2.0
 
-add_subdirectory(arm-corstone-platform-bsp)
+set(ARM_CORSTONE_BSP_TARGET_PLATFORM "corstone310" CACHE STRING "Featured Reference Integration target")
 
-# Target specific image loading addresses
+set(arm_corstone_platform_bsp_SOURCE_DIR
+    ${CMAKE_CURRENT_LIST_DIR}/library
+    CACHE INTERNAL
+    "Path to Arm Corstone-3xx Platform CMSIS-Driver Based Board Support Package source code"
+)
+
+add_subdirectory(library)
+
+target_compile_definitions(arm-corstone-platform-bsp
+    INTERFACE
+        __DOMAIN_NS=1
+)
+
 if(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone300")
-    set(BL2_IMAGE_LOAD_ADDRESS 0x00000000 PARENT_SCOPE)
-    set(S_IMAGE_LOAD_ADDRESS 0x38000000 PARENT_SCOPE)
-    set(NS_IMAGE_LOAD_ADDRESS 0x28080000 PARENT_SCOPE)
-    set(S_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x10022000 PARENT_SCOPE)
-    set(NS_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x211FF000 PARENT_SCOPE)
+    set(BL2_IMAGE_LOAD_ADDRESS 0x00000000 CACHE STRING "Bootload image loading address")
+    set(S_IMAGE_LOAD_ADDRESS 0x38000000 CACHE STRING "Secure TF-M firmware loading address")
+    set(NS_IMAGE_LOAD_ADDRESS 0x28080000 CACHE STRING "Non-secure user application loading address")
+    set(S_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x10022000 CACHE STRING "Secure provisioning bundle loading address")
+    set(NS_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x211FF000 CACHE STRING "Non-Secure provisioning bundle loading address")
 elseif(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone310")
-    set(BL2_IMAGE_LOAD_ADDRESS 0x11000000 PARENT_SCOPE)
-    set(S_IMAGE_LOAD_ADDRESS 0x38000000 PARENT_SCOPE)
-    set(NS_IMAGE_LOAD_ADDRESS 0x28080000 PARENT_SCOPE)
-    set(S_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x11022000 PARENT_SCOPE)
-    set(NS_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x213FF000 PARENT_SCOPE)
+    set(BL2_IMAGE_LOAD_ADDRESS 0x11000000 CACHE STRING "Bootload image loading address")
+    set(S_IMAGE_LOAD_ADDRESS 0x38000000 CACHE STRING "Secure TF-M firmware loading address")
+    set(NS_IMAGE_LOAD_ADDRESS 0x28080000 CACHE STRING "Non-secure user application loading address")
+    set(S_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x11022000 CACHE STRING "Secure provisioning bundle loading address")
+    set(NS_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x213FF000 CACHE STRING "Non-Secure provisioning bundle loading address")
 endif()
 
 # BSP serial library

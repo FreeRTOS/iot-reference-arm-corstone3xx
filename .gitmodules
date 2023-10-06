@@ -1,57 +1,57 @@
-[submodule "Middleware/FreeRTOS/kernel"]
-	path = Middleware/FreeRTOS/kernel
-	url = https://github.com/FreeRTOS/FreeRTOS-Kernel.git
-[submodule "Middleware/FreeRTOS/FreeRTOS-Libraries-Integration-Tests"]
-	path = Middleware/FreeRTOS/FreeRTOS-Libraries-Integration-Tests
-	url = https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests.git
-[submodule "Middleware/ARM/TF-M/trusted-firmware-m"]
-	path = Middleware/ARM/TF-M/trusted-firmware-m
-	url = https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git
-[submodule "toolchains"]
-	path = toolchains
-	url = https://git.gitlab.arm.com/iot/open-iot-sdk/toolchain.git
-[submodule "Bsp/arm-corstone-platform-bsp"]
-	path = Bsp/arm-corstone-platform-bsp
+[submodule "arm_corstone_platform_bsp"]
+	path = Bsp/library
 	url = https://git.gitlab.arm.com/iot/open-iot-sdk/arm-corstone-platform-bsp.git
-[submodule "Middleware/ARM/mbedtls-lib/mbedtls"]
-	path = Middleware/ARM/mbedtls-lib/mbedtls
-	url = https://github.com/Mbed-TLS/mbedtls.git
-[submodule "Middleware/ARM/IoT_Socket-lib/IoT_Socket"]
-	path = Middleware/ARM/IoT_Socket-lib/IoT_Socket
-	url = https://github.com/MDK-Packs/IoT_Socket.git
-[submodule "Middleware/ARM/IoT_VSocket-lib/AVH"]
-	path = Middleware/ARM/IoT_VSocket-lib/AVH
-	url = https://github.com/ARM-software/AVH.git
-[submodule "Middleware/ARM/freertos-pkcs11-psa-lib/freertos-pkcs11-psa"]
-	path = Middleware/ARM/freertos-pkcs11-psa-lib/freertos-pkcs11-psa
-	url = https://github.com/Linaro/freertos-pkcs11-psa.git
-[submodule "Middleware/ARM/freertos-ota-pal-psa-lib/freertos-ota-pal-psa"]
-	path = Middleware/ARM/freertos-ota-pal-psa-lib/freertos-ota-pal-psa
-	url = https://github.com/Linaro/freertos-ota-pal-psa.git
-[submodule "Middleware/AWS/coreMQTT-Agent"]
-	path = Middleware/AWS/coreMQTT-Agent
-	url = https://github.com/FreeRTOS/coreMQTT-Agent
-[submodule "Middleware/AWS/coreMQTT"]
-	path = Middleware/AWS/coreMQTT
-	url = https://github.com/FreeRTOS/coreMQTT.git
-[submodule "Middleware/AWS/coreJSON"]
-	path = Middleware/AWS/coreJSON
-	url = https://github.com/FreeRTOS/coreJSON.git
-[submodule "Middleware/AWS/corePKCS11"]
-	path = Middleware/AWS/corePKCS11
-	url = https://github.com/FreeRTOS/corePKCS11.git
-[submodule "Middleware/AWS/backoffAlgorithm"]
-	path = Middleware/AWS/backoffAlgorithm
+[submodule "backoff_algorithm"]
+	path = components/connectivity/backoff_algorithm/library
 	url = https://github.com/FreeRTOS/backoffAlgorithm.git
-[submodule "Middleware/AWS/ota-for-aws-iot-embedded-sdk"]
-	path = Middleware/AWS/ota-for-aws-iot-embedded-sdk
-	url = https://github.com/aws/ota-for-aws-iot-embedded-sdk.git
-[submodule "Middleware/AWS/tinycbor"]
-	path = Middleware/AWS/tinycbor
-	url = https://github.com/intel/tinycbor
-[submodule "Middleware/Unity"]
-	path = Middleware/Unity
-	url = https://github.com/ThrowTheSwitch/Unity.git
-[submodule "Middleware/FreeRTOS/FreeRTOS-Plus-TCP-lib/FreeRTOS-Plus-TCP"]
-	path = Middleware/FreeRTOS/FreeRTOS-Plus-TCP-lib/FreeRTOS-Plus-TCP
+[submodule "corejson"]
+	path = components/aws_iot/corejson/library
+	url = https://github.com/FreeRTOS/coreJSON.git
+[submodule "coremqtt"]
+	path = components/aws_iot/coremqtt/library
+	url = https://github.com/FreeRTOS/coreMQTT.git
+[submodule "coremqtt_agent"]
+	path = components/aws_iot/coremqtt_agent/library
+	url = https://github.com/FreeRTOS/coreMQTT-Agent.git
+[submodule "corepkcs11"]
+	path = components/aws_iot/corepkcs11/library
+	url = https://github.com/FreeRTOS/corePKCS11.git
+[submodule "iot_socket"]
+	path = components/connectivity/iot_socket/library
+	url = https://github.com/MDK-Packs/IoT_Socket.git
+[submodule "iot_vsocket"]
+	path = components/connectivity/iot_vsocket/library
+	url = https://github.com/ARM-software/AVH.git
+[submodule "freertos_kernel"]
+	path = components/freertos_kernel/library
+	url = https://github.com/FreeRTOS/FreeRTOS-Kernel.git
+[submodule "freertos_libraries_integration_tests"]
+	path = components/tools/freertos_libraries_integration_tests/library
+	url = https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests.git
+[submodule "freertos_ota_pal_psa"]
+	path = components/security/freertos_ota_pal_psa/library
+	url = https://github.com/Linaro/freertos-ota-pal-psa.git
+[submodule "freertos_plus_tcp"]
+	path = components/connectivity/freertos_plus_tcp/library
 	url = https://github.com/FreeRTOS/FreeRTOS-Plus-TCP.git
+[submodule "freertos_pkcs11_psa"]
+	path = components/security/freertos_pkcs11_psa/library
+	url = https://github.com/Linaro/freertos-pkcs11-psa.git
+[submodule "mbedtls"]
+	path = components/security/mbedtls/library
+	url = https://github.com/Mbed-TLS/mbedtls.git
+[submodule "open_iot_sdk_toolchain"]
+	path = components/tools/open_iot_sdk_toolchain/library
+	url = https://git.gitlab.arm.com/iot/open-iot-sdk/toolchain.git
+[submodule "ota_for_aws_iot_embedded_sdk"]
+	path = components/aws_iot/ota_for_aws_iot_embedded_sdk/library
+	url = https://github.com/aws/ota-for-aws-iot-embedded-sdk.git
+[submodule "tinycbor"]
+	path = components/aws_iot/tinycbor/library
+	url = https://github.com/intel/tinycbor.git
+[submodule "trusted_firmware-m"]
+	path = components/security/trusted_firmware-m/library
+	url = https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git
+[submodule "unity"]
+	path = components/tools/unity/library
+	url = https://github.com/ThrowTheSwitch/Unity.git
