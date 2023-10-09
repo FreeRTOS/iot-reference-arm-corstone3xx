@@ -72,7 +72,7 @@ build-applications:
   stage: build
   extends: .base_job
   script:
-    - ./ci/generate_credentials.sh -f -p Config/aws_configs
+    - ./ci/generate_credentials.sh -f -p Projects/${APP}/configs/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
     - ./Tools/scripts/build.sh ${APP} --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
@@ -82,7 +82,7 @@ build-applications:
           build/${APP}_merged.elf \
           build/${APP}-update_signed.bin \
           build/update-signature.txt \
-          Config/aws_configs
+          Projects/${APP}/configs/aws_configs
       else
         tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz \
           build/${APP}_merged.elf
@@ -103,7 +103,7 @@ test-applications-output:
     - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz
     - |
       pytest -s Tools/tests/test_application_output.py \
-      --build-artefacts-path "build/Projects/${APP}" \
+      --build-artefacts-path "build" \
       --fvp $FVP_BIN \
       --merged-elf-name "${APP}_merged.elf" \
       --timeout-seconds 600 \
@@ -121,9 +121,9 @@ test-ota:
     - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz
     - |
       pytest -s Tools/tests/test_ota.py \
-      --build-artefacts-path "build/Projects/${APP}" \
+      --build-artefacts-path "build" \
       --fvp $FVP_BIN \
-      --credentials-path "Config/aws_configs" \
+      --credentials-path "Projects/${APP}/configs/aws_configs" \
       --merged-elf-name "${APP}_merged.elf" \
       --signed-update-bin-name "${APP}-update_signed.bin" \
       --timeout-seconds 900 \
@@ -142,7 +142,7 @@ integration-tests:
   rules:
     - if: ( $SCHEDULED_JOB_TO_RUN == "integration-tests" )
   script:
-    - ./ci/generate_credentials.sh -f -p Config/aws_configs
+    - ./ci/generate_credentials.sh -f -p Projects/${APP}/configs/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
     - ./Tools/scripts/build.sh -q ${APP}
@@ -152,9 +152,9 @@ integration-tests:
     - sleep 1
     - |
       pytest -s Tools/tests/test_integration.py \
-      --build-artefacts-path "build/Projects/${APP}" \
+      --build-artefacts-path "build" \
       --fvp $FVP_BIN \
-      --credentials-path "Config/aws_configs" \
+      --credentials-path "Projects/${APP}/configs/aws_configs" \
       --merged-elf-name "${APP}-tests_merged.elf" \
       --signed-update-bin-name "${APP}-tests-update_signed.bin"
   parallel:

@@ -184,7 +184,7 @@ policies to it, the representative values must be added to your application to
 ensure connectivity with your AWS account.
 
 Within the application directory that you are using, edit the
-`Config/aws_configs/aws_clientcredential.h` file and set values for specified
+`configs/aws_configs/aws_clientcredential.h` file and set values for specified
 user defines called out below.
 
 `clientcredentialMQTT_BROKER_ENDPOINT`
@@ -336,7 +336,7 @@ To see messages being sent by the application:
 1. In the **Subscription topic** field enter the topic name
    `pubsub/<mqtt-client-identifier>/task_0`
     > `mqtt-client-identifier` value is defined in
-      `Config/aws_configs/aws_clientcredential.h` as
+      `configs/aws_configs/aws_clientcredential.h` as
       `clientcredentialIOT_THING_NAME`.
 1. In the **MQTT payload display** combo box select `Display payloads as
    strings (more accurate)`
@@ -540,10 +540,10 @@ policies to it, the representative values must be added to your application to
 ensure connectivity with AWS IoT Core Device Advisor.
 
 Set the macro `appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE` in
-`Config/app_config/app_config.h` to 1.
+`configs/app_config/app_config.h` to 1.
 
 Within the application directory that you are using, edit the
-`Config/aws_configs/aws_clientcredential.h` file and set values for specified
+`configs/aws_configs/aws_clientcredential.h` file and set values for specified
 user defines called out below.
 
 `clientcredentialMQTT_BROKER_ENDPOINT`
@@ -570,7 +570,7 @@ Save and close the file.
 
 Next insert the keys that are in the certificates you have downloaded when you
 created the thing. Edit the file
-`Config/aws_configs/aws_clientcredential_keys.h` replacing the existing keys
+`configs/aws_configs/aws_clientcredential_keys.h` replacing the existing keys
 with yours.
 
 `keyCLIENT_CERTIFICATE_PEM`
