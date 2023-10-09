@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 HERE="$(dirname "$0")"
-ROOT="$(realpath $HERE/..)"
+ROOT="$(realpath $HERE/../..)"
 EXAMPLE=""
 BUILD_PATH="build"
 TARGET="corstone310"
@@ -109,7 +109,14 @@ case "$1" in
         ;;
 esac
 
-OPTIONS="-C mps3_board.visualisation.disable-visualisation=1 -C mps3_board.smsc_91c111.enabled=1 -C mps3_board.hostbridge.userNetworking=1 -C mps3_board.telnetterminal0.start_telnet=0 -C mps3_board.uart0.out_file="-"  -C mps3_board.uart0.unbuffered_output=1 --stat  -C mps3_board.DISABLE_GATING=1"
+OPTIONS="-C mps3_board.visualisation.disable-visualisation=1 \
+-C mps3_board.smsc_91c111.enabled=1 \
+-C mps3_board.hostbridge.userNetworking=1 \
+-C mps3_board.telnetterminal0.start_telnet=0 \
+-C mps3_board.uart0.out_file="-" \
+-C mps3_board.uart0.unbuffered_output=1 \
+--stat \
+-C mps3_board.DISABLE_GATING=1"
 
 # Start the FVP
 $FVP_BIN $OPTIONS -a $MERGED_IMAGE_PATH
