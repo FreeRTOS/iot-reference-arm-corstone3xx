@@ -2,15 +2,12 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.21.0 FATAL_ERROR)
 
-# Start of the project
-project(blinky-example LANGUAGES C CXX)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "The build type" FORCE)
+endif()
 
-# Declare the target of the total solution
-set(ARM_CORSTONE_BSP_TARGET_PLATFORM "" CACHE STRING "Featured Reference Integration target")
-
-# Configure target
 if (${ARM_CORSTONE_BSP_TARGET_PLATFORM} STREQUAL "corstone300")
     set(TFM_PLATFORM_LOCAL_PATH "arm/mps3/corstone300/fvp")
     set( FREERTOS_PORT "GCC_ARM_CM55_TFM" CACHE STRING "" FORCE)
@@ -21,93 +18,62 @@ else()
     message(FATAL_ERROR "Invalid ARM_CORSTONE_BSP_TARGET_PLATFORM (${ARM_CORSTONE_BSP_TARGET_PLATFORM}) set. Supported are corstone300/corstone310")
 endif()
 
-# Extra arguments for TF-M and ML
 set(TFM_CMAKE_ARGS
-    -DPROJECT_CONFIG_HEADER_FILE=${PRJ_DIR}/Config/tfm-config/project_config.h
-    -DPLATFORM_DEFAULT_PROVISIONING=OFF
-    -DTFM_DUMMY_PROVISIONING=OFF
-    -DMCUBOOT_GENERATE_SIGNING_KEYPAIR=ON
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     -DCONFIG_TFM_ENABLE_CP10CP11=ON
-    -DTFM_EXCEPTION_INFO_DUMP=ON
-    -DNS=ON;
-    -DPLATFORM_DEFAULT_UART_STDOUT=ON;
-    -DMCUBOOT_SIGNATURE_KEY_LEN=3072
+    -DMCUBOOT_GENERATE_SIGNING_KEYPAIR=ON
     -DMCUBOOT_LOG_LEVEL=INFO
-    -DTFM_SPM_LOG_LEVEL=TFM_SPM_LOG_LEVEL_INFO
+    -DMCUBOOT_SIGNATURE_KEY_LEN=3072
+    -DNS=ON
+    -DPLATFORM_DEFAULT_PROVISIONING=OFF
+    -DPLATFORM_DEFAULT_UART_STDOUT=ON
+    -DPROJECT_CONFIG_HEADER_FILE=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/Projects/blinky/configs/tfm-config/project_config.h
+    -DTFM_DUMMY_PROVISIONING=OFF
+    -DTFM_EXCEPTION_INFO_DUMP=ON
     -DTFM_PARTITION_CRYPTO=ON
     -DTFM_PARTITION_INITIAL_ATTESTATION=ON
     -DTFM_PARTITION_INTERNAL_TRUSTED_STORAGE=ON
     -DTFM_PARTITION_PLATFORM=ON
     -DTFM_PARTITION_PROTECTED_STORAGE=ON
     -DTFM_PLATFORM=${TFM_PLATFORM_LOCAL_PATH}
+    -DTFM_SPM_LOG_LEVEL=TFM_SPM_LOG_LEVEL_INFO
 )
 
-# Configuration of executable
-set(EXE_SUFFIX ".axf")
-set(CMAKE_EXECUTABLE_SUFFIX ${EXE_SUFFIX})
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+project(blinky-example LANGUAGES C)
+
+set(CMAKE_EXECUTABLE_SUFFIX ".axf")
 
 # Set global optimization level to reduce code size while keeping the debug experience.
-# ARMClang does not have -Og but officially recommends -O1 for debug.
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
     add_compile_options(-Og)
-else()
+elseif(CMAKE_C_COMPILER_ID STREQUAL "ARMClang")
     add_compile_options(-O1)
 endif()
 
-add_subdirectory(../../Middleware/ARM ${CMAKE_BINARY_DIR}/Middleware/ARM)
-add_subdirectory(../../Bsp ${CMAKE_BINARY_DIR}/Bsp)
-add_subdirectory(../../Config ${CMAKE_BINARY_DIR}/Config)
+add_subdirectory(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR} ${CMAKE_BINARY_DIR}/iot_reference_arm_corstone3xx)
 
-target_compile_definitions(arm-corstone-platform-bsp
-    INTERFACE
-        __DOMAIN_NS=1
-)
+list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/Bsp/cmake)
+list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/components/security/trusted_firmware-m/integration/cmake)
+include(BspUtilities)
+include(MergeTfmImages)
+include(SignTfmImage)
 
-# Compilation Database
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+add_subdirectory(configs)
 
-add_library(freertos_config INTERFACE)
-target_include_directories(freertos_config SYSTEM
-    INTERFACE
-        ${PRJ_DIR}/Config/freertos-config
-)
-
-target_compile_definitions(freertos_config
-  INTERFACE
-    projCOVERAGE_TEST=0
-)
-
-target_link_libraries(freertos_config
-    INTERFACE
-        tfm-ns-interface
-        app-config
-        fri-bsp
-)
-
-set( FREERTOS_HEAP "3" CACHE STRING "" FORCE)
-
-add_subdirectory(../../Middleware/FreeRTOS ${CMAKE_BINARY_DIR}/Middleware/FreeRTOS)
-
-# Declare the blinky executable
 add_executable(blinky main.c)
-
+# Trusted Firmware-M must be built before the application, because
+# the application depends on the NS interface and the BL2 signing scripts,
+# both of which are generated as parts of the Trusted Firmware-M build process.
+add_dependencies(blinky trusted_firmware-m-build)
 target_link_libraries(blinky
     freertos_kernel
     tfm-ns-interface
     fri-bsp
 )
 
-# Trusted Firmware-M must be built before the application, because
-# the application depends on the NS interface and the BL2 signing scripts,
-# both of which are generated as parts of the Trusted Firmware-M build process.
-add_dependencies(blinky tf-m-build)
-
-include(${PRJ_DIR}/Bsp/cmake/BspUtilities.cmake)
 set_linker_script(blinky)
-
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Middleware/ARM/TF-M/cmake)
-include(SignTfmImage)
-include(MergeTfmImages)
 
 # The non-secure application image should be padded while being signed
 # Hence, passing "TRUE" as the input parameter to the pad option of sign function.
@@ -117,4 +83,9 @@ iot_reference_arm_corstone3xx_tf_m_sign_image(blinky blinky_signed 0.0.1 TRUE)
 # addresses in order to merge images for TF-M. The addresses cannot
 # be easily programmatically extracted as they are defined in the linker
 # scripts.
-iot_reference_arm_corstone3xx_tf_m_merge_images(blinky ${BL2_IMAGE_LOAD_ADDRESS} ${S_IMAGE_LOAD_ADDRESS} ${NS_IMAGE_LOAD_ADDRESS} ${S_PROVISIONING_BUNDLE_LOAD_ADDRESS})
+iot_reference_arm_corstone3xx_tf_m_merge_images(blinky
+    ${BL2_IMAGE_LOAD_ADDRESS}
+    ${S_IMAGE_LOAD_ADDRESS}
+    ${NS_IMAGE_LOAD_ADDRESS}
+    ${S_PROVISIONING_BUNDLE_LOAD_ADDRESS}
+)
