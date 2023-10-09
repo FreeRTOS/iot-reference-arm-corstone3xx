@@ -2,18 +2,11 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.21.0 FATAL_ERROR)
 
-project(arm-featured-reference-integration)
+project(iot-reference-arm-corstone3xx LANGUAGES C ASM)
 
-# Declare root and other build paths
-set(PRJ_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/Tools/cmake)
 
-# Add examples targets
-if(EXAMPLE STREQUAL "blinky")
-    add_subdirectory(Projects/blinky)
-endif()
-
-if(EXAMPLE STREQUAL "aws-iot-example")
-    add_subdirectory(Projects/aws-iot-example)
-endif()
+add_subdirectory(Bsp)
+add_subdirectory(components EXCLUDE_FROM_ALL)

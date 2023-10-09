@@ -60,9 +60,9 @@ jobs:
         shell: bash
         run: |
           tar -czf gnu_build.tar.gz \
-          build/Projects/aws-iot-example/aws-iot-example_merged.elf \
-          build/Projects/aws-iot-example/aws-iot-example-update_signed.bin \
-          build/Projects/aws-iot-example/update-signature.txt
+          build/aws-iot-example_merged.elf \
+          build/aws-iot-example-update_signed.bin \
+          build/update-signature.txt
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v3
         with:

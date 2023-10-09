@@ -41,7 +41,16 @@ function build_with_cmake {
         set -ex
 
         # Note: A bug in CMake force us to set the toolchain here
-        cmake -G Ninja -S . -B $BUILD_PATH --toolchain=$TOOLCHAIN_FILE -DCMAKE_SYSTEM_PROCESSOR=$TARGET_PROCESSOR -DARM_CORSTONE_BSP_TARGET_PLATFORM=$TARGET -DEXAMPLE=$EXAMPLE -DINTEGRATION_TESTS=$INTEGRATION_TESTS -DAWS_CLIENT_PRIVATE_KEY_PEM_PATH=$PRIVATE_KEY_PATH -DAWS_CLIENT_CERTIFICATE_PEM_PATH=$CERTIFICATE_PATH
+        cmake \
+        -G Ninja --toolchain=$TOOLCHAIN_FILE \
+        -B $BUILD_PATH \
+        -S $PATH_TO_SOURCE \
+        -DCMAKE_SYSTEM_PROCESSOR=$TARGET_PROCESSOR \
+        -DARM_CORSTONE_BSP_TARGET_PLATFORM=$TARGET \
+        -DINTEGRATION_TESTS=$INTEGRATION_TESTS \
+        -DAWS_CLIENT_PRIVATE_KEY_PEM_PATH=$PRIVATE_KEY_PATH \
+        -DAWS_CLIENT_CERTIFICATE_PEM_PATH=$CERTIFICATE_PATH \
+        -DIOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR=$ROOT
 
         if [[ $BUILD -ne 0 ]]; then
             cmake --build $BUILD_PATH --target $EXAMPLE
@@ -130,9 +139,11 @@ done
 case "$1" in
     blinky)
         EXAMPLE="$1"
+        PATH_TO_SOURCE="$ROOT/Projects/blinky"
         ;;
     aws-iot-example)
         EXAMPLE="$1"
+        PATH_TO_SOURCE="$ROOT/Projects/aws-iot-example"
         ;;
     *)
         echo "Missing example <blinky,aws-iot-example>"
@@ -157,10 +168,10 @@ esac
 
 case "$TOOLCHAIN" in
     ARMCLANG )
-      TOOLCHAIN_FILE="toolchains/toolchain-armclang.cmake"
+      TOOLCHAIN_FILE="$ROOT/components/tools/open_iot_sdk_toolchain/library/toolchain-armclang.cmake"
       ;;
     GNU )
-      TOOLCHAIN_FILE="toolchains/toolchain-arm-none-eabi-gcc.cmake"
+      TOOLCHAIN_FILE="$ROOT/components/tools/open_iot_sdk_toolchain/library/toolchain-arm-none-eabi-gcc.cmake"
       ;;
     * )
       echo "Invalid toolchain <ARMCLANG|GNU>"

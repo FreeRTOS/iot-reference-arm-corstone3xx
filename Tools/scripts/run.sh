@@ -97,11 +97,11 @@ esac
 case "$1" in
     blinky)
         EXAMPLE="$1"
-        MERGED_IMAGE_PATH="$BUILD_PATH/Projects/$EXAMPLE/blinky_merged.elf"
+        MERGED_IMAGE_PATH="$BUILD_PATH/blinky_merged.elf"
         ;;
     aws-iot-example)
         EXAMPLE="$1"
-        MERGED_IMAGE_PATH="$BUILD_PATH/Projects/$EXAMPLE/aws-iot-example_merged.elf"
+        MERGED_IMAGE_PATH="$BUILD_PATH/aws-iot-example_merged.elf"
         ;;
     *)
         echo "Usage: $0 <blinky,aws-iot-example>" >&2

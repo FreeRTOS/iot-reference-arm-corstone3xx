@@ -79,13 +79,13 @@ build-applications:
     - |
       if [ $APP == "aws-iot-example" ];then
         tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz \
-          build/Projects/${APP}/${APP}_merged.elf \
-          build/Projects/${APP}/${APP}-update_signed.bin \
-          build/Projects/${APP}/update-signature.txt \
+          build/${APP}_merged.elf \
+          build/${APP}-update_signed.bin \
+          build/update-signature.txt \
           Config/aws_configs
       else
         tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz \
-          build/Projects/${APP}/${APP}_merged.elf
+          build/${APP}_merged.elf
       fi
   parallel:
     matrix:
