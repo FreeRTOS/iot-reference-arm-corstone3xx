@@ -41,16 +41,18 @@ if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
             "-nostartfiles"
     )
     target_add_scatter_file(provisioning_data ${CMAKE_CURRENT_SOURCE_DIR}/provisioning_data.ld)
-    set(provisioning_elf_to_bin_cmd ${GCC_ELF2BIN} -O binary ${CMAKE_CURRENT_BINARY_DIR}/provisioning_data${CMAKE_EXECUTABLE_SUFFIX} ${CMAKE_CURRENT_BINARY_DIR}/provisioning_data.bin)
 else()
     target_add_scatter_file(provisioning_data ${CMAKE_CURRENT_SOURCE_DIR}/provisioning_data.sct)
-    set(provisioning_elf_to_bin_cmd ${ARM_ELF2BIN} --bin --output ${CMAKE_CURRENT_BINARY_DIR}/provisioning_data.bin ${CMAKE_CURRENT_BINARY_DIR}/provisioning_data${CMAKE_EXECUTABLE_SUFFIX} --bincombined)
 endif()
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Tools/cmake)
+include(ConvertElfToBin)
 
 add_custom_command(OUTPUT provisioning_data.bin
     DEPENDS $<TARGET_FILE_DIR:provisioning_data>/provisioning_data${CMAKE_EXECUTABLE_SUFFIX}
-    COMMAND ${provisioning_elf_to_bin_cmd}
 )
+
+target_elf_to_bin(provisioning_data provisioning_data)
 
 add_custom_target(provisioning_data_bin ALL
     SOURCES provisioning_data.bin
