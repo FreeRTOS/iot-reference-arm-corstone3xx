@@ -47,13 +47,13 @@ function build_with_cmake {
         -S $PATH_TO_SOURCE \
         -DCMAKE_SYSTEM_PROCESSOR=$TARGET_PROCESSOR \
         -DARM_CORSTONE_BSP_TARGET_PLATFORM=$TARGET \
-        -DINTEGRATION_TESTS=$INTEGRATION_TESTS \
         -DAWS_CLIENT_PRIVATE_KEY_PEM_PATH=$PRIVATE_KEY_PATH \
         -DAWS_CLIENT_CERTIFICATE_PEM_PATH=$CERTIFICATE_PATH \
         -DIOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR=$ROOT
 
+
         if [[ $BUILD -ne 0 ]]; then
-            cmake --build $BUILD_PATH --target $EXAMPLE
+            cmake --build $BUILD_PATH --target "$EXAMPLE"
         fi
     )
 }

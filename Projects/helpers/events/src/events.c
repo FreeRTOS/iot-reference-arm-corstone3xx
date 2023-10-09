@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "event_helper.h"
+#include "events.h"
 
 /* System events group. */
 EventGroupHandle_t xSystemEvents = NULL;
@@ -58,5 +58,5 @@ bool xIsMqttAgentConnected( void )
 {
     EventBits_t uxEvents = xEventGroupGetBits( xSystemEvents );
 
-    return( ( uxEvents & EVENT_MASK_MQTT_CONNECTED ) == 0 ? false : true );
+    return( ( bool ) ( uxEvents & EVENT_MASK_MQTT_CONNECTED ) );
 }

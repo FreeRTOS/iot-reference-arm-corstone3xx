@@ -2,4 +2,5 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
+add_subdirectory(events)
 add_subdirectory(logging)

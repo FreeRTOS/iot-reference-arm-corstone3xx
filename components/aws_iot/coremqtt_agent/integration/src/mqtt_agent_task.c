@@ -63,7 +63,7 @@
 #include "backoff_algorithm.h"
 
 /* System events header. */
-#include "event_helper.h"
+#include "events.h"
 
 /* Configure name and log level. */
 #ifndef LIBRARY_LOG_NAME

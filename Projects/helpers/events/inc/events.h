@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef EVENT_HELPER_H
-#define EVENT_HELPER_H
+#ifndef EVENT_H
+#define EVENT_H
 
 #include <stdbool.h>
 
@@ -45,4 +45,4 @@ void vWaitUntilMQTTAgentConnected( void );
  */
 bool xIsMqttAgentConnected( void );
 
-#endif /* EVENT_HELPER_H */
+#endif /* EVENT_H */

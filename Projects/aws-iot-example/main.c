@@ -24,7 +24,7 @@
 #include "mbedtls/platform.h"
 #include "threading_alt.h"
 
-#include "event_helper.h"
+#include "events.h"
 
 /* Include header that defines log levels. */
 #include "logging_levels.h"
