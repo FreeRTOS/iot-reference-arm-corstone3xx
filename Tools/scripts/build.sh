@@ -52,8 +52,12 @@ function build_with_cmake {
         -DIOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR=$ROOT
 
 
-        if [[ $BUILD -ne 0 ]]; then
+        if [[ $BUILD -ne 0 && $INTEGRATION_TESTS -eq 0 ]]; then
+            echo "Building $EXAMPLE" >&2
             cmake --build $BUILD_PATH --target "$EXAMPLE"
+        elif [[ $BUILD -ne 0 && $INTEGRATION_TESTS -eq 1 ]]; then
+            echo "Building $EXAMPLE-tests" >&2
+            cmake --build $BUILD_PATH --target "$EXAMPLE-tests"
         fi
     )
 }

@@ -168,3 +168,113 @@ iot_reference_arm_corstone3xx_generate_aws_update_digest_and_signature(
     update-digest
     update-signature
 )
+
+# ---------------------------------------------------------------------------------------------------------
+# Configure FreeRTOS Libraries Integration Tests
+add_dependencies(freertos-libraries-integration-tests-config provisioning_data_bin)
+target_sources(freertos-libraries-integration-tests-config
+    INTERFACE
+        freertos-integration-tests/integration_tests_platform_function.c
+)
+target_include_directories(freertos-libraries-integration-tests-config
+    INTERFACE
+        freertos-integration-tests/include
+        provisioning
+        ${CMAKE_BINARY_DIR}/provisioning
+        ${CMAKE_BINARY_DIR}/provisioning_data
+)
+target_link_libraries(freertos-libraries-integration-tests-config
+    INTERFACE
+        connectivity-stack
+        coremqtt
+        helpers-logging
+        freertos-libraries-integration-tests-mqtt
+        freertos-libraries-integration-tests-ota-pal
+        freertos-libraries-integration-tests-qualification
+        freertos-libraries-integration-tests-transport
+        unity
+)
+
+# Add FreeRTOS Libraries Integration Tests application executable
+add_executable(aws-iot-example-tests
+    dev_mode_key_provisioning.c
+    main.c
+    mqtt_demo_pub_sub.c
+    ${corepkcs11_SOURCE_DIR}/source/dependency/3rdparty/mbedtls_utils/mbedtls_utils.c
+)
+target_include_directories(aws-iot-example-tests
+    PUBLIC
+        freertos-integration-tests
+        provisioning
+)
+
+target_compile_definitions(aws-iot-example-tests
+    PRIVATE
+        INTEGRATION_TESTS=1
+)
+# Trusted Firmware-M must be built before the application, because
+# the application depends on the NS interface and the BL2 signing scripts,
+# both of which are generated as parts of the Trusted Firmware-M build process.
+add_dependencies(aws-iot-example-tests trusted_firmware-m-build)
+# The provision data must be built before the application because
+# it provides credentials to connect to AWS
+add_dependencies(aws-iot-example-tests provisioning_data_bin)
+target_link_libraries(aws-iot-example-tests
+    PRIVATE
+        backoff-algorithm
+        connectivity-stack
+        coremqtt
+        coremqtt-agent
+        corepkcs11
+        freertos_kernel
+        freertos-libraries-integration-tests-config
+        freertos-ota-pal-psa
+        fri-bsp
+        helpers-events
+        ota-for-aws-iot-embedded-sdk
+        mbedtls
+        mbedtls-threading-freertos
+        tfm-ns-interface
+)
+
+set_linker_script(aws-iot-example-tests)
+
+# The non-secure application image should be padded while being signed
+iot_reference_arm_corstone3xx_tf_m_sign_image(
+    aws-iot-example-tests
+    aws-iot-example-tests_signed
+    ${MCUBOOT_IMAGE_VERSION_NS}
+    TRUE
+)
+
+# The update image is not padded to fill the whole slot (no --pad), because
+# 1) the image to download is smaller without padding
+# 2) the trailer that keeps track of boot and update statuses should not be overwritten
+iot_reference_arm_corstone3xx_tf_m_sign_image(
+    aws-iot-example-tests
+    aws-iot-example-tests-update_signed
+    ${MCUBOOT_IMAGE_VERSION_NS_UPDATE}
+    FALSE
+)
+
+# A user project that consumes the ARM FRI needs to explicitly provide
+# addresses in order to merge images for TF-M. The addresses cannot
+# be easily programmatically extracted as they are defined in the linker
+# scripts.
+iot_reference_arm_corstone3xx_tf_m_merge_images(
+    aws-iot-example-tests
+    ${BL2_IMAGE_LOAD_ADDRESS}
+    ${S_IMAGE_LOAD_ADDRESS}
+    ${NS_IMAGE_LOAD_ADDRESS}
+    ${S_PROVISIONING_BUNDLE_LOAD_ADDRESS}
+    ${NS_PROVISIONING_BUNDLE_LOAD_ADDRESS}
+    ${CMAKE_BINARY_DIR}/provisioning_data/provisioning_data.bin
+)
+
+# Generate the AWS OTA update digest and signature
+iot_reference_arm_corstone3xx_generate_aws_update_digest_and_signature(
+    aws-iot-example-tests
+    aws-iot-example-tests-update_signed
+    update-digest
+    update-signature
+)
