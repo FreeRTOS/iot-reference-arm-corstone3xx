@@ -8,7 +8,7 @@ HERE="$(dirname "$0")"
 ROOT="$(realpath $HERE/..)"
 EXAMPLE=""
 BUILD_PATH="build"
-TARGET="corstone300"
+TARGET="corstone310"
 FVP_TYPE="fvp"
 FVP_BIN=""
 
@@ -88,7 +88,7 @@ case "$TARGET" in
       fi
       ;;
     *)
-      echo "Invalid target <Corstone300|corstone310>"
+      echo "Invalid target <corstone300|corstone310>"
       show_usage
       exit 2
       ;;
