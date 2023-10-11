@@ -3,24 +3,10 @@
 # SPDX-License-Identifier: MIT
 
 from timeit import default_timer as timer
-from pytest import fixture
 import subprocess
-from aws_test_util import Flags, create_aws_resources, cleanup_aws_resources
 
 
-@fixture(scope="function")
-def aws_resources(build_artefacts_path, credentials_path, signed_update_bin_name):
-    flags = Flags(build_artefacts_path, credentials_path, signed_update_bin_name)
-    flags = create_aws_resources(flags)
-    try:
-        # Caller won't actually do anything with this, but we have to yield something.
-        yield flags
-    finally:
-        cleanup_aws_resources(flags)
-
-
-def test_ota(
-    aws_resources,
+def test_application_output(
     fvp_process: subprocess.Popen,
     pass_output_file: str,
     fail_output_file: str,
@@ -28,10 +14,8 @@ def test_ota(
 ) -> None:
     """
     Compare the actual output on the FVP with the expectations in
-    pass and fail output files for the OTA update test.
+    pass and fail output files.
 
-    aws_resources: Input coming out as a result of executiong of aws_resources function
-                   defined above.
     fvp_process (subprocess.Popen): FVP execution process
     pass_output_file (str): Path to the file containing the output when application
                             runs without errors.
@@ -49,14 +33,13 @@ def test_ota(
     index = 0
     start = timer()
     current_time = timer()
-
     while (current_time - start) < (timeout_seconds):
         line = fvp_process.stdout.readline()
         if not line:
             break
-        line = line.decode("utf-8")
-        line = line.rstrip()
-        print(line)
+        line = line.decode("utf-8").rstrip()
+        if line:
+            print(line)
         if pass_output[index] in line:
             index += 1
             if index == len(pass_output):

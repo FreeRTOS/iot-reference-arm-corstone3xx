@@ -36,8 +36,8 @@ def read_whole_file(path, mode="r"):
 
 
 class Flags:
-    def __init__(self, build_dir, credentials_dir):
-        self.BUILD_DIR = build_dir
+    def __init__(self, build_artefacts_path, credentials_dir, signed_update_bin_name):
+        self.BUILD_ARTEFACTS_PATH = build_artefacts_path
         self.TEST_ID = read_whole_file(
             os.path.join(credentials_dir, "test-id.txt")
         ).strip()
@@ -45,10 +45,8 @@ class Flags:
         self.OTA_THING_NAME = "iotmsw-ci-test-thing-" + self.TEST_ID
         self.OTA_S3_BUCKET = "iotmsw-ci-test-bucket-" + self.TEST_ID
         self.OTA_POLICY_NAME = "iotmsw-ci-test-policy-" + self.TEST_ID
-        self.OTA_BINARY = "aws-iot-example-update_signed.bin"
-        self.OTA_BINARY_PATH = os.path.join(
-            self.BUILD_DIR, "Projects", "aws-iot-example", self.OTA_BINARY
-        )
+        self.OTA_BINARY = signed_update_bin_name
+        self.OTA_BINARY_PATH = os.path.join(self.BUILD_ARTEFACTS_PATH, self.OTA_BINARY)
         self.OTA_ROLE_ARN = f"arn:aws:iam::{self.AWS_ACCOUNT}:role/{OTA_ROLE_NAME}"
         self.OTA_UPDATE_PROTOCOLS = ["MQTT"]
         self.OTA_UPDATE_TARGET_SELECTION = "SNAPSHOT"
@@ -64,8 +62,8 @@ class Flags:
                             "inlineDocument": bytearray(
                                 read_whole_file(
                                     os.path.join(
-                                        self.BUILD_DIR,
-                                        "Projects/aws-iot-example/update-signature.txt",
+                                        self.BUILD_ARTEFACTS_PATH,
+                                        "update-signature.txt",
                                     )
                                 ).strip(),
                                 "utf-8",

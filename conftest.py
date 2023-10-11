@@ -8,24 +8,27 @@ from functools import reduce
 
 
 def pytest_addoption(parser):
-    parser.addoption("--build-path", action="store", default="build")
+    parser.addoption("--build-artefacts-path", action="store", default="")
     parser.addoption("--credentials-path", action="store", default="credentials")
-    parser.addoption(
-        "--fvp", action="store", default="FVP_Corstone_SSE-310"
-    )
+    parser.addoption("--fvp", action="store", default="FVP_Corstone_SSE-310")
     parser.addoption("--fvp-options", action="store", default="")
+    parser.addoption("--merged-elf-name", action="store", default="")
+    parser.addoption("--signed-update-bin-name", action="store", default="")
+    parser.addoption("--timeout-seconds", type=int, action="store", default="")
+    parser.addoption("--pass-output-file", action="store", default="")
+    parser.addoption("--fail-output-file", action="store", default="")
 
 
 @pytest.fixture()
-def build_path(pytestconfig):
+def build_artefacts_path(pytestconfig):
     root = os.path.dirname(os.path.abspath(__file__))
-    yield root + "/" + pytestconfig.getoption("--build-path")
+    yield os.path.join(root, pytestconfig.getoption("--build-artefacts-path"))
 
 
 @pytest.fixture
 def credentials_path(pytestconfig):
     root = os.path.dirname(os.path.abspath(__file__))
-    yield root + "/" + pytestconfig.getoption("--credentials-path")
+    yield os.path.join(root, pytestconfig.getoption("--credentials-path"))
 
 
 @pytest.fixture
@@ -35,7 +38,7 @@ def fvp_path(pytestconfig):
 
 @pytest.fixture
 def vsi_script_path():
-    yield os.path.dirname(os.path.abspath(__file__)) + "/lib/AVH/audio"
+    yield os.path.join(os.path.dirname(os.path.abspath(__file__)), "/lib/AVH/audio")
 
 
 @pytest.fixture
@@ -55,8 +58,39 @@ def fvp_options(pytestconfig):
     return reduce(options_builder, options, [])
 
 
+@pytest.fixture
+def merged_elf_name(pytestconfig):
+    root = os.path.dirname(os.path.abspath(__file__))
+    yield os.path.join(
+        root,
+        pytestconfig.getoption("--build-artefacts-path"),
+        pytestconfig.getoption("--merged-elf-name"),
+    )
+
+
+@pytest.fixture
+def signed_update_bin_name(pytestconfig):
+    yield pytestconfig.getoption("--signed-update-bin-name")
+
+
+@pytest.fixture
+def timeout_seconds(pytestconfig):
+    yield pytestconfig.getoption("--timeout-seconds")
+
+
+@pytest.fixture
+def pass_output_file(pytestconfig):
+    print(Path(__file__).parent / pytestconfig.getoption("--pass-output-file"))
+    yield Path(__file__).parent / pytestconfig.getoption("--pass-output-file")
+
+
+@pytest.fixture
+def fail_output_file(pytestconfig):
+    yield Path(__file__).parent / pytestconfig.getoption("--fail-output-file")
+
+
 @pytest.fixture(scope="function")
-def fvp(fvp_path, build_path, vsi_script_path, fvp_options):
+def fvp_process(fvp_path, merged_elf_name, vsi_script_path, fvp_options):
     # Fixture of the FVP, when it returns, the FVP is started and
     # traces are accessible through the .stdout of the object returned.
     # When the test is terminated, the FVP subprocess is closed.
@@ -64,7 +98,7 @@ def fvp(fvp_path, build_path, vsi_script_path, fvp_options):
     cmdline = [
         fvp_path,
         "-a",
-        f"{build_path}/Projects/aws-iot-example/aws-iot-example_merged.elf",
+        f"{merged_elf_name}",
         "-C",
         "core_clk.mul=200000000",
         "-C",
