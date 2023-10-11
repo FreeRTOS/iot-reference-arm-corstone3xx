@@ -56,7 +56,7 @@ typedef enum TransportStatus
     TRANSPORT_STATUS_DNS_FAILURE,           /**< Resolving hostname of the server failed. */
     TRANSPORT_STATUS_SOCKET_CREATE_FAILURE, /**< Underlying socket creation failed. */
     TRANSPORT_STATUS_CONNECT_FAILURE,       /**< Initial connection to the server failed. */
-    TRANSPORT_STATUS_TLS_FAILURE,          /**< TLS Handshake for the secure connection failed. */
+    TRANSPORT_STATUS_TLS_FAILURE,           /**< TLS Handshake for the secure connection failed. */
     TRANSPORT_STATUS_SOCKET_CLOSE_FAILURE   /**< Failed to close the underlying socket. */
 } TransportStatus_t;
 
@@ -118,6 +118,8 @@ typedef struct TLSParams
  * @param[out] pNetworkContext The output parameter to return the created network context.
  * @param[in] pServerInfo Server connection info.
  * @param[in] pTLSParams socket configs for the connection.
+ * @param[in] sendTimeoutMs socket send timeout.
+ * @param[in] recvTimeoutMs socket receive timeout.
  *
  * @return #TRANSPORT_STATUS_SUCCESS on success;
  *         #TRANSPORT_STATUS_INVALID_PARAMETER, #TRANSPORT_STATUS_INSUFFICIENT_MEMORY,
@@ -125,9 +127,9 @@ typedef struct TLSParams
  *         #TRANSPORT_STATUS_DNS_FAILURE, #TRANSPORT_STATUS_CONNECT_FAILURE on failure.
  */
 TransportStatus_t Transport_Connect( NetworkContext_t * pNetworkContext,
-                                           const ServerInfo_t * pServerInfo,
-                                           const TLSParams_t * pTLSParams,
-                                               uint32_t sendTimeoutMs,
+                                     const ServerInfo_t * pServerInfo,
+                                     const TLSParams_t * pTLSParams,
+                                     uint32_t sendTimeoutMs,
                                      uint32_t recvTimeoutMs );
 
 /**
@@ -157,8 +159,8 @@ TransportStatus_t Transport_Disconnect( NetworkContext_t * pNetworkContext );
  *         negative value on error.
  */
 int32_t Transport_Recv( NetworkContext_t * pNetworkContext,
-                              void * pBuffer,
-                              size_t bytesToRecv );
+                        void * pBuffer,
+                        size_t bytesToRecv );
 
 /**
  * @brief Sends data over an established TLS session using the Secure Sockets API.
@@ -167,13 +169,13 @@ int32_t Transport_Recv( NetworkContext_t * pNetworkContext,
  * over the network.
  *
  * @param[in] pNetworkContext The network context created using Secure Sockets API.
- * @param[in] pBuffer Buffer containing the bytes to send over the network stack.
+ * @param[in] pMessage A message to be sent over the network stack.
  * @param[in] bytesToSend Number of bytes to send over the network.
  *
  * @return Number of bytes sent if successful; negative value on error.
  */
 int32_t Transport_Send( NetworkContext_t * pNetworkContext,
-                              const void * pMessage,
-                              size_t bytesToSend );
+                        const void * pMessage,
+                        size_t bytesToSend );
 
 #endif /* TRANSPORT_INTERFACE_API_H */
