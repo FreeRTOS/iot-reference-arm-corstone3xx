@@ -12,8 +12,8 @@ ignore_tests = {Cases: Output}
 
 
 @fixture(scope="function")
-def aws_resources(build_path, credentials_path):
-    flags = Flags(build_path, credentials_path)
+def aws_resources(build_artefacts_path, credentials_path, signed_update_bin_name):
+    flags = Flags(build_artefacts_path, credentials_path, signed_update_bin_name)
     flags = create_aws_resources(flags)
     try:
         # Caller won't actually do anything with this, but we have to yield something.

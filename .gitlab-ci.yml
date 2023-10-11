@@ -14,6 +14,12 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   RETRY_LIMIT: 100
 
+# Those fragments contain base variables required by pipelines for applications.
+# They can be used to set matrix parameters and extended using << : .anchor syntax
+.pipeline_config_applications: &pipeline_config_applications
+  TARGET: [corstone300, corstone310]
+  TOOLCHAIN: [ARMCLANG, GNU]
+
 # Normally, workflow rules are enabled for all the below and "main" branch
 # Since, main branch is already tested and quite heavy, we do not need to run
 # most jobs already run. The below rule skips the job on main branch.
@@ -54,8 +60,7 @@ workflow:
       fi
   parallel:
     matrix:
-      - TARGET: [corstone300, corstone310]
-        TOOLCHAIN: [GNU, ARMCLANG]
+      - *pipeline_config_applications
   variables:
     PYTHONUNBUFFERED: 1
 
@@ -77,24 +82,48 @@ build-applications:
     - ./ci/generate_credentials.sh -f -p Config/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
-    - ./Tools/scripts/build.sh aws-iot-example --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
+    - ./Tools/scripts/build.sh ${APP} --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
     - |
-      tar -czf ${TARGET}_${TOOLCHAIN}_build.tar.gz \
-        build/Projects/aws-iot-example/aws-iot-example_merged.elf \
-        build/Projects/aws-iot-example/aws-iot-example-update_signed.bin \
-        build/Projects/aws-iot-example/update-signature.txt \
-        Config/aws_configs
+      if [ $APP == "aws-iot-example" ];then
+        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz \
+          build/Projects/${APP}/${APP}_merged.elf \
+          build/Projects/${APP}/${APP}-update_signed.bin \
+          build/Projects/${APP}/update-signature.txt \
+          Config/aws_configs
+      else
+        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz \
+          build/Projects/${APP}/${APP}_merged.elf
+      fi
+  parallel:
+    matrix:
+       -
+         << : *pipeline_config_applications
+         APP: [blinky, aws-iot-example]
   artifacts:
     paths:
-      - ${TARGET}_${TOOLCHAIN}_build.tar.gz
+      - ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz
     expire_in: 1 week
 
-# Test connection to the AWS cloud
-test-ota-aws:
+test-ota:
   extends: .test_job
   script:
-    - tar xf ${TARGET}_${TOOLCHAIN}_build.tar.gz
-    - pytest -s Tools/tests/test_ota.py --build-path "build" --fvp $FVP_BIN --credentials-path "Config/aws_configs"
+    - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz
+    - |
+      pytest -s Tools/tests/test_ota.py \
+      --build-artefacts-path "build/Projects/${APP}" \
+      --fvp $FVP_BIN \
+      --credentials-path "Config/aws_configs" \
+      --merged-elf-name "${APP}_merged.elf" \
+      --signed-update-bin-name "${APP}-update_signed.bin" \
+      --timeout-seconds 900 \
+      --pass-output-file "Projects/${APP}/tests/pass_output.log" \
+      --fail-output-file "Projects/${APP}/tests/fail_output.log"
+  parallel:
+    matrix:
+      -
+        << : *pipeline_config_applications
+        APP: [aws-iot-example]
+
 
 integration-tests:
   stage: test
@@ -105,15 +134,26 @@ integration-tests:
     - ./ci/generate_credentials.sh -f -p Config/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
-    - ./Tools/scripts/build.sh -q aws-iot-example
-    - apt update
-    - apt install golang-go -y
+    - ./Tools/scripts/build.sh -q ${APP}
     - pushd Middleware/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tools/echo_server
     - go run echo_server.go&
     - popd
     - sleep 1
-    - pytest -s Tools/tests/test_integration.py --build-path "build" --fvp $FVP_BIN --credentials-path "Config/aws_configs"
+    - |
+      pytest -s Tools/tests/test_integration.py \
+      --build-artefacts-path "build/Projects/${APP}" \
+      --fvp $FVP_BIN \
+      --credentials-path "Config/aws_configs" \
+      --merged-elf-name "${APP}-tests_merged.elf" \
+      --signed-update-bin-name "${APP}-tests-update_signed.bin"
+  parallel:
+    matrix:
+      -
+        << : *pipeline_config_applications
+        APP: [aws-iot-example]
 
+# The clean up only happens once daily when the `Daily OTA cleanup`
+# scheduled pipeline sets the `SCHEDULED_JOB_TO_RUN` variable to `cleanup`.
 aws-cleanup:
   stage: cleanup
   tags:

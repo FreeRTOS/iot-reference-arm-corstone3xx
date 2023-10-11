@@ -28,7 +28,6 @@ if not OTA_CERT_ID:
 THING_NAME_PREFIX = "iotmsw-ci-test-thing-"
 OTA_NAME_PREFIX = "ota-test-update-id-"
 OTA_S3_BUCKET_PREFIX = "iotmsw-ci-test-bucket-"
-OTA_BINARY = "aws-iot-example-update_signed.bin"
 OTA_JOB_PREFIX = "AFR_OTA-"
 AWS_ACCOUNT = boto3.client("sts").get_caller_identity().get("Account")
 
@@ -127,8 +126,7 @@ def process_things(nextToken: str) -> str:
                     f"arn:aws:iot:{AWS_REGION}:{AWS_ACCOUNT}:cert/{OTA_CERT_ID}"
                 )
                 iot.detach_thing_principal(
-                    thingName=thing_name,
-                    principal=ota_principal,
+                    thingName=thing_name, principal=ota_principal
                 )
                 iot.delete_thing(thingName=thing_name)
             except Exception as ex:
@@ -140,22 +138,55 @@ def process_things(nextToken: str) -> str:
 
 def process_buckets(nextToken: str) -> str:
     response = s3.list_buckets(nextToken=nextToken)
+
     for bucket in response["Buckets"]:
         bucket_name: str = bucket["Name"]
         if bucket_name.startswith(OTA_S3_BUCKET_PREFIX):
             try:
-                try:
-                    s3.delete_object(Bucket=bucket_name, Key=OTA_BINARY)
-                except Exception as ex:
-                    print_ex(ex)
-                else:
-                    print(f"Deleted S3 object {OTA_BINARY} from {bucket_name}")
+                delete_all_bucket_objects(bucket_name)
+            except Exception as e:
+                raise Exception(
+                    f"Failed to delete all objects from bucket `{bucket_name}`: {e}"
+                )
+
+            print(f"Deleted all objects from {bucket_name}")
+
+            try:
                 s3.delete_bucket(Bucket=bucket_name)
-            except Exception as ex:
-                print_ex(ex)
-            else:
-                print(f"Deleted S3 bucket {bucket_name}")
+            except Exception as e:
+                raise Exception(f"Failed to delete bucket `{bucket_name}`: {e}")
+
+            print(f"Deleted S3 bucket {bucket_name}")
+
     return response.get("nextToken", "")
+
+
+def delete_all_bucket_objects(bucket_name: str) -> None:
+    """
+    Delete all S3 bucket objects.
+
+    Raises:
+        Exception: If any of the S3 bucket deletions fail.
+    """
+    try:
+        response = s3.list_objects_v2(Bucket=bucket_name)
+
+        while True:
+            for obj in response.get("Contents", []):
+                s3.delete_object(Bucket=bucket_name, Key=obj["Key"])
+
+            if not response.get("IsTruncated", False):
+                break
+
+            continuation_token = response.get("NextContinuationToken")
+
+            response = s3.list_objects_v2(
+                Bucket=bucket_name, ContinuationToken=continuation_token
+            )
+    except Exception as e:
+        raise Exception(
+            f"Failed to delete all objects from bucket `{bucket_name}`: {e}"
+        )
 
 
 process_resources("Update", process_updates)
