@@ -2,8 +2,8 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
-from timeit import default_timer as timer
 import subprocess
+from timeit import default_timer as timer
 
 
 def test_application_output(

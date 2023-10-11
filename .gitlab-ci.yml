@@ -73,8 +73,7 @@ workflow:
     - job: build-applications
       artifacts: true
 
-# Build all the applications which later are tested. Build of the various binaries
-# is described in ./ci/build_examples.sh
+# Build all the applications which later are tested.
 build-applications:
   stage: build
   extends: .base_job
@@ -103,6 +102,24 @@ build-applications:
     paths:
       - ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz
     expire_in: 1 week
+
+test-applications-output:
+  extends: .test_job
+  script:
+    - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz
+    - |
+      pytest -s Tools/tests/test_application_output.py \
+      --build-artefacts-path "build/Projects/${APP}" \
+      --fvp $FVP_BIN \
+      --merged-elf-name "${APP}_merged.elf" \
+      --timeout-seconds 600 \
+      --pass-output-file "Projects/${APP}/tests/pass_output.log" \
+      --fail-output-file "Projects/${APP}/tests/fail_output.log"
+  parallel:
+    matrix:
+       -
+         << : *pipeline_config_applications
+         APP: [blinky]
 
 test-ota:
   extends: .test_job
