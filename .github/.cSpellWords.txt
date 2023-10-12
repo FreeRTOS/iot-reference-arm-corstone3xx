@@ -53,6 +53,7 @@ JITR
 Jytl
 NBNS
 LLMNR
+lltoa
 mcuboot
 MCUBOOT
 mbed
@@ -83,6 +84,7 @@ pkwrite
 ppuc
 prepoccessor
 pyelftools
+pyproject
 Retarget
 Rfbo
 RIHN
@@ -92,11 +94,15 @@ SECP
 srecord
 srtp
 SRTP
+suppr
 tinycbor
 tinycbor's
 TINYCBOR
+tpip
+TPIP
 TRNG
 UDBL
+uncrustify
 unusued
 USART
 venv

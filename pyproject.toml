@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
+build-backend = "setuptools.build_meta"
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
+
+[tool.towncrier]
+directory = "release_changes"
+filename = "CHANGELOG.md"
+template = "ci/towncrier/template.rst"
+
+[[tool.towncrier.type]]
+directory = "change"
+name = "Changes"
+showcontent = true
+
+[tool.black]
+diff = false
+color = true
+line-length = 88
