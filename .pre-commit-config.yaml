@@ -1,0 +1,96 @@
+# Copyright (c) 2022-2023 Arm Limited and/or its affiliates
+# <open-source-office@arm.com>
+# SPDX-License-Identifier: MIT
+
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+exclude: >
+    .patch|
+    (?x)^(
+        Bsp/arm-corstone-platform-bsp/|
+        Middleware/ARM/freertos-ota-pal-psa-lib/freertos-ota-pal-psa/|
+        Middleware/ARM/freertos-pkcs11-psa-lib/freertos-pkcs11-psa/|
+        Middleware/ARM/IoT_Socket-lib/IoT_Socket/|
+        Middleware/ARM/IoT_VSocket-lib/AVH/|
+        Middleware/ARM/IoT_VSocket-lib/transport_interface_api.h|
+        Middleware/ARM/mbedtls-lib/|
+        Middleware/ARM/TF-M/trusted-firmware-m/|
+        Middleware/AWS/|
+        Middleware/FreeRTOS/|
+        Middleware/Unity/
+    )
+
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-added-large-files
+        args: ['--maxkb=2500']
+-   repo: https://github.com/jorisroovers/gitlint
+    rev:  v0.19.1
+    hooks:
+    -   id: gitlint
+        args:
+        - "--config ci/gitlint/.gitlint"
+-   repo: https://github.com/psf/black
+    rev: 23.10.1
+    hooks:
+    -   id: black
+-   repo: https://github.com/pycqa/flake8
+    rev: 6.1.0
+    hooks:
+    -   id: flake8
+        args: # arguments to configure flake8
+        # making line length compatible with black
+        - "--max-line-length=88"
+-   repo: local
+    hooks:
+      - id: cppcheck
+        name: cppcheck
+        description: Run `cppcheck` against C/C++ source files
+        language: system
+        files: \.(c|cc|cpp|cu|c\+\+|cxx|tpp|txx)$
+        entry: cppcheck --error-exitcode=1
+        args: [
+            "--force",
+            "--std=c99",
+            "--std=c++14",
+            # enable everything except "information" level.
+            "--enable=style,performance,warning,portability",
+            "--template=gcc",
+            "--inline-suppr",
+            # Do not fail for internal cppcheck error
+            "--suppress=internalAstError",
+            # As we are passing list of suppression list, some files may
+            # not need to suppress any or all of the suppressions producing
+            # unmatchedSuppression by cppcheck. Ignore such cases.
+            "--suppress=unmatchedSuppression",
+            # useStlAlgorithm cannot be mandated in embedded projects
+            "--suppress=useStlAlgorithm"
+        ]
+-   repo: local
+    hooks:
+      - id: uncrustify
+        name: uncrustify
+        description: Run 'uncrustify' C/C++ code formatter
+        language: script
+        entry: Tools/scripts/run_uncrustify.sh
+        require_serial: true
+-   repo: local
+    hooks:
+      - id: banned-api
+        name: banned-api
+        entry: banned-api-hook
+        description: Checks if source code uses banned apis
+        types_or: [c, c++]
+        language: python
+-   repo: local
+    hooks:
+      - id: dependencies-check
+        name: dependencies-check
+        description: Checks listed dependencies in manifest.yml
+        language: script
+        entry: Tools/scripts/run_dependencies_check.sh
+        require_serial: true

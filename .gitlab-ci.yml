@@ -7,6 +7,9 @@ default:
   interruptible: true
   image: ${OPEN_IOT_SDK_DOCKER_REGISTRY}/open-iot-sdk:${OPEN_IOT_SDK_DOCKER_VERSION}
 
+include:
+  local: '$PWD/ci/pipeline-baseline-fri.yml'
+
 variables:
   OPEN_IOT_SDK_DOCKER_VERSION: v1
   KUBERNETES_CPU_REQUEST: 1
@@ -20,17 +23,8 @@ variables:
   TARGET: [corstone300, corstone310]
   TOOLCHAIN: [ARMCLANG, GNU]
 
-# Normally, workflow rules are enabled for all the below and "main" branch
-# Since, main branch is already tested and quite heavy, we do not need to run
-# most jobs already run. The below rule skips the job on main branch.
-.base_job_rules:
-  rules:
-    - if: $CI_MERGE_REQUEST_ID
-    - if: $CI_COMMIT_REF_NAME =~ /^release-.*/
-    - if: $CI_PIPELINE_SOURCE == "web"
-    - if: $GITLAB_CI_LOCAL == "true"
-
 stages:
+  - quality-check
   - build
   - test
   - cleanup
@@ -45,7 +39,7 @@ workflow:
 
 # This base job load the right docker image and sets some default variables
 .base_job:
-  extends: .base_job_rules
+  extends: .base-job-rules
   tags:
     - iotmsw-amd64
   before_script:
