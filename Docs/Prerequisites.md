@@ -37,7 +37,8 @@ console (either AWS-Web-Console or Local-Console) to an Arm Virtual Hardware
 Instance. From now on, any command-line commands described in this document
 must be run on the console connected to the Arm Virtual Hardware Instance.
 
-**Note**  
+**Note**
+
 The run example script `Tools/scripts/run.sh` assumes ecosystem FVP by default.
 If you are using Arm virtual hardware using Amazon machine images then an
 additional argument `--fvp_type vht` must be passed to the run example script.
