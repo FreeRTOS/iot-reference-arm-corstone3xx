@@ -18,12 +18,12 @@ extern uint32_t tfm_ns_interface_init( void );
 void vAssertCalled( const char * pcFile,
                     unsigned long ulLine )
 {
-    volatile unsigned long looping = 0;
-
-    printf( "ASSERT failed! file %s:%ld, \r\n", pcFile, ulLine );
+    printf( "ASSERT failed! file %s:%lu, \r\n", pcFile, ulLine );
 
     taskENTER_CRITICAL();
     {
+        volatile unsigned long looping = 0;
+
         /* Use the debugger to set ul to a non-zero value in order to step out
          *      of this function to determine why it was called. */
         while( looping == 0LU )
