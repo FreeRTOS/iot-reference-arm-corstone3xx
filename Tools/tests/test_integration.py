@@ -6,7 +6,10 @@ from pytest import fixture
 from aws_test_util import Flags, create_aws_resources, cleanup_aws_resources
 import re
 
-ignore_tests = { "Full_OTA_PAL, otaPal_CloseFile_ValidSignature": "Test cannot succeed as the filename is hardcoded in test" }
+ignore_tests = {
+    "Full_OTA_PAL, otaPal_CloseFile_ValidSignature": "Test cannot succeed as the filename is hardcoded in test"
+}
+
 
 @fixture(scope="function")
 def aws_resources(build_path, credentials_path):
@@ -59,7 +62,7 @@ def test_integration(aws_resources, fvp):
         if result:
             failed_tests.append(current_test)
         if end_string in line:
-            break;
+            break
         current_time = timer()
 
     print("--------------------  SUMMARY  --------------------")
