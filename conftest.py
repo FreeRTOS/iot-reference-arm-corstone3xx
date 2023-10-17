@@ -10,7 +10,9 @@ from functools import reduce
 def pytest_addoption(parser):
     parser.addoption("--build-path", action="store", default="build")
     parser.addoption("--credentials-path", action="store", default="credentials")
-    parser.addoption("--avh", action="store", default="/opt/VHT/VHT_Corstone_SSE-300_Ethos-U55")
+    parser.addoption(
+        "--avh", action="store", default="/opt/VHT/VHT_Corstone_SSE-300_Ethos-U55"
+    )
     parser.addoption("--avh-options", action="store", default="")
 
 
@@ -61,18 +63,30 @@ def fvp(fvp_path, build_path, vsi_script_path, fvp_options):
     # Note: It can take few seconds to terminate the FVP
     cmdline = [
         fvp_path,
-        "-a", f"{build_path}/Projects/aws-iot-example/aws-iot-example_merged.elf",
-        "-C", "core_clk.mul=200000000",
-        "-C", "mps3_board.visualisation.disable-visualisation=1",
-        "-C", "mps3_board.telnetterminal0.start_telnet=0",
-        "-C", "mps3_board.uart0.out_file=-",
-        "-C", "mps3_board.uart0.unbuffered_output=1",
-        "-C", "mps3_board.uart0.shutdown_on_eot=1",
-        "-C", "cpu0.semihosting-enable=1",
-        "-C", "mps3_board.smsc_91c111.enabled=1",
-        "-C", "mps3_board.hostbridge.userNetworking=1",
-        "-C", "mps3_board.DISABLE_GATING=1",
-        "-V", f"{vsi_script_path}",
+        "-a",
+        f"{build_path}/Projects/aws-iot-example/aws-iot-example_merged.elf",
+        "-C",
+        "core_clk.mul=200000000",
+        "-C",
+        "mps3_board.visualisation.disable-visualisation=1",
+        "-C",
+        "mps3_board.telnetterminal0.start_telnet=0",
+        "-C",
+        "mps3_board.uart0.out_file=-",
+        "-C",
+        "mps3_board.uart0.unbuffered_output=1",
+        "-C",
+        "mps3_board.uart0.shutdown_on_eot=1",
+        "-C",
+        "cpu0.semihosting-enable=1",
+        "-C",
+        "mps3_board.smsc_91c111.enabled=1",
+        "-C",
+        "mps3_board.hostbridge.userNetworking=1",
+        "-C",
+        "mps3_board.DISABLE_GATING=1",
+        "-V",
+        f"{vsi_script_path}",
     ]
 
     cmdline.extend(fvp_options)
