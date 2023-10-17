@@ -57,4 +57,3 @@ target_elf_to_bin(provisioning_data provisioning_data)
 add_custom_target(provisioning_data_bin ALL
     SOURCES provisioning_data.bin
 )
-

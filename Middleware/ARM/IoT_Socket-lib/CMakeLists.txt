@@ -8,4 +8,3 @@ target_include_directories(iot-socket-api
     INTERFACE
         IoT_Socket/include
 )
-
