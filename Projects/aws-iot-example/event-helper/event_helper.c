@@ -58,5 +58,5 @@ bool xIsMqttAgentConnected( void )
 {
     EventBits_t uxEvents = xEventGroupGetBits( xSystemEvents );
 
-    return( ( bool ) ( uxEvents & EVENT_MASK_MQTT_CONNECTED ) );
+    return( ( uxEvents & EVENT_MASK_MQTT_CONNECTED ) == 0 ? false : true );
 }

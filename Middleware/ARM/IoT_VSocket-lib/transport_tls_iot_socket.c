@@ -37,7 +37,7 @@ TransportStatus_t Transport_Connect( NetworkContext_t * pNetworkContext,
                                      uint32_t recvTimeoutMs )
 {
     TransportStatus_t status = TRANSPORT_STATUS_SUCCESS;
-    int32_t socketStatus = 0;
+    int32_t socketStatus;
     uint8_t ipAddr[ 4 ];
     uint32_t ipAddrLen;
     TLSHelperParams_t tlsHelperParams = { 0 };
@@ -257,7 +257,6 @@ static int Send_Cb( void * pvCallerContext,
 TransportStatus_t Transport_Disconnect( NetworkContext_t * pNetworkContext )
 {
     TransportStatus_t status = TRANSPORT_STATUS_SUCCESS;
-    int32_t socketStatus;
 
     if( pNetworkContext == NULL )
     {
@@ -265,6 +264,7 @@ TransportStatus_t Transport_Disconnect( NetworkContext_t * pNetworkContext )
     }
     else
     {
+        int32_t socketStatus;
         do
         {
             socketStatus = iotSocketClose( pNetworkContext->socket );
