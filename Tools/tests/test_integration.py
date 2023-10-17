@@ -6,9 +6,9 @@ from pytest import fixture
 from aws_test_util import Flags, create_aws_resources, cleanup_aws_resources
 import re
 
-ignore_tests = {
-    "Full_OTA_PAL, otaPal_CloseFile_ValidSignature": "Test cannot succeed as the filename is hardcoded in test"
-}
+Cases = "Full_OTA_PAL, otaPal_CloseFile_ValidSignature"
+Output = "Test cannot succeed as the filename is hardcoded in test"
+ignore_tests = {Cases: Output}
 
 
 @fixture(scope="function")
@@ -25,13 +25,12 @@ def aws_resources(build_path, credentials_path):
 def test_integration(aws_resources, fvp):
     end_string = "RunQualificationTest returned"
 
-    index = 0
     start = timer()
     current_time = timer()
 
-    regex = re.compile("(\d+) Tests (\d+) Failures (\d+) Ignored")
-    regex_test_name = re.compile("TEST\((.*)\)")
-    regex_fail = re.compile(":FAIL:")
+    regex = re.compile(r"(\d+) Tests (\d+) Failures (\d+) Ignored")
+    regex_test_name = re.compile(r"TEST\((.*)\)")
+    regex_fail = re.compile(r":FAIL:")
     current_test = ""
 
     tests = 0
