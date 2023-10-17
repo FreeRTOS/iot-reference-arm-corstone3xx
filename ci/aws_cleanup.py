@@ -123,9 +123,12 @@ def process_things(nextToken: str) -> str:
         thing_name: str = thing["thingName"]
         if thing_name.startswith(THING_NAME_PREFIX):
             try:
+                ota_principal = (
+                    f"arn:aws:iot:{AWS_REGION}:{AWS_ACCOUNT}:cert/{OTA_CERT_ID}"
+                )
                 iot.detach_thing_principal(
                     thingName=thing_name,
-                    principal=f"arn:aws:iot:{AWS_REGION}:{AWS_ACCOUNT}:cert/{OTA_CERT_ID}",
+                    principal=ota_principal,
                 )
                 iot.delete_thing(thingName=thing_name)
             except Exception as ex:

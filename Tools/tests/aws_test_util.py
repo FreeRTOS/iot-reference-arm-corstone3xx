@@ -96,7 +96,8 @@ def wait_for_status(id, action):
         res = None
         try:
             res = iot.get_ota_update(otaUpdateId=id)
-        except:
+        except Exception as e:
+            print(e)
             break
         else:
             status = res["otaUpdateInfo"]["otaUpdateStatus"]
@@ -137,9 +138,12 @@ def create_aws_resources(flags: Flags):
 
         # Create test thing with policy attached.
         flags.thing = iot.create_thing(thingName=flags.OTA_THING_NAME)["thingArn"]
+        ota_principal = (
+            f"arn:aws:iot:{AWS_REGION}:{flags.AWS_ACCOUNT}:cert/{OTA_CERT_ID}"
+        )
         iot.attach_thing_principal(
             thingName=flags.OTA_THING_NAME,
-            principal=f"arn:aws:iot:{AWS_REGION}:{flags.AWS_ACCOUNT}:cert/{OTA_CERT_ID}",
+            principal=ota_principal,
         )
         print("Created OTA thing", flags.OTA_THING_NAME)
 
@@ -174,10 +178,13 @@ def cleanup_aws_resources(flags: Flags):
             print("Deleted update", flags.update, file=sys.stderr)
             flags.update = None
     if flags.thing:
+        ota_principal = (
+            f"arn:aws:iot:{AWS_REGION}:{flags.AWS_ACCOUNT}:cert/{OTA_CERT_ID}"
+        )
         try:
             iot.detach_thing_principal(
                 thingName=flags.OTA_THING_NAME,
-                principal=f"arn:aws:iot:{AWS_REGION}:{flags.AWS_ACCOUNT}:cert/{OTA_CERT_ID}",
+                principal=ota_principal,
             )
             iot.delete_thing(thingName=flags.OTA_THING_NAME)
         except Exception as ex:
