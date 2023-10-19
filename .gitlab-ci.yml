@@ -46,11 +46,11 @@ workflow:
     - python -m pip install pyelftools
     - |
       if [ $TARGET == "corstone300" ];then
-        AVH=/opt/VHT/VHT_Corstone_SSE-300_Ethos-U55
+        FVP_BIN=FVP_Corstone_SSE-300_Ethos-U55
       fi
     - |
       if [ $TARGET == "corstone310" ];then
-        AVH=/opt/VHT/VHT_Corstone_SSE-310
+        FVP_BIN=FVP_Corstone_SSE-310
       fi
   parallel:
     matrix:
@@ -59,7 +59,7 @@ workflow:
   variables:
     PYTHONUNBUFFERED: 1
 
-# The test job extends .basejob. It add rules to map targets to AVH binaries,
+# The test job extends .basejob. It add rules to map targets to FVP binaries,
 # require the application to be built and retrieve the artifacts.
 .test_job:
   stage: test
@@ -94,7 +94,7 @@ test-ota-aws:
   extends: .test_job
   script:
     - tar xf ${TARGET}_${TOOLCHAIN}_build.tar.gz
-    - pytest -s Tools/tests/test_ota.py --build-path "build" --avh $AVH --credentials-path "Config/aws_configs"
+    - pytest -s Tools/tests/test_ota.py --build-path "build" --fvp $FVP_BIN --credentials-path "Config/aws_configs"
 
 integration-tests:
   stage: test
@@ -112,7 +112,7 @@ integration-tests:
     - go run echo_server.go&
     - popd
     - sleep 1
-    - pytest -s Tools/tests/test_integration.py --build-path "build" --avh $AVH --credentials-path "Config/aws_configs"
+    - pytest -s Tools/tests/test_integration.py --build-path "build" --fvp $FVP_BIN --credentials-path "Config/aws_configs"
 
 aws-cleanup:
   stage: cleanup
