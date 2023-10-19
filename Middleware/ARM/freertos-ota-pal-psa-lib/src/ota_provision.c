@@ -6,20 +6,22 @@
 /* Key provisioning include. */
 #include "ota_provision.h"
 
-/* This is the public key which is derivated from ./bl2/ext/mcuboot/root-rsa-2048_1.pem.
+/* This is the public key which is derivated from ./bl2/ext/mcuboot/root-RSA-3072_1.pem.
  * If you used a different key to sign the image, then please replace the values here
- * with your public key. Also please note that the OTA service only support RSA2048(RSA3072
- * is not supported). */
+ * with your public key.*/
+
 static const char cOTARSAPublicKey[] =
-	"-----BEGIN PUBLIC KEY-----\n"
-	"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArNJ0kz5f56/yyGzoWFFj\n"
-	"dw5S/ljVu6XjnIrNFAqJxhWuSQSfXz0riRIfPn8F/AuZJmNelu8zvIwnaE1GjWYz\n"
-	"mTs4ERvjrBgHlUiHsqtPLQ4SURt/M7p4sdX6f79xS+RfZ1dn1au7ZAYXPYHr2MH5\n"
-	"elfTKVwQ/6fTOlg/JYrFhHuXJ6XkkOffHDPmfK9od14fCW7dkmBOrHOEsPe2AsLO\n"
-	"n6+tsrFXzPkGHWolL3Iqff4N7bjClYhB8kWobmqF7q76inn6/n5ASUPsLI6Ogn7i\n"
-	"+A/y6X2jf6wjvQpC6hj7cqCaJAHIJ4xWJJOC3yMZlnPyEcMF5qW4C+BzzgebV+aO\n"
-	"+wIDAQAB\n"
-	"-----END PUBLIC KEY-----";
+    "-----BEGIN PUBLIC KEY-----\n"
+    "MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAv7ewn+jI0f4WHVOHl3kc\n"
+    "FceZFmzKuC3Kwg1i+euP6ToYQ0fXu9VivOMzY6ejqFzzI3j9LQchH7lUcCipCNpQ\n"
+    "fp6OzGhOf0gN6ifoxu+tX51GSrxpmjBfO8FSkvi8ddQ8J3BAAKYuKH9Z5WBDEdwx\n"
+    "CX3PL0E/tlIao0kW8rWznDz7XiwfIoa9rr42Ur3E8FhpNqeAPoGzVJjkXZXtIfC6\n"
+    "riH7xBmHVdErTwDYQVjL26maU+lsZ8t8XfaRBnVS8sB+sWtdMEBAL9gelTwFl3/w\n"
+    "BPBOLNU5DpQ9fAMIHQkI8o1EDc+zlj1aduj27pNk6FfR4vULGGlv6eE9+IlJKOav\n"
+    "uKjGQlUtwduMXbJtf/4m6nXZ/R/cIjukG6et63HfvbQ30eu+CBAceIQcmnXEreXv\n"
+    "cxesaXi81jeMDBQhBke9+AqsGQmdDR1y4T4adOqG2VxKzczGlKf+2guHEbtr8Drj\n"
+    "T4JPseSkzbxwPJ2cSfnPKG242m99OFdVQypzjbYY/XCnAgMBAAE=\n"
+    "-----END PUBLIC KEY-----";
 
 /* This function can be found in libraries/3rdparty/mbedtls_utils/mbedtls_utils.c. */
 extern int convert_pem_to_der( const unsigned char * pucInput,
@@ -29,8 +31,8 @@ extern int convert_pem_to_der( const unsigned char * pucInput,
 
 int ota_privision_code_signing_key(psa_key_handle_t * key_handle)
 {
-    uint8_t public_key_der[310];
-    size_t xLength = 310;
+    uint8_t public_key_der[512];
+    size_t xLength = 512;
     int result;
     psa_key_handle_t key_handle_tmp = 0;
     psa_status_t status;
@@ -48,7 +50,7 @@ int ota_privision_code_signing_key(psa_key_handle_t * key_handle)
     psa_set_key_usage_flags( &attributes, PSA_KEY_USAGE_VERIFY_HASH );
     psa_set_key_algorithm( &attributes, PSA_ALG_RSA_PSS_ANY_SALT( PSA_ALG_SHA_256 ) );
     psa_set_key_type( &attributes, PSA_KEY_TYPE_RSA_PUBLIC_KEY );
-    psa_set_key_bits(&attributes, 2048);
+    psa_set_key_bits(&attributes, 3072);
     status = psa_import_key(&attributes, ( const uint8_t *)public_key_der, xLength, &key_handle_tmp );
     if( status == PSA_SUCCESS )
     {
