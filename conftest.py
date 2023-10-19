@@ -11,9 +11,9 @@ def pytest_addoption(parser):
     parser.addoption("--build-path", action="store", default="build")
     parser.addoption("--credentials-path", action="store", default="credentials")
     parser.addoption(
-        "--avh", action="store", default="/opt/VHT/VHT_Corstone_SSE-300_Ethos-U55"
+        "--fvp", action="store", default="FVP_Corstone_SSE-310"
     )
-    parser.addoption("--avh-options", action="store", default="")
+    parser.addoption("--fvp-options", action="store", default="")
 
 
 @pytest.fixture()
@@ -30,7 +30,7 @@ def credentials_path(pytestconfig):
 
 @pytest.fixture
 def fvp_path(pytestconfig):
-    yield pytestconfig.getoption("--avh")
+    yield pytestconfig.getoption("--fvp")
 
 
 @pytest.fixture
@@ -40,7 +40,7 @@ def vsi_script_path():
 
 @pytest.fixture
 def fvp_options(pytestconfig):
-    raw_options = pytestconfig.getoption("--avh-options")
+    raw_options = pytestconfig.getoption("--fvp-options")
 
     if raw_options == "":
         return []
@@ -85,8 +85,6 @@ def fvp(fvp_path, build_path, vsi_script_path, fvp_options):
         "mps3_board.hostbridge.userNetworking=1",
         "-C",
         "mps3_board.DISABLE_GATING=1",
-        "-V",
-        f"{vsi_script_path}",
     ]
 
     cmdline.extend(fvp_options)
