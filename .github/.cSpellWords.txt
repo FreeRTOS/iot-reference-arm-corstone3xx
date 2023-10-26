@@ -37,6 +37,7 @@ ECJPAKE
 ecdh
 ECDH
 ECKEY
+endpointid
 fsanitize
 FVPs
 havege
