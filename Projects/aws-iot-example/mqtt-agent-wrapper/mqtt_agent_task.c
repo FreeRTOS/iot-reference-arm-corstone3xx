@@ -281,9 +281,6 @@ static UBaseType_t prvGetRandomNumber( void )
 static BaseType_t prvSocketConnect( NetworkContext_t * pxNetworkContext )
 {
     BaseType_t xConnected = pdFAIL;
-    BackoffAlgorithmStatus_t xBackoffAlgStatus = BackoffAlgorithmSuccess;
-    BackoffAlgorithmContext_t xReconnectParams = { 0 };
-    uint16_t usNextRetryBackOff = 0U;
 
     TransportStatus_t xNetworkStatus = TRANSPORT_STATUS_CONNECT_FAILURE;
     TLSParams_t xTLSParams = { 0 };
@@ -361,7 +358,6 @@ static void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
                                         MQTTPublishInfo_t * pxPublishInfo )
 {
     bool xPublishHandled = false;
-    char cOriginalChar, * pcLocation;
 
     ( void ) packetId;
 
@@ -375,8 +371,8 @@ static void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
     {
         /* Ensure the topic string is terminated for printing.  This will over-
          * write the message ID, which is restored afterwards. */
-        pcLocation = ( char * ) &( pxPublishInfo->pTopicName[ pxPublishInfo->topicNameLength ] );
-        cOriginalChar = *pcLocation;
+        char * pcLocation = ( char * ) &( pxPublishInfo->pTopicName[ pxPublishInfo->topicNameLength ] );
+        char cOriginalChar = *pcLocation;
         *pcLocation = 0x00;
         LogWarn( ( "Received an unsolicited publish from topic %s", pxPublishInfo->pTopicName ) );
         *pcLocation = cOriginalChar;
@@ -386,13 +382,14 @@ static void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
 static void prvReSubscriptionCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
                                               MQTTAgentReturnInfo_t * pxReturnInfo )
 {
-    size_t xIndex = 0;
     MQTTAgentSubscribeArgs_t * pxSubscribeArgs = ( MQTTAgentSubscribeArgs_t * ) pxCommandContext;
 
     /* If the return code is success, no further action is required as all the topic filters
      * are already part of the subscription list. */
     if( pxReturnInfo->returnCode != MQTTSuccess )
     {
+        size_t xIndex;
+
         /* Check through each of the suback codes and determine if there are any failures. */
         for( xIndex = 0; xIndex < pxSubscribeArgs->numSubscriptions; xIndex++ )
         {
@@ -632,9 +629,9 @@ static void prvDisconnectFromMQTTBroker( void )
 
 static void prvMQTTAgentTask( void * pParam )
 {
-    BaseType_t xResult = pdFAIL;
+    BaseType_t xResult;
     MQTTStatus_t xMQTTStatus = MQTTSuccess;
-    BackoffAlgorithmStatus_t xBackoffAlgStatus = BackoffAlgorithmSuccess;
+    BackoffAlgorithmStatus_t xBackoffAlgStatus;
     BackoffAlgorithmContext_t xReconnectParams = { 0 };
     uint16_t usNextRetryBackOff = 0U;
 

@@ -1,7 +1,7 @@
 /*
  * FreeRTOS V202012.00
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2023, Arm Limited and Contributors. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -132,7 +132,6 @@ static CK_RV prvProvisionPrivateECKey( CK_SESSION_HANDLE xSession,
     CK_FUNCTION_LIST_PTR pxFunctionList = NULL;
     CK_BYTE * pxD;               /* Private value D. */
     CK_BYTE * pxEcParams = NULL; /* DER-encoding of an ANSI X9.62 Parameters value */
-    int lMbedResult = 0;
     CK_BBOOL xTrue = CK_TRUE;
     CK_KEY_TYPE xPrivateKeyType = CKK_EC;
     CK_OBJECT_CLASS xPrivateKeyClass = CKO_PRIVATE_KEY;
@@ -152,7 +151,7 @@ static CK_RV prvProvisionPrivateECKey( CK_SESSION_HANDLE xSession,
 
     if( xResult == CKR_OK )
     {
-        lMbedResult = mbedtls_mpi_write_binary( &( pxKeyPair->d ), pxD, EC_D_LENGTH );
+        int lMbedResult = mbedtls_mpi_write_binary( &( pxKeyPair->d ), pxD, EC_D_LENGTH );
 
         if( lMbedResult != 0 )
         {
@@ -219,7 +218,6 @@ static CK_RV prvProvisionPrivateRSAKey( CK_SESSION_HANDLE xSession,
 {
     CK_RV xResult = CKR_OK;
     CK_FUNCTION_LIST_PTR pxFunctionList = NULL;
-    int lMbedResult = 0;
     CK_KEY_TYPE xPrivateKeyType = CKK_RSA;
     mbedtls_rsa_context * xRsaContext = pxMbedPkContext->pk_ctx;
     CK_OBJECT_CLASS xPrivateKeyClass = CKO_PRIVATE_KEY;
@@ -239,12 +237,12 @@ static CK_RV prvProvisionPrivateRSAKey( CK_SESSION_HANDLE xSession,
     {
         memset( pxRsaParams, 0, sizeof( RsaParams_t ) );
 
-        lMbedResult = mbedtls_rsa_export_raw( xRsaContext,
-                                              pxRsaParams->modulus, MODULUS_LENGTH + 1,
-                                              pxRsaParams->prime1, PRIME_1_LENGTH + 1,
-                                              pxRsaParams->prime2, PRIME_2_LENGTH + 1,
-                                              pxRsaParams->d, D_LENGTH + 1,
-                                              pxRsaParams->e, E_LENGTH + 1 );
+        int lMbedResult = mbedtls_rsa_export_raw( xRsaContext,
+                                                  pxRsaParams->modulus, MODULUS_LENGTH + 1,
+                                                  pxRsaParams->prime1, PRIME_1_LENGTH + 1,
+                                                  pxRsaParams->prime2, PRIME_2_LENGTH + 1,
+                                                  pxRsaParams->d, D_LENGTH + 1,
+                                                  pxRsaParams->e, E_LENGTH + 1 );
 
         if( lMbedResult != 0 )
         {
@@ -318,7 +316,7 @@ CK_RV xProvisionPrivateKey( CK_SESSION_HANDLE xSession,
                             CK_OBJECT_HANDLE_PTR pxObjectHandle )
 {
     CK_RV xResult = CKR_OK;
-    mbedtls_pk_type_t xMbedKeyType = MBEDTLS_PK_NONE;
+    mbedtls_pk_type_t xMbedKeyType;
     int lMbedResult = 0;
     mbedtls_pk_context xMbedPkContext = { 0 };
 
@@ -404,12 +402,12 @@ CK_RV xProvisionPublicKey( CK_SESSION_HANDLE xSession,
         CK_BYTE xPublicExponent[] = { 0x01, 0x00, 0x01 };
         CK_BYTE xModulus[ MODULUS_LENGTH + 1 ] = { 0 };
 
-        lMbedResult = mbedtls_rsa_export_raw( ( mbedtls_rsa_context * ) xMbedPkContext.pk_ctx,
-                                              ( unsigned char * ) &xModulus, MODULUS_LENGTH + 1,
-                                              NULL, 0,
-                                              NULL, 0,
-                                              NULL, 0,
-                                              NULL, 0 );
+        ( void ) mbedtls_rsa_export_raw( ( mbedtls_rsa_context * ) xMbedPkContext.pk_ctx,
+                                         ( unsigned char * ) &xModulus, MODULUS_LENGTH + 1,
+                                         NULL, 0,
+                                         NULL, 0,
+                                         NULL, 0,
+                                         NULL, 0 );
         CK_ATTRIBUTE xPublicKeyTemplate[] =
         {
             { CKA_CLASS,           NULL /* &xClass */,         sizeof( CK_OBJECT_CLASS )                    },
@@ -444,12 +442,12 @@ CK_RV xProvisionPublicKey( CK_SESSION_HANDLE xSession,
         mbedtls_ecdsa_context * pxEcdsaContext = ( mbedtls_ecdsa_context * ) xMbedPkContext.pk_ctx;
 
         /* DER encoded EC point. Leave 2 bytes for the tag and length. */
-        lMbedResult = mbedtls_ecp_point_write_binary( &pxEcdsaContext->grp,
-                                                      &pxEcdsaContext->Q,
-                                                      MBEDTLS_ECP_PF_UNCOMPRESSED,
-                                                      &xLength,
-                                                      xEcPoint + 2,
-                                                      sizeof( xEcPoint ) - 2 );
+        ( void ) mbedtls_ecp_point_write_binary( &pxEcdsaContext->grp,
+                                                 &pxEcdsaContext->Q,
+                                                 MBEDTLS_ECP_PF_UNCOMPRESSED,
+                                                 &xLength,
+                                                 xEcPoint + 2,
+                                                 sizeof( xEcPoint ) - 2 );
         xEcPoint[ 0 ] = 0x04; /* Octet string. */
         xEcPoint[ 1 ] = ( CK_BYTE ) xLength;
 
@@ -541,7 +539,7 @@ CK_RV xProvisionGenerateKeyPairRSA( CK_SESSION_HANDLE xSession,
     xPrivateKeyTemplate[ 2 ].pValue = &xTrue;
     xPrivateKeyTemplate[ 3 ].pValue = &xTrue;
 
-    xResult = C_GetFunctionList( &pxFunctionList );
+    ( void ) C_GetFunctionList( &pxFunctionList );
 
     xResult = pxFunctionList->C_GenerateKeyPair( xSession,
                                                  &xMechanism,
@@ -603,7 +601,7 @@ CK_RV xProvisionGenerateKeyPairEC( CK_SESSION_HANDLE xSession,
     xPrivateKeyTemplate[ 2 ].pValue = &xTrue;
     xPrivateKeyTemplate[ 3 ].pValue = &xTrue;
 
-    xResult = C_GetFunctionList( &pxFunctionList );
+    ( void ) C_GetFunctionList( &pxFunctionList );
 
     xResult = pxFunctionList->C_GenerateKeyPair( xSession,
                                                  &xMechanism,
@@ -631,7 +629,6 @@ CK_RV xProvisionCertificate( CK_SESSION_HANDLE xSession,
     CK_FUNCTION_LIST_PTR pxFunctionList;
     CK_RV xResult;
     uint8_t * pucDerObject = NULL;
-    int32_t lConversionReturn = 0;
     size_t xDerLen = 0;
     CK_BBOOL xTokenStorage = CK_TRUE;
 
@@ -679,10 +676,10 @@ CK_RV xProvisionCertificate( CK_SESSION_HANDLE xSession,
 
         if( pucDerObject != NULL )
         {
-            lConversionReturn = convert_pem_to_der( xCertificateTemplate.xValue.pValue,
-                                                    xCertificateTemplate.xValue.ulValueLen,
-                                                    pucDerObject,
-                                                    &xDerLen );
+            int32_t lConversionReturn = convert_pem_to_der( xCertificateTemplate.xValue.pValue,
+                                                            xCertificateTemplate.xValue.ulValueLen,
+                                                            pucDerObject,
+                                                            &xDerLen );
 
             if( 0 != lConversionReturn )
             {
@@ -700,20 +697,14 @@ CK_RV xProvisionCertificate( CK_SESSION_HANDLE xSession,
         /* Set the template pointers to refer to the DER converted objects. */
         xCertificateTemplate.xValue.pValue = pucDerObject;
         xCertificateTemplate.xValue.ulValueLen = xDerLen;
-    }
 
-    /* Best effort clean-up of the existing object, if it exists. */
-    if( xResult == CKR_OK )
-    {
+        /* Best effort clean-up of the existing object, if it exists. */
         xDestroyProvidedObjects( xSession,
                                  &pucLabel,
                                  &xCertificateClass,
                                  1 );
-    }
 
-    /* Create an object using the encoded client certificate. */
-    if( xResult == CKR_OK )
-    {
+        /* Create an object using the encoded client certificate. */
         configPRINTF( ( "Write certificate...\n" ) );
 
         xResult = pxFunctionList->C_CreateObject( xSession,
@@ -734,21 +725,20 @@ CK_RV xProvisionCertificate( CK_SESSION_HANDLE xSession,
 
 /* Delete the specified crypto object from storage. */
 CK_RV xDestroyProvidedObjects( CK_SESSION_HANDLE xSession,
-                               CK_BYTE_PTR * ppxPkcsLabels,
+                               const CK_BYTE_PTR * ppxPkcsLabels,
                                CK_OBJECT_CLASS * xClass,
                                CK_ULONG ulCount )
 {
     CK_RV xResult;
     CK_FUNCTION_LIST_PTR pxFunctionList;
     CK_OBJECT_HANDLE xObjectHandle;
-    CK_BYTE * pxLabel;
     CK_ULONG uiIndex = 0;
 
     xResult = C_GetFunctionList( &pxFunctionList );
 
     for( uiIndex = 0; uiIndex < ulCount; uiIndex++ )
     {
-        pxLabel = ppxPkcsLabels[ uiIndex ];
+        CK_BYTE * pxLabel = ppxPkcsLabels[ uiIndex ];
 
         xResult = xFindObjectWithLabelAndClass( xSession,
                                                 ( char * ) pxLabel,
@@ -827,13 +817,6 @@ static CK_RV prvExportPublicKey( CK_SESSION_HANDLE xSession,
     CK_FUNCTION_LIST_PTR pxFunctionList;
     CK_KEY_TYPE xKeyType = 0;
     CK_ATTRIBUTE xTemplate = { 0 };
-    uint8_t pucEcP256AsnAndOid[] =
-    {
-        0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2a, 0x86,
-        0x48, 0xce, 0x3d, 0x02, 0x01, 0x06, 0x08, 0x2a,
-        0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, 0x03,
-        0x42, 0x00
-    };
     uint8_t pucUnusedKeyTag[] = { 0x04, 0x41 };
 
     /* This variable is used only for its size. This gets rid of compiler warnings. */
@@ -865,6 +848,13 @@ static CK_RV prvExportPublicKey( CK_SESSION_HANDLE xSession,
                                                        xPublicKeyHandle,
                                                        &xTemplate,
                                                        1 );
+        uint8_t pucEcP256AsnAndOid[] =
+        {
+            0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2a, 0x86,
+            0x48, 0xce, 0x3d, 0x02, 0x01, 0x06, 0x08, 0x2a,
+            0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, 0x03,
+            0x42, 0x00
+        };
 
         /* Allocate a buffer large enough for the full, encoded public key. */
         if( CKR_OK == xResult )
@@ -921,7 +911,6 @@ static CK_RV prvGetProvisionedState( CK_SESSION_HANDLE xSession,
     CK_SLOT_ID_PTR pxSlotId = NULL;
     CK_ULONG ulSlotCount = 0;
     CK_TOKEN_INFO xTokenInfo = { 0 };
-    unsigned int i = 0;
 
     xResult = C_GetFunctionList( &pxFunctionList );
 
@@ -978,6 +967,8 @@ static CK_RV prvGetProvisionedState( CK_SESSION_HANDLE xSession,
 
     if( ( CKR_OK == xResult ) && ( '\0' != xTokenInfo.label[ 0 ] ) && ( ' ' != xTokenInfo.label[ 0 ] ) )
     {
+        unsigned int i = 0;
+
         /* PKCS #11 requires that token info fields are padded out with space
          * characters. However, a NULL terminated copy will be more useful to the
          * caller. */
@@ -1023,7 +1014,6 @@ static void prvWriteHexBytesToConsole( char * pcDescription,
     char pcByteRow[ 1 + ( BYTES_TO_DISPLAY_PER_ROW * 2 ) + ( BYTES_TO_DISPLAY_PER_ROW / 2 ) ];
     char * pcNextChar = pcByteRow;
     uint32_t ulIndex = 0;
-    uint8_t ucByteValue = 0;
 
     /* Write help text to the console. */
     configPRINTF( ( "%s, %d bytes:\r\n", pcDescription, ulDataLength ) );
@@ -1032,7 +1022,7 @@ static void prvWriteHexBytesToConsole( char * pcDescription,
     for( ; ulIndex < ulDataLength; ulIndex++ )
     {
         /* Convert one byte to ASCII hex. */
-        ucByteValue = *( pucData + ulIndex );
+        uint8_t ucByteValue = *( pucData + ulIndex );
         snprintf( pcNextChar,
                   sizeof( pcByteRow ) - ( pcNextChar - pcByteRow ),
                   "%02x",
@@ -1163,8 +1153,8 @@ CK_RV xProvisionDevice( CK_SESSION_HANDLE xSession,
      * available. */
     if( ( xResult == CKR_OK ) && ( CK_FALSE == xImportedPrivateKey ) )
     {
-        xResult = prvGetProvisionedState( xSession,
-                                          &xProvisionedState );
+        ( void ) prvGetProvisionedState( xSession,
+                                         &xProvisionedState );
 
         if( ( CK_INVALID_HANDLE == xProvisionedState.xPrivateKey ) ||
             ( CK_INVALID_HANDLE == xProvisionedState.xPublicKey ) ||

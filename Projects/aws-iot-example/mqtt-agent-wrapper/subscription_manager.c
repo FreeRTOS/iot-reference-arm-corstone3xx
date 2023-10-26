@@ -1,6 +1,8 @@
 /*
  * FreeRTOS V202212.00
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright 2023 Arm Limited and/or its affiliates
+ * <open-source-office@arm.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -64,8 +66,6 @@ bool addSubscription( const char * pcTopicFilterString,
                       IncomingPubCallback_t pxIncomingPublishCallback,
                       void * pvIncomingPublishCallbackContext )
 {
-    int32_t lIndex = 0;
-    size_t xAvailableIndex = SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS;
     bool xReturnStatus = false;
 
     if( ( pcTopicFilterString == NULL ) ||
@@ -80,6 +80,9 @@ bool addSubscription( const char * pcTopicFilterString,
     }
     else
     {
+        int32_t lIndex;
+        size_t xAvailableIndex = SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS;
+
         /* Start at end of array, so that we will insert at the first available index.
          * Scans backwards to find duplicates. */
         for( lIndex = ( int32_t ) SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS - 1; lIndex >= 0; lIndex-- )
@@ -121,8 +124,6 @@ bool addSubscription( const char * pcTopicFilterString,
 void removeSubscription( const char * pcTopicFilterString,
                          uint16_t usTopicFilterLength )
 {
-    int32_t lIndex = 0;
-
     if( ( pcTopicFilterString == NULL ) ||
         ( usTopicFilterLength == 0U ) )
     {
@@ -133,6 +134,8 @@ void removeSubscription( const char * pcTopicFilterString,
     }
     else
     {
+        int32_t lIndex;
+
         for( lIndex = 0; lIndex < SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS; lIndex++ )
         {
             if( xGlobalSubscriptionList[ lIndex ].usFilterStringLength == usTopicFilterLength )
@@ -150,7 +153,6 @@ void removeSubscription( const char * pcTopicFilterString,
 
 bool handleIncomingPublishes( MQTTPublishInfo_t * pxPublishInfo )
 {
-    int32_t lIndex = 0;
     bool isMatched = false, publishHandled = false;
 
     if( pxPublishInfo == NULL )
@@ -160,6 +162,8 @@ bool handleIncomingPublishes( MQTTPublishInfo_t * pxPublishInfo )
     }
     else
     {
+        int32_t lIndex;
+
         for( lIndex = 0; lIndex < SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS; lIndex++ )
         {
             if( xGlobalSubscriptionList[ lIndex ].usFilterStringLength > 0 )
