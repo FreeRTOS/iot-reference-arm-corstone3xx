@@ -1,6 +1,8 @@
 /*
  * FreeRTOS V202104.00
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright 2023 Arm Limited and/or its affiliates
+ * <open-source-office@arm.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -83,14 +85,12 @@ static volatile uint8_t initStatus = QUEUE_NOT_INITIALIZED;
 
 void Agent_InitializePool( void )
 {
-    size_t i;
     MQTTAgentCommand_t * pCommand;
-    static uint8_t staticQueueStorageArea[ MQTT_COMMAND_CONTEXTS_POOL_SIZE * sizeof( MQTTAgentCommand_t * ) ];
     static StaticQueue_t staticQueueStructure;
-    bool commandAdded = false;
 
     if( initStatus == QUEUE_NOT_INITIALIZED )
     {
+        static uint8_t staticQueueStorageArea[ MQTT_COMMAND_CONTEXTS_POOL_SIZE * sizeof( MQTTAgentCommand_t * ) ];
         memset( ( void * ) commandStructurePool, 0x00, sizeof( commandStructurePool ) );
         commandStructMessageCtx.queue = xQueueCreateStatic( MQTT_COMMAND_CONTEXTS_POOL_SIZE,
                                                             sizeof( MQTTAgentCommand_t * ),
@@ -98,13 +98,15 @@ void Agent_InitializePool( void )
                                                             &staticQueueStructure );
         configASSERT( commandStructMessageCtx.queue );
 
+        size_t i;
+
         /* Populate the queue. */
         for( i = 0; i < MQTT_COMMAND_CONTEXTS_POOL_SIZE; i++ )
         {
             /* Store the address as a variable. */
             pCommand = &commandStructurePool[ i ];
             /* Send the pointer to the queue. */
-            commandAdded = Agent_MessageSend( &commandStructMessageCtx, &pCommand, 0U );
+            bool commandAdded = Agent_MessageSend( &commandStructMessageCtx, &pCommand, 0U );
             configASSERT( commandAdded );
         }
 

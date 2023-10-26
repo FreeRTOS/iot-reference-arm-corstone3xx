@@ -1,5 +1,7 @@
 /*
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright 2023 Arm Limited and/or its affiliates
+ * <open-source-office@arm.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -303,7 +305,7 @@ static void prvRegisterSubscribeCallback( const char * pTopicFilter,
                                           uint16_t topicFilterLength )
 {
     bool isMatch = false;
-    MQTTStatus_t mqttStatus = MQTTSuccess;
+    MQTTStatus_t mqttStatus;
     uint16_t usIndex = 0U;
     bool subscriptionAdded;
     size_t xTopicFilterLen;
@@ -363,11 +365,9 @@ static void prvRegisterSubscribeCallback( const char * pTopicFilter,
 static void prvSubscribeCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
                                          MQTTAgentReturnInfo_t * pxReturnInfo )
 {
-    MQTTAgentSubscribeArgs_t * pSubscribeArgs;
-
     if( pxReturnInfo->returnCode == MQTTSuccess )
     {
-        pSubscribeArgs = ( MQTTAgentSubscribeArgs_t * ) ( pxCommandContext->pArgs );
+        MQTTAgentSubscribeArgs_t * pSubscribeArgs = ( MQTTAgentSubscribeArgs_t * ) ( pxCommandContext->pArgs );
         prvRegisterSubscribeCallback( pSubscribeArgs->pSubscribeInfo->pTopicFilter, pSubscribeArgs->pSubscribeInfo->topicFilterLength );
     }
 
@@ -565,7 +565,7 @@ void vSimpleSubscribePublishTask( void * pvParameters )
     TickType_t xTicksToDelay;
     static char cPayloadBuf[ mqttexampleSTRING_BUFFER_LENGTH ];
     static char cOutTopicBuf[ mqttexampleOUTPUT_TOPIC_BUFFER_LENGTH ];
-    size_t xInTopicLength = 0UL, xOutTopicLength = 0UL, xPayloadLength = 0UL;
+    size_t xInTopicLength, xOutTopicLength, xPayloadLength;
     uint32_t ulPublishCount = 0U, ulSuccessCount = 0U, ulFailCount = 0U;
     BaseType_t xStatus = pdPASS;
     MQTTStatus_t xMQTTStatus;

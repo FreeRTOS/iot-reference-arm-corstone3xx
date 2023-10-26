@@ -434,11 +434,12 @@ static void prvOTAEventBufferFree( OtaEventData_t * const pxBuffer )
 
 static OtaEventData_t * prvOTAEventBufferGet( void )
 {
-    uint32_t ulIndex = 0;
     OtaEventData_t * pFreeBuffer = NULL;
 
     if( xSemaphoreTake( xBufferSemaphore, portMAX_DELAY ) == pdTRUE )
     {
+        uint32_t ulIndex;
+
         for( ulIndex = 0; ulIndex < otaconfigMAX_NUM_OTA_DATA_BUFFERS; ulIndex++ )
         {
             if( eventBuffer[ ulIndex ].bufferUsed == false )
@@ -490,7 +491,7 @@ static void otaAppCallback( OtaJobEvent_t event,
              * Activate the new firmware image immediately. Applications can choose to postpone
              * the activation to a later stage if needed.
              */
-            err = OTA_ActivateNewImage();
+            ( void ) OTA_ActivateNewImage();
 
             /**
              * Activation of the new image failed. This indicates an error that requires a follow
@@ -690,11 +691,9 @@ static void prvRegisterOTACallback( const char * pTopicFilter,
 static void prvMQTTSubscribeCompleteCallback( MQTTAgentCommandContext_t * pxCommandContext,
                                               MQTTAgentReturnInfo_t * pxReturnInfo )
 {
-    MQTTAgentSubscribeArgs_t * pSubscribeArgs;
-
     if( pxReturnInfo->returnCode == MQTTSuccess )
     {
-        pSubscribeArgs = ( MQTTAgentSubscribeArgs_t * ) ( pxCommandContext->pArgs );
+        MQTTAgentSubscribeArgs_t * pSubscribeArgs = ( MQTTAgentSubscribeArgs_t * ) ( pxCommandContext->pArgs );
         prvRegisterOTACallback( pSubscribeArgs->pSubscribeInfo->pTopicFilter, pSubscribeArgs->pSubscribeInfo->topicFilterLength );
     }
 
@@ -988,13 +987,12 @@ static BaseType_t prvSuspendOTA( void )
     /* OTA library return status. */
     OtaErr_t otaRet = OtaErrNone;
     BaseType_t status = pdPASS;
-    uint32_t suspendTimeout;
 
     otaRet = OTA_Suspend();
 
     if( otaRet == OtaErrNone )
     {
-        suspendTimeout = OTA_SUSPEND_TIMEOUT_MS;
+        uint32_t suspendTimeout = OTA_SUSPEND_TIMEOUT_MS;
 
         while( ( OTA_GetState() != OtaAgentStateSuspended ) && ( suspendTimeout > 0 ) )
         {
@@ -1023,13 +1021,12 @@ static BaseType_t prvResumeOTA( void )
     /* OTA library return status. */
     OtaErr_t otaRet = OtaErrNone;
     BaseType_t status = pdPASS;
-    uint32_t suspendTimeout;
 
     otaRet = OTA_Resume();
 
     if( otaRet == OtaErrNone )
     {
-        suspendTimeout = OTA_SUSPEND_TIMEOUT_MS;
+        uint32_t suspendTimeout = OTA_SUSPEND_TIMEOUT_MS;
 
         while( ( OTA_GetState() == OtaAgentStateSuspended ) && ( suspendTimeout > 0 ) )
         {
@@ -1058,9 +1055,6 @@ static BaseType_t prvRunOTADemo( void )
     /* Status indicating a successful demo or not. */
     BaseType_t xStatus = pdPASS;
 
-    /* OTA library return status. */
-    OtaErr_t otaRet = OtaErrNone;
-
     /* OTA event message used for sending event to OTA Agent.*/
     OtaEventMsg_t eventMsg = { 0 };
 
@@ -1071,7 +1065,7 @@ static BaseType_t prvRunOTADemo( void )
     OtaAgentStatistics_t otaStatistics = { 0 };
 
     /* OTA Agent state returned from calling OTA_GetState.*/
-    OtaState_t state = OtaAgentStateStopped;
+    OtaState_t state;
 
     /* Set OTA Library interfaces.*/
     setOtaInterfaces( &otaInterfaces );
@@ -1083,6 +1077,9 @@ static BaseType_t prvRunOTADemo( void )
 
     if( xStatus == pdPASS )
     {
+        /* OTA library return status. */
+        OtaErr_t otaRet;
+
         if( ( otaRet = OTA_Init( &otaBuffer,
                                  &otaInterfaces,
                                  ( const uint8_t * ) ( democonfigCLIENT_IDENTIFIER ),
@@ -1125,12 +1122,8 @@ static BaseType_t prvRunOTADemo( void )
         /* Send start event to OTA Agent.*/
         eventMsg.eventId = OtaAgentEventStart;
         OTA_SignalEvent( &eventMsg );
-    }
 
-    /****************************** Loop and display OTA statistics ******************************/
-
-    if( xStatus == pdPASS )
-    {
+        /* Loop and display OTA statistics */
         while( ( state = OTA_GetState() ) != OtaAgentStateStopped )
         {
             /* Get OTA statistics for currently executing job. */
@@ -1190,10 +1183,6 @@ static BaseType_t prvRunOTADemo( void )
  */
 static void vOtaDemoTask( void * pvParam )
 {
-    /* Return error status. */
-    BaseType_t xReturnStatus = pdPASS;
-    MQTTStatus_t xMQTTStatus;
-
     ( void ) pvParam;
 
     if( GetImageVersionPSA( FWU_COMPONENT_ID_NONSECURE ) == 0 )
@@ -1214,25 +1203,20 @@ static void vOtaDemoTask( void * pvParam )
     if( xBufferSemaphore == NULL )
     {
         LogError( ( "Failed to initialize buffer semaphore." ) );
-        xReturnStatus = pdFAIL;
     }
-
-    /****************************** Start OTA Demo. ******************************/
-
-    if( xReturnStatus == pdPASS )
+    else
     {
+        /****************************** Start OTA Demo. ******************************/
+
         /* Start OTA demo. The function returns only if OTA completes successfully and a
          * shutdown of OTA is triggered for a manual restart of the device. */
         if( prvRunOTADemo() != pdPASS )
         {
-            xReturnStatus = pdFAIL;
+            LogError( ( "Failed to complete OTA successfully." ) );
         }
-    }
 
-    /* / ****************************** Cleanup ****************************** / */
+        /* / ****************************** Cleanup ****************************** / */
 
-    if( xBufferSemaphore != NULL )
-    {
         /* Cleanup semaphore created for buffer operations. */
         vSemaphoreDelete( xBufferSemaphore );
     }
