@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "app_config.h"
+#include "aws_clientcredential.h"
 #include "dev_mode_key_provisioning.h"
 
 #include "mqtt_agent_task.h"
@@ -60,6 +61,19 @@ extern BaseType_t xStartPubSubTasks( uint32_t ulNumPubsubTasks,
                                      UBaseType_t uxPriority );
 
 extern uint32_t tfm_ns_interface_init( void );
+
+static bool xAreAwsCredentialsValid( void )
+{
+    if( ( strcmp( clientcredentialMQTT_BROKER_ENDPOINT, "dummy.endpointid.amazonaws.com" ) == 0 ) ||
+        ( strcmp( clientcredentialIOT_THING_NAME, "dummy_thingname" ) == 0 ) )
+    {
+        printf( "[ERR] INVALID BROKER ENDPOINT AND/OR THING NAME.\r\n" );
+        printf( "[ERR] Set the right credentials in aws_clientcredential.h\r\n" );
+        return false;
+    }
+
+    return true;
+}
 
 void vAssertCalled( const char * pcFile,
                     unsigned long ulLine )
@@ -150,6 +164,11 @@ int main()
     int32_t status;
 
     bsp_serial_init();
+
+    if( xAreAwsCredentialsValid() != true )
+    {
+        return EXIT_FAILURE;
+    }
 
     /* Create logging task */
     xLoggingTaskInitialize( appCONFIG_LOGGING_TASK_STACK_SIZE,
