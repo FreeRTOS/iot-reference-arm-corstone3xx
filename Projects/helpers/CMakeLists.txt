@@ -4,3 +4,4 @@
 
 add_subdirectory(events)
 add_subdirectory(logging)
+add_subdirectory(provisioning)

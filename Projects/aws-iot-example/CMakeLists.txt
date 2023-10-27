@@ -86,7 +86,6 @@ include(SignTfmImage)
 
 add_subdirectory(configs)
 add_subdirectory(../helpers ${CMAKE_BINARY_DIR}/helpers)
-add_subdirectory(provisioning provisioning_data)
 
 # Add main application executable
 add_executable(aws-iot-example
@@ -98,7 +97,7 @@ add_executable(aws-iot-example
 target_include_directories(aws-iot-example
     PUBLIC
         freertos-integration-tests/include
-        provisioning
+        ../helpers/provisioning
 )
 
 # Trusted Firmware-M must be built before the application, because
@@ -158,7 +157,7 @@ iot_reference_arm_corstone3xx_tf_m_merge_images(
     ${NS_IMAGE_LOAD_ADDRESS}
     ${S_PROVISIONING_BUNDLE_LOAD_ADDRESS}
     ${NS_PROVISIONING_BUNDLE_LOAD_ADDRESS}
-    ${CMAKE_BINARY_DIR}/provisioning_data/provisioning_data.bin
+    ${CMAKE_BINARY_DIR}/helpers/provisioning/provisioning_data.bin
 )
 
 # Generate the AWS OTA update digest and signature
@@ -182,6 +181,8 @@ target_include_directories(freertos-libraries-integration-tests-config
         provisioning
         ${CMAKE_BINARY_DIR}/provisioning
         ${CMAKE_BINARY_DIR}/provisioning_data
+        ${CMAKE_BINARY_DIR}/helpers/provisioning
+        ../helpers/provisioning
 )
 target_link_libraries(freertos-libraries-integration-tests-config
     INTERFACE
@@ -205,7 +206,6 @@ add_executable(aws-iot-example-tests
 target_include_directories(aws-iot-example-tests
     PUBLIC
         freertos-integration-tests
-        provisioning
 )
 
 target_compile_definitions(aws-iot-example-tests
@@ -268,7 +268,7 @@ iot_reference_arm_corstone3xx_tf_m_merge_images(
     ${NS_IMAGE_LOAD_ADDRESS}
     ${S_PROVISIONING_BUNDLE_LOAD_ADDRESS}
     ${NS_PROVISIONING_BUNDLE_LOAD_ADDRESS}
-    ${CMAKE_BINARY_DIR}/provisioning_data/provisioning_data.bin
+    ${CMAKE_BINARY_DIR}/helpers/provisioning/provisioning_data.bin
 )
 
 # Generate the AWS OTA update digest and signature

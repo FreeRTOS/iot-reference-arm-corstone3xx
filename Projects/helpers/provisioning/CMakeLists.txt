@@ -10,13 +10,16 @@ if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
     string(REPLACE "-g3" "" CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
 endif()
 
-include(linkerscript_preprocess.cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
-add_executable(provisioning_data
-    provisioning_data.c
-)
-target_include_directories(provisioning_data PUBLIC
-    ${CMAKE_CURRENT_BINARY_DIR}
+include(linkerscript_preprocess)
+
+add_executable(provisioning_data provisioning_data.c)
+target_include_directories(provisioning_data
+    PUBLIC
+        ${CMAKE_CURRENT_BINARY_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/inc
 )
 
 target_link_libraries(provisioning_data PRIVATE
@@ -29,7 +32,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/aws_clientcredential_keys.
     DEPENDS ${AWS_CLIENT_PRIVATE_KEY_PEM_PATH}
     DEPENDS ${AWS_CLIENT_CERTIFICATE_PEM_PATH}
     COMMAND
-        ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/generate_credentials_header.py
+        ${Python3_EXECUTABLE} ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/Tools/scripts/generate_credentials_header.py
             ${CMAKE_CURRENT_BINARY_DIR}
             --path-to-client-private-key-pem ${AWS_CLIENT_PRIVATE_KEY_PEM_PATH}
             --path-to-client-certificate-pem ${AWS_CLIENT_CERTIFICATE_PEM_PATH}
@@ -50,9 +53,9 @@ if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
             "--specs=nosys.specs"
             "-nostartfiles"
     )
-    target_add_scatter_file(provisioning_data ${CMAKE_CURRENT_SOURCE_DIR}/provisioning_data.ld)
+    target_add_scatter_file(provisioning_data ${CMAKE_CURRENT_LIST_DIR}/provisioning_data.ld)
 else()
-    target_add_scatter_file(provisioning_data ${CMAKE_CURRENT_SOURCE_DIR}/provisioning_data.sct)
+    target_add_scatter_file(provisioning_data ${CMAKE_CURRENT_LIST_DIR}/provisioning_data.sct)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/Tools/cmake)
