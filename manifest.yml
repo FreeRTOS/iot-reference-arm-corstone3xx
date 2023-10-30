@@ -108,7 +108,7 @@ dependencies:
       type: "git"
       url: "https://github.com/intel/tinycbor"
       path: "Middleware/AWS/tinycbor"
-  - name: "toolchains"
+  - name: "toolchain"
     license: "Apache-2.0"
     version: "v2022.09"
     repository:
