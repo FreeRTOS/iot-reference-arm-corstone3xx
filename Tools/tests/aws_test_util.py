@@ -3,14 +3,12 @@
 # SPDX-License-Identifier: MIT
 
 import os
+from pathlib import Path
 import sys
 import time
 import traceback as tb
 
 import boto3
-
-SCRIPT_NAME = list(filter(lambda x: x.endswith(".py"), sys.argv))[0]
-SCRIPT_DIR = os.path.dirname(SCRIPT_NAME)
 
 AWS_REGION = os.getenv("AWS_REGION")
 OTA_ROLE_NAME = os.getenv("IOT_OTA_ROLE_NAME")
@@ -38,15 +36,13 @@ def read_whole_file(path, mode="r"):
 class Flags:
     def __init__(self, build_artefacts_path, credentials_dir, signed_update_bin_name):
         self.BUILD_ARTEFACTS_PATH = build_artefacts_path
-        self.TEST_ID = read_whole_file(
-            os.path.join(credentials_dir, "test-id.txt")
-        ).strip()
+        self.TEST_ID = read_whole_file(Path(credentials_dir) / "test-id.txt").strip()
         self.AWS_ACCOUNT = boto3.client("sts").get_caller_identity().get("Account")
         self.OTA_THING_NAME = "iotmsw-ci-test-thing-" + self.TEST_ID
         self.OTA_S3_BUCKET = "iotmsw-ci-test-bucket-" + self.TEST_ID
         self.OTA_POLICY_NAME = "iotmsw-ci-test-policy-" + self.TEST_ID
         self.OTA_BINARY = signed_update_bin_name
-        self.OTA_BINARY_PATH = os.path.join(self.BUILD_ARTEFACTS_PATH, self.OTA_BINARY)
+        self.OTA_BINARY_PATH = Path(self.BUILD_ARTEFACTS_PATH) / self.OTA_BINARY
         self.OTA_ROLE_ARN = f"arn:aws:iam::{self.AWS_ACCOUNT}:role/{OTA_ROLE_NAME}"
         self.OTA_UPDATE_PROTOCOLS = ["MQTT"]
         self.OTA_UPDATE_TARGET_SELECTION = "SNAPSHOT"
@@ -61,9 +57,9 @@ class Flags:
                         "signature": {
                             "inlineDocument": bytearray(
                                 read_whole_file(
-                                    os.path.join(
-                                        self.BUILD_ARTEFACTS_PATH,
-                                        "update-signature.txt",
+                                    (
+                                        Path(self.BUILD_ARTEFACTS_PATH)
+                                        / "update-signature.txt"
                                     )
                                 ).strip(),
                                 "utf-8",

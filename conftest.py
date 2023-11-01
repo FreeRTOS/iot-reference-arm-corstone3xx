@@ -3,6 +3,7 @@
 
 import pytest
 import os
+from pathlib import Path
 import subprocess
 from functools import reduce
 
@@ -21,14 +22,12 @@ def pytest_addoption(parser):
 
 @pytest.fixture()
 def build_artefacts_path(pytestconfig):
-    root = os.path.dirname(os.path.abspath(__file__))
-    yield os.path.join(root, pytestconfig.getoption("--build-artefacts-path"))
+    yield Path(__file__).parent / pytestconfig.getoption("--build-artefacts-path")
 
 
 @pytest.fixture
 def credentials_path(pytestconfig):
-    root = os.path.dirname(os.path.abspath(__file__))
-    yield os.path.join(root, pytestconfig.getoption("--credentials-path"))
+    yield Path(__file__).parent / pytestconfig.getoption("--credentials-path")
 
 
 @pytest.fixture
@@ -38,7 +37,7 @@ def fvp_path(pytestconfig):
 
 @pytest.fixture
 def vsi_script_path():
-    yield os.path.join(os.path.dirname(os.path.abspath(__file__)), "/lib/AVH/audio")
+    yield Path(__file__) / "lib/AVH/audio"
 
 
 @pytest.fixture
@@ -60,11 +59,10 @@ def fvp_options(pytestconfig):
 
 @pytest.fixture
 def merged_elf_name(pytestconfig):
-    root = os.path.dirname(os.path.abspath(__file__))
-    yield os.path.join(
-        root,
-        pytestconfig.getoption("--build-artefacts-path"),
-        pytestconfig.getoption("--merged-elf-name"),
+    yield (
+        Path(__file__).parent
+        / pytestconfig.getoption("--build-artefacts-path")
+        / pytestconfig.getoption("--merged-elf-name")
     )
 
 

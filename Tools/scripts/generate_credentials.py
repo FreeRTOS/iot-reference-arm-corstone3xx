@@ -6,7 +6,7 @@
 
 import argparse
 import datetime
-import os
+from pathlib import Path
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -19,7 +19,7 @@ def main(args):
         public_exponent=65537,
         key_size=2048,
     )
-    with open(os.path.join(args.private_key_out_path, "private_key.pem"), "wb") as f:
+    with open(Path(args.private_key_out_path).parent / "private_key.pem", "wb") as f:
         f.write(
             key.private_bytes(
                 encoding=serialization.Encoding.PEM,
@@ -58,7 +58,7 @@ def main(args):
         .sign(key, hashes.SHA256())
     )
 
-    with open(os.path.join(args.certificate_out_path, "certificate.pem"), "wb") as f:
+    with open(Path(args.certificate_out_path).parent / "certificate.pem", "wb") as f:
         f.write(cert.public_bytes(serialization.Encoding.PEM))
 
 
