@@ -143,11 +143,11 @@ done
 case "$1" in
     blinky)
         EXAMPLE="$1"
-        PATH_TO_SOURCE="$ROOT/Projects/blinky"
+        PATH_TO_SOURCE="$ROOT/applications/blinky"
         ;;
     aws-iot-example)
         EXAMPLE="$1"
-        PATH_TO_SOURCE="$ROOT/Projects/aws-iot-example"
+        PATH_TO_SOURCE="$ROOT/applications/aws-iot-example"
         ;;
     *)
         echo "Missing example <blinky,aws-iot-example>"

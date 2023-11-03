@@ -17,7 +17,7 @@ exclude: >
         components/security/trusted_firmware-m/library/|
         components/aws_iot/|
         components/connectivity/backoff_algorithm/|
-        Projects/helpers/logging/|
+        applications/helpers/logging/|
         components/freertos_kernel/|
         components/connectivity/freertos_plus_tcp/|
         components/tools/freertos_libraries_integration_tests/|

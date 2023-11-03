@@ -120,7 +120,7 @@ See [CONTRIBUTING](CONTRIBUTING.md) for more information.
 
 ## License
 
-Source code located in the *Projects* directory is
+Source code located in the *applications* directory is
 available under the terms of the MIT License. See the [LICENSE](./LICENSE) file
 for more details.
 
