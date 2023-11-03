@@ -3,4 +3,4 @@
 # SPDX-License-Identifier: MIT
 
 add_subdirectory(app_config)
-add_subdirectory(freertos-config)
+add_subdirectory(freertos_config)
