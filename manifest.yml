@@ -16,7 +16,7 @@ dependencies:
     repository:
       type: "git"
       url: "https://git.gitlab.arm.com/iot/open-iot-sdk/arm-corstone-platform-bsp.git"
-      path: "Bsp/library"
+      path: "bsp/library"
   - name: "trusted-firmware-m"
     license: "BSD-3-Clause"
     version: "TF-Mv2.0.0"

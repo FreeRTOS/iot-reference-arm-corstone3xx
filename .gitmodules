@@ -1,5 +1,5 @@
 [submodule "arm_corstone_platform_bsp"]
-	path = Bsp/library
+	path = bsp/library
 	url = https://git.gitlab.arm.com/iot/open-iot-sdk/arm-corstone-platform-bsp.git
 [submodule "backoff_algorithm"]
 	path = components/connectivity/backoff_algorithm/library
