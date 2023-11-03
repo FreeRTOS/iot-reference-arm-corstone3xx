@@ -169,7 +169,7 @@ repos:
         name: uncrustify
         description: Run 'uncrustify' C/C++ code formatter
         language: script
-        entry: Tools/run_uncrustify.sh
+        entry: tools/run_uncrustify.sh
         require_serial: true
 -   repo: local
     hooks:

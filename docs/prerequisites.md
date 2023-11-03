@@ -39,7 +39,7 @@ must be run on the console connected to the Arm Virtual Hardware Instance.
 
 **Note**
 
-The run example script `Tools/scripts/run.sh` assumes ecosystem FVP by default.
+The run example script `tools/scripts/run.sh` assumes ecosystem FVP by default.
 If you are using Arm virtual hardware using Amazon machine images then an
 additional argument `--fvp_type vht` must be passed to the run example script.
 

@@ -80,7 +80,7 @@ repos:
         name: uncrustify
         description: Run 'uncrustify' C/C++ code formatter
         language: script
-        entry: Tools/scripts/run_uncrustify.sh
+        entry: tools/scripts/run_uncrustify.sh
         require_serial: true
 -   repo: local
     hooks:
@@ -96,5 +96,5 @@ repos:
         name: dependencies-check
         description: Checks listed dependencies in manifest.yml
         language: script
-        entry: Tools/scripts/run_dependencies_check.sh
+        entry: tools/scripts/run_dependencies_check.sh
         require_serial: true

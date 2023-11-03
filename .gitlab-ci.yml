@@ -75,7 +75,7 @@ build-applications:
     - ./ci/generate_credentials.sh -f -p applications/${APP}/configs/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
-    - ./Tools/scripts/build.sh ${APP} --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
+    - ./tools/scripts/build.sh ${APP} --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
     - |
       if [ $APP == "aws-iot-example" ];then
         tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz \
@@ -102,7 +102,7 @@ test-applications-output:
   script:
     - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz
     - |
-      pytest -s Tools/tests/test_application_output.py \
+      pytest -s tools/tests/test_application_output.py \
       --build-artefacts-path "build" \
       --fvp $FVP_BIN \
       --merged-elf-name "${APP}_merged.elf" \
@@ -120,7 +120,7 @@ test-ota:
   script:
     - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz
     - |
-      pytest -s Tools/tests/test_ota.py \
+      pytest -s tools/tests/test_ota.py \
       --build-artefacts-path "build" \
       --fvp $FVP_BIN \
       --credentials-path "applications/${APP}/configs/aws_configs" \
@@ -145,13 +145,13 @@ integration-tests:
     - ./ci/generate_credentials.sh -f -p applications/${APP}/configs/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
-    - ./Tools/scripts/build.sh -q ${APP}
+    - ./tools/scripts/build.sh -q ${APP}
     - pushd components/tools/freertos_libraries_integration_tests/library/tools/echo_server
     - go run echo_server.go&
     - popd
     - sleep 1
     - |
-      pytest -s Tools/tests/test_integration.py \
+      pytest -s tools/tests/test_integration.py \
       --build-artefacts-path "build" \
       --fvp $FVP_BIN \
       --credentials-path "applications/${APP}/configs/aws_configs" \

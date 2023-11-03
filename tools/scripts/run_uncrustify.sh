@@ -21,4 +21,4 @@ do
 done
 exclude_pattern+="./build"
 
-fdfind -E $exclude_pattern -e c -e h --exec uncrustify --no-backup --replace --if-changed -c Tools/uncrustify.cfg -l C
+fdfind -E $exclude_pattern -e c -e h --exec uncrustify --no-backup --replace --if-changed -c tools/uncrustify.cfg -l C

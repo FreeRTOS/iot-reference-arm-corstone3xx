@@ -100,11 +100,11 @@ via MQTT as well as enable an over-the-air update.
 ### Generating and registering your own device certificate
 AWS IoT Core authenticates device connections with the help of X.509 certificates. The steps below describes how to generate self-signed device certificate and then register it with AWS IoT Core.
 
-1. Run the ```./Tools/scripts/generate_credentials.py``` Python script, that's going to generate a private key
+1. Run the ```./tools/scripts/generate_credentials.py``` Python script, that's going to generate a private key
    and a certificate that's signed  with this key.
    * Optionally you can specify metadata for the certificate. Use the ```-h``` flag for the python script to see the available options.
   ```bash
-  python ./Tools/scripts/generate_credentials.py --certificate_valid_time <validity duration in days > \
+  python ./tools/scripts/generate_credentials.py --certificate_valid_time <validity duration in days > \
                                                 --certificate_country_name <Country Name (2 letter code)> \
                                                 --certificate_state_province_name <State or Province Name (full name)> \
                                                 --certificate_locality_name <Locality Name (eg, city)> \
@@ -211,14 +211,14 @@ The device certificate PEM and private key PEM will be set during the build conf
 To build the AWS FreeRTOS MQTT example, run the following command:
 
 ```bash
-./Tools/scripts/build.sh aws-iot-example --certificate_path <certificate pem's path> --private_key_path <private key pem's path>
+./tools/scripts/build.sh aws-iot-example --certificate_path <certificate pem's path> --private_key_path <private key pem's path>
 ```
-* The `certificate pem's path` and `private key pem's path` should be the downloaded key's and certificate's path if you chose the **Auto-generate a new certificate** during the Thing creation. If you chose **Skip creating a certificate at this time** then these paths should locate the generated credential files that were created by the `./Tools/scripts/generate_credentials.py` script in the previous step.
+* The `certificate pem's path` and `private key pem's path` should be the downloaded key's and certificate's path if you chose the **Auto-generate a new certificate** during the Thing creation. If you chose **Skip creating a certificate at this time** then these paths should locate the generated credential files that were created by the `./tools/scripts/generate_credentials.py` script in the previous step.
 
 Or, run the command below to perform a clean build:
 
 ```bash
-./Tools/scripts/build.sh aws-iot-example -c
+./tools/scripts/build.sh aws-iot-example -c
 ```
 
 This will build the example with the Arm Compiler (armclang) by default, which is
@@ -241,7 +241,7 @@ The binary has to be loaded to the ```0x210FF000``` address so the ```aws-iot-ex
 To run the AWS FreeRTOS MQTT example, run the following command:
 
 ```bash
-./Tools/scripts/run.sh aws-iot-example
+./tools/scripts/run.sh aws-iot-example
 ```
 
 ### Expected output
@@ -588,13 +588,13 @@ with yours.
 To build the application, run the following command:
 
 ```bash
-./Tools/scripts/build.sh aws-iot-example
+./tools/scripts/build.sh aws-iot-example
 ```
 
 Or, run the command below to perform a clean build:
 
 ```bash
-./Tools/scripts/build.sh aws-iot-example -c
+./tools/scripts/build.sh aws-iot-example -c
 ```
 
 This will build the example with the Arm Compiler (armclang) by default, which is
@@ -614,7 +614,7 @@ to start the Creating AWS IoT Core Qualification test suite created in [section]
 Now run the application by running the following command:
 
 ```bash
-./Tools/scripts/run.sh aws-iot-example
+./tools/scripts/run.sh aws-iot-example
 ```
 
 Once the device advisor has completed all the tests, you can download the AWS

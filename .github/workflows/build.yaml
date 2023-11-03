@@ -55,7 +55,7 @@ jobs:
       - name: Build the project
         shell: bash
         run: |
-          ./Tools/scripts/build.sh aws-iot-example --toolchain GNU --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
+          ./tools/scripts/build.sh aws-iot-example --toolchain GNU --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
       - name: Copy artifacts
         shell: bash
         run: |

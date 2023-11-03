@@ -18,12 +18,12 @@ ensure that all the prerequisites are met before continuing.
 
 To build the blinky example, run the following command:
 ```bash
-./Tools/scripts/build.sh blinky
+./tools/scripts/build.sh blinky
 ```
 
 Run the command below to perform a clean build:
 ```bash
-./Tools/scripts/build.sh blinky -c
+./tools/scripts/build.sh blinky -c
 ```
 
 This will build the example with the Arm Compiler (armclang) by default, which is
@@ -36,7 +36,7 @@ on AWS. If you would like to build it with the Arm GNU Toolchain (arm-none-eabi-
 
 To run the blinky example, run the following command:
 ```bash
-./Tools/scripts/run.sh blinky
+./tools/scripts/run.sh blinky
 ```
 
 ### Expected output

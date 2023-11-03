@@ -4,4 +4,4 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
-python3 Tools/scripts/check_listed_dependencies.py
+python3 tools/scripts/check_listed_dependencies.py

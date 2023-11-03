@@ -2,7 +2,7 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
-list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/Tools/cmake)
+list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/tools/cmake)
 include(ConvertElfToBin)
 include(ExternalProject)
 
