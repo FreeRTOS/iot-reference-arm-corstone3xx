@@ -12,7 +12,7 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
-include(linkerscript_preprocess)
+include(SetProvisioningLinkOptions)
 
 add_executable(provisioning_data provisioning_data.c)
 target_include_directories(provisioning_data
