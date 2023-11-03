@@ -72,7 +72,8 @@ build-applications:
   stage: build
   extends: .base_job
   script:
-    - ./ci/generate_credentials.sh -f -p applications/${APP}/configs/aws_configs
+    - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
+    - ./ci/generate_credentials.sh -f -p applications/${APP_UNDERSCORED}/configs/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
     - ./tools/scripts/build.sh ${APP} --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
@@ -82,7 +83,7 @@ build-applications:
           build/${APP}_merged.elf \
           build/${APP}-update_signed.bin \
           build/update-signature.txt \
-          applications/${APP}/configs/aws_configs
+          applications/${APP_UNDERSCORED}/configs/aws_configs
       else
         tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz \
           build/${APP}_merged.elf
@@ -101,14 +102,15 @@ test-applications-output:
   extends: .test_job
   script:
     - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz
+    - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - |
       pytest -s tools/tests/test_application_output.py \
       --build-artefacts-path "build" \
       --fvp $FVP_BIN \
       --merged-elf-name "${APP}_merged.elf" \
       --timeout-seconds 600 \
-      --pass-output-file "applications/${APP}/tests/pass_output.log" \
-      --fail-output-file "applications/${APP}/tests/fail_output.log"
+      --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
+      --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
   parallel:
     matrix:
        -
@@ -119,16 +121,17 @@ test-ota:
   extends: .test_job
   script:
     - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz
+    - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - |
       pytest -s tools/tests/test_ota.py \
       --build-artefacts-path "build" \
       --fvp $FVP_BIN \
-      --credentials-path "applications/${APP}/configs/aws_configs" \
+      --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
       --merged-elf-name "${APP}_merged.elf" \
       --signed-update-bin-name "${APP}-update_signed.bin" \
       --timeout-seconds 900 \
-      --pass-output-file "applications/${APP}/tests/pass_output.log" \
-      --fail-output-file "applications/${APP}/tests/fail_output.log"
+      --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
+      --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
   parallel:
     matrix:
       -
@@ -142,7 +145,8 @@ integration-tests:
   rules:
     - if: ( $SCHEDULED_JOB_TO_RUN == "integration-tests" )
   script:
-    - ./ci/generate_credentials.sh -f -p applications/${APP}/configs/aws_configs
+    - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
+    - ./ci/generate_credentials.sh -f -p applications/${APP_UNDERSCORED}/configs/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
     - ./tools/scripts/build.sh -q ${APP}
@@ -154,7 +158,7 @@ integration-tests:
       pytest -s tools/tests/test_integration.py \
       --build-artefacts-path "build" \
       --fvp $FVP_BIN \
-      --credentials-path "applications/${APP}/configs/aws_configs" \
+      --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
       --merged-elf-name "${APP}-tests_merged.elf" \
       --signed-update-bin-name "${APP}-tests-update_signed.bin"
   parallel:

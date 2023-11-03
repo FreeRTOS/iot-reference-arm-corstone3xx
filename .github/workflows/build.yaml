@@ -49,7 +49,7 @@ jobs:
           export IOT_OTA_CLIENT_CERT="dummy_certificate"
           export IOT_OTA_CLIENT_PRIV="dummy_priv_key"
           export IOT_OTA_CLIENT_PUB="dummy_pub_key"
-          ./ci/generate_credentials.sh -f -p applications/aws-iot-example/configs/aws_configs
+          ./ci/generate_credentials.sh -f -p applications/aws_iot_example/configs/aws_configs
           git config --global user.email "ci@example.com"
           git config --global user.name "ci"
       - name: Build the project

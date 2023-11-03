@@ -147,7 +147,7 @@ case "$1" in
         ;;
     aws-iot-example)
         EXAMPLE="$1"
-        PATH_TO_SOURCE="$ROOT/applications/aws-iot-example"
+        PATH_TO_SOURCE="$ROOT/applications/aws_iot_example"
         ;;
     *)
         echo "Missing example <blinky,aws-iot-example>"

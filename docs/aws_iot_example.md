@@ -229,7 +229,7 @@ on AWS. If you would like to build it with the Arm GNU Toolchain (arm-none-eabi-
 
 
 ## Provisioning the device credentials into Protected Storage
-During the build process a ```provisioning_data.bin``` is built into the ```build/applications/aws-iot-example/provisioning_data``` directory.
+During the build process a ```provisioning_data.bin``` is built into the ```build/applications/aws_iot_example/provisioning_data``` directory.
 This binary contains the device credentials (private key and certificate).
 
 If the content of the .pem files that were used during the build process (passed with ```--certificate_path``` and ```--private_key_path```) changed, then ```cmake --build build -j -- provisioning_data``` rebuilds this provisioning binary.
@@ -363,7 +363,7 @@ is used for both.  This is to ensure you have the original binary to compare
 against any new version you build.
 
 For example, the updated binary is placed in
-`build/applications/aws-iot-example/aws-iot-example-update_signed.bin` for the
+`build/applications/aws_iot_example/aws-iot-example-update_signed.bin` for the
 aws-iot-example application. The updated binary is already signed and it is the
 file you will need to upload to the Amazon S3 bucket in the next section.
 
@@ -387,11 +387,11 @@ in the next step.
 1. Select `MQTT` transport only
 1. Select **Use my custom signed file**
 1. Select upload new file and select the signed update binary
-   (`build/applications/aws-iot-example/aws-iot-example-update_signed.bin`)
+   (`build/applications/aws_iot_example/aws-iot-example-update_signed.bin`)
 1. Select the S3 bucket you created in step 1. to upload the binary to
 1. Paste the signature string that is echoed during the build of the example
    (it is also available in
-   `build/applications/aws-iot-example/update-signature.txt`).
+   `build/applications/aws_iot_example/update-signature.txt`).
 1. Select `SHA-256` and `RSA` algorithms.
 1. For **Path name of code signing certificate on device** put in `0`
    (the path is not used)

@@ -46,7 +46,7 @@ set(TFM_CMAKE_ARGS
     -DPLATFORM_DEFAULT_PROVISIONING=OFF
     -DPLATFORM_DEFAULT_UART_STDOUT=ON
     -DPLATFORM_HAS_FIRMWARE_UPDATE_SUPPORT=ON
-    -DPROJECT_CONFIG_HEADER_FILE=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/aws-iot-example/configs/tfm-config/project_config.h
+    -DPROJECT_CONFIG_HEADER_FILE=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/aws_iot_example/configs/tfm_config/project_config.h
     -DTFM_DUMMY_PROVISIONING=OFF
     -DTFM_EXCEPTION_INFO_DUMP=ON
     -DTFM_PARTITION_CRYPTO=ON
@@ -96,7 +96,7 @@ add_executable(aws-iot-example
 )
 target_include_directories(aws-iot-example
     PUBLIC
-        freertos-integration-tests/include
+        freertos_integration_tests
         ../helpers/provisioning
 )
 
@@ -173,11 +173,11 @@ iot_reference_arm_corstone3xx_generate_aws_update_digest_and_signature(
 add_dependencies(freertos-libraries-integration-tests-config provisioning_data_bin)
 target_sources(freertos-libraries-integration-tests-config
     INTERFACE
-        freertos-integration-tests/integration_tests_platform_function.c
+        freertos_integration_tests/integration_tests_platform_function.c
 )
 target_include_directories(freertos-libraries-integration-tests-config
     INTERFACE
-        freertos-integration-tests/include
+        freertos_integration_tests
         provisioning
         ${CMAKE_BINARY_DIR}/provisioning
         ${CMAKE_BINARY_DIR}/provisioning_data
@@ -205,7 +205,7 @@ add_executable(aws-iot-example-tests
 )
 target_include_directories(aws-iot-example-tests
     PUBLIC
-        freertos-integration-tests
+        freertos_integration_tests
 )
 
 target_compile_definitions(aws-iot-example-tests

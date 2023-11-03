@@ -4,5 +4,5 @@
 
 add_subdirectory(app_config)
 add_subdirectory(aws_configs)
-add_subdirectory(freertos-config)
+add_subdirectory(freertos_config)
 add_subdirectory(mbedtls_config)
