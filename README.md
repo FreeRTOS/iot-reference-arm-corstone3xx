@@ -26,9 +26,9 @@ porting of this integration across platforms easy.
 
 This reference integration contains following two examples:
 
-* [Blinky example](Docs/blinky.md)
+* [Blinky example](docs/blinky.md)
     * Demonstrates FreeRTOS kernel and TF-M integration
-* [AWS IoT example](Docs/aws-iot-example.md)
+* [AWS IoT example](docs/aws_iot_example.md)
     * Demonstrates [secure connectivity](#secure-tls-connection) to AWS IoT core using [Mbed TLS](#mbed-tls),
       [PKCS#11 PSA Shim](#pkcs11-psa-shim) and [coreMQTT-agent](https://docs.aws.amazon.com/freertos/latest/userguide/coremqtt-agent.html)
       library. In addition, [secure OTA](#secure-ota-updates) using [OTA agent](https://freertos.org/ota/index.html)

@@ -29,7 +29,7 @@ more information.
 
 ### Setting up Arm Virtual Hardware using Amazon Machine Images
 
-Follow the instructions described in [Launch Arm Virtual Hardware Instance](setting-up-arm-virtual-hardware.md)
+Follow the instructions described in [Launch Arm Virtual Hardware Instance](setting_up_arm_virtual_hardware.md)
 to setup your development environment.
 
 If you have successfully followed the instructions, then you should have a
@@ -45,5 +45,5 @@ additional argument `--fvp_type vht` must be passed to the run example script.
 
 ## Setting up development environment
 
-Follow the instructions described in [Setting Up your Development Environment](development-environment.md)
+Follow the instructions described in [Setting Up your Development Environment](development_environment.md)
 to setup your development environment.

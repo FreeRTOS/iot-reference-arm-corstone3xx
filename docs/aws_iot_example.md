@@ -44,7 +44,7 @@ of the verification fails, then MCUBoot stops the booting process.
 
 ## Prerequisites
 
-Follow the instructions described in [Prerequisites](Prerequisites.md) and
+Follow the instructions described in [Prerequisites](prerequisites.md) and
 ensure that all the prerequisites are met before continuing.
 
 ## Setting up AWS connectivity
@@ -222,9 +222,9 @@ Or, run the command below to perform a clean build:
 ```
 
 This will build the example with the Arm Compiler (armclang) by default, which is
-included in the [Arm Virtual Hardware instance](./setting-up-arm-virtual-hardware.md)
+included in the [Arm Virtual Hardware instance](./setting_up_arm_virtual_hardware.md)
 on AWS. If you would like to build it with the Arm GNU Toolchain (arm-none-eabi-gcc)
-[installed by yourself](./development-environment.md), append the extra option
+[installed by yourself](./development_environment.md), append the extra option
 `--toolchain GNU` to the build command above.
 
 
@@ -598,9 +598,9 @@ Or, run the command below to perform a clean build:
 ```
 
 This will build the example with the Arm Compiler (armclang) by default, which is
-included in the [Arm Virtual Hardware instance](./setting-up-arm-virtual-hardware.md)
+included in the [Arm Virtual Hardware instance](./setting_up_arm_virtual_hardware.md)
 on AWS. If you would like to build it with the Arm GNU Toolchain (arm-none-eabi-gcc)
-[installed by yourself](./development-environment.md), append the extra option
+[installed by yourself](./development_environment.md), append the extra option
 `--toolchain GNU` to the build command above.
 
 ### Running the application

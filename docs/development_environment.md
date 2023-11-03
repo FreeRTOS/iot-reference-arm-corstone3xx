@@ -64,7 +64,7 @@ git submodule update --init --recursive
 
   * Arm Compiler for Embedded
 
-    The [Arm Virtual Hardware instance](./setting-up-arm-virtual-hardware.md)
+    The [Arm Virtual Hardware instance](./setting_up_arm_virtual_hardware.md)
     comes with the Arm Compiler for Embedded in its environment which is ready
     for use.
 
