@@ -51,6 +51,9 @@ This reference integration contains following two examples:
 * [Keyword Detection](docs/keyword_detection.md)
     * Demonstrates detecting keywords from an audio source using Machine Learning.
       It also has all the features of the AWS IoT example.
+* [Speech Recognition](docs/keyword_detection.md)
+    * Demonstrates detecting sentences from an audio source using Machine Learning.
+      It also has all the features of the AWS IoT example.
 
 ### Secure TLS Connection
 

@@ -17,6 +17,7 @@
 #define EVENT_MASK_MQTT_CONNECTED    0x04
 #define EVENT_MASK_ML_START          0x08
 #define EVENT_MASK_ML_STOP           0x10
+#define EVENT_MASK_DSP_START         0x20
 
 extern EventGroupHandle_t xSystemEvents;
 

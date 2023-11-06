@@ -28,7 +28,7 @@ Options:
     -f, --fvp_type  FVP type to use (fvp, vht)
 
 Examples:
-    blinky, aws-iot-example, keyword-detection
+    blinky, aws-iot-example, keyword-detection, speech-recognition
 EOF
 }
 
@@ -116,8 +116,12 @@ case "$1" in
         EXAMPLE="$1"
         MERGED_IMAGE_PATH="$BUILD_PATH/keyword-detection_merged.elf"
         ;;
+    speech-recognition)
+        EXAMPLE="$1"
+        MERGED_IMAGE_PATH="$BUILD_PATH/speech-recognition_merged.elf"
+        ;;
     *)
-        echo "Usage: $0 <blinky,aws-iot-example,keyword-detection>" >&2
+        echo "Usage: $0 <blinky,aws-iot-example,keyword-detection,speech-recognition>" >&2
         exit 1
         ;;
 esac
