@@ -8,6 +8,13 @@ import subprocess
 from functools import reduce
 
 
+def get_absolute_path(filename) -> str:
+    """
+    Get the absolute path of the file
+    """
+    return Path(__file__).parent.parent.parent / filename
+
+
 def pytest_addoption(parser):
     parser.addoption("--build-artefacts-path", action="store", default="")
     parser.addoption("--credentials-path", action="store", default="credentials")
@@ -22,22 +29,17 @@ def pytest_addoption(parser):
 
 @pytest.fixture()
 def build_artefacts_path(pytestconfig):
-    yield Path(__file__).parent / pytestconfig.getoption("--build-artefacts-path")
+    yield get_absolute_path(pytestconfig.getoption("--build-artefacts-path"))
 
 
 @pytest.fixture
 def credentials_path(pytestconfig):
-    yield Path(__file__).parent / pytestconfig.getoption("--credentials-path")
+    yield get_absolute_path(pytestconfig.getoption("--credentials-path"))
 
 
 @pytest.fixture
 def fvp_path(pytestconfig):
     yield pytestconfig.getoption("--fvp")
-
-
-@pytest.fixture
-def vsi_script_path():
-    yield Path(__file__) / "lib/AVH/audio"
 
 
 @pytest.fixture
@@ -60,7 +62,7 @@ def fvp_options(pytestconfig):
 @pytest.fixture
 def merged_elf_name(pytestconfig):
     yield (
-        Path(__file__).parent
+        Path(__file__).parent.parent.parent
         / pytestconfig.getoption("--build-artefacts-path")
         / pytestconfig.getoption("--merged-elf-name")
     )
@@ -78,17 +80,16 @@ def timeout_seconds(pytestconfig):
 
 @pytest.fixture
 def pass_output_file(pytestconfig):
-    print(Path(__file__).parent / pytestconfig.getoption("--pass-output-file"))
-    yield Path(__file__).parent / pytestconfig.getoption("--pass-output-file")
+    yield get_absolute_path(pytestconfig.getoption("--pass-output-file"))
 
 
 @pytest.fixture
 def fail_output_file(pytestconfig):
-    yield Path(__file__).parent / pytestconfig.getoption("--fail-output-file")
+    yield get_absolute_path(pytestconfig.getoption("--fail-output-file"))
 
 
 @pytest.fixture(scope="function")
-def fvp_process(fvp_path, merged_elf_name, vsi_script_path, fvp_options):
+def fvp_process(fvp_path, merged_elf_name, fvp_options):
     # Fixture of the FVP, when it returns, the FVP is started and
     # traces are accessible through the .stdout of the object returned.
     # When the test is terminated, the FVP subprocess is closed.
