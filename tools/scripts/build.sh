@@ -85,7 +85,7 @@ Options:
     --certificate_path          The full path for the AWS device certificate
     --private_key_path          The full path for the AWS device private key
 Examples:
-    blinky, aws-iot-example, keyword-detection
+    blinky, aws-iot-example, keyword-detection, speech-recognition
 EOF
 }
 
@@ -172,8 +172,12 @@ case "$1" in
         EXAMPLE="$1"
         PATH_TO_SOURCE="$ROOT/applications/keyword_detection"
         ;;
+    speech-recognition)
+        EXAMPLE="$1"
+        PATH_TO_SOURCE="$ROOT/applications/speech_recognition"
+        ;;
     *)
-        echo "Missing example <blinky,aws-iot-example,keyword-detection>"
+        echo "Missing example <blinky,aws-iot-example,keyword-detection,speech-recognition>"
         show_usage
         exit 2
         ;;
@@ -237,6 +241,11 @@ if [ ! -f "$PRIVATE_KEY_PATH" ]; then
     echo "The --private_key_path must be set to an existing file."
     show_usage
     exit 2
+fi
+
+if [ "$EXAMPLE" == "speech-recognition" ] && [ "$ML_INFERENCE_ENGINE" == "SOFTWARE" ]; then
+    echo "Error: Invalid combination of example and ML Inference engine. speech-recognition only support ETHOS ML Inference" >&2
+    exit 1
 fi
 
 build_with_cmake
