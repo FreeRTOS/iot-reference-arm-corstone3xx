@@ -143,3 +143,10 @@ dependencies:
       type: "git"
       url: "https://review.mlplatform.org/ml/ethos-u/ml-embedded-evaluation-kit.git"
       path: "components/ai/ml_embedded_evaluation_kit/library"
+  - name: "speexdsp"
+    license: "BSD-3-Clause"
+    version: "738e17905e1ca2a1fa932ddd9c2a85d089f4e845"
+    repository:
+      type: "git"
+      url: "https://gitlab.xiph.org/xiph/speexdsp.git"
+      path: "components/ai/speexdsp/library"

@@ -3,3 +3,4 @@
 # SPDX-License-Identifier: MIT
 
 add_subdirectory(ml_embedded_evaluation_kit)
+add_subdirectory(speexdsp)

@@ -58,3 +58,6 @@
 [submodule "ml_embedded_evaluation_kit"]
 	path = components/ai/ml_embedded_evaluation_kit/library
 	url = https://review.mlplatform.org/ml/ethos-u/ml-embedded-evaluation-kit.git
+[submodule "speexdsp"]
+	path = components/ai/speexdsp/library
+	url = https://gitlab.xiph.org/xiph/speexdsp.git
