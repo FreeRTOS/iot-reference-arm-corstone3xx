@@ -123,7 +123,7 @@ repos:
     hooks:
     -   id: gitlint
         args:
-        - "--config ci/gitlint/.gitlint"
+        - "--config tools/ci/gitlint/.gitlint"
 -   repo: https://github.com/psf/black
     rev: 23.10.1
     hooks:
@@ -194,7 +194,7 @@ Refer to the [.pre-commit-config.yaml](../.pre-commit-config.yaml) for the defau
 
 #### Banned-api
 
-This pre-commit hook is used to check if certain unsafe C/C++ APIs are used in your code. By default, `banned-api` checks the [complete list](../ci/hooks/banned_api_list.txt) present in the repository.
+This pre-commit hook is used to check if certain unsafe C/C++ APIs are used in your code. By default, `banned-api` checks the [complete list](../tools/ci/hooks/banned_api_list.txt) present in the repository.
 
 #### Trims trailing whitespace
 Check and trim any trailing whitespace.

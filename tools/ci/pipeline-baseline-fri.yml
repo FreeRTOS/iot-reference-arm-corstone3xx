@@ -31,7 +31,7 @@ license:
 
   script:
     - scancode -l --json-pp scancode_report.json $PWD/..
-    - jsonschema -i scancode_report.json $PWD/ci/license/license.schema
+    - jsonschema -i scancode_report.json $PWD/tools/ci/license/license.schema
   artifacts:
     paths:
       - scancode_report.json
@@ -67,9 +67,9 @@ gitlint:
     - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
     - >
       gitlint --commits "origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME..$CI_COMMIT_SHA"
-      --extra-path ${PWD}/ci/gitlint/gitlint-user-rules.py
+      --extra-path ${PWD}/tools/ci/gitlint/gitlint-user-rules.py
       -c body-invalid-words.invalid-words=${PROTECTED_WORDS_LIST}
-      --config ${PWD}/ci/gitlint/.gitlint
+      --config ${PWD}/tools/ci/gitlint/.gitlint
 
 ########################
 # TownCrier Jobs       #
@@ -101,7 +101,7 @@ tpip-check:
     - env
     - set -x
     - >
-      python ${PWD}/ci/tpip-checker/tpip_checker.py
+      python ${PWD}/tools/ci/tpip-checker/tpip_checker.py
       --server-url "${CI_SERVER_URL}"
       --private-token "${AUTOBOT_GITLAB_TOKEN}"
       --project-id "${CI_PROJECT_ID}"

@@ -8,7 +8,7 @@ default:
   image: ${OPEN_IOT_SDK_DOCKER_REGISTRY}/open-iot-sdk:${OPEN_IOT_SDK_DOCKER_VERSION}
 
 include:
-  local: '$PWD/ci/pipeline-baseline-fri.yml'
+  local: '$PWD/tools/ci/pipeline-baseline-fri.yml'
 
 variables:
   OPEN_IOT_SDK_DOCKER_VERSION: v1
@@ -73,7 +73,7 @@ build-applications:
   extends: .base_job
   script:
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
-    - ./ci/generate_credentials.sh -f -p applications/${APP_UNDERSCORED}/configs/aws_configs
+    - ./tools/ci/generate_credentials.sh -f -p applications/${APP_UNDERSCORED}/configs/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
     - ./tools/scripts/build.sh ${APP} --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
@@ -146,7 +146,7 @@ integration-tests:
     - if: ( $SCHEDULED_JOB_TO_RUN == "integration-tests" )
   script:
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
-    - ./ci/generate_credentials.sh -f -p applications/${APP_UNDERSCORED}/configs/aws_configs
+    - ./tools/ci/generate_credentials.sh -f -p applications/${APP_UNDERSCORED}/configs/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
     - ./tools/scripts/build.sh -q ${APP}
@@ -176,4 +176,4 @@ aws-cleanup:
   rules:
     - if: $SCHEDULED_JOB_TO_RUN == "cleanup"
   script:
-    - python -u ./ci/aws_cleanup.py
+    - python -u ./tools/ci/aws_cleanup.py

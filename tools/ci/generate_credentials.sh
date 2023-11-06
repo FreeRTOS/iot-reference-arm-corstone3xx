@@ -6,7 +6,7 @@
 
 NAME="$(basename "$0")"
 HERE="$(dirname "$0")"
-ROOT="$(realpath $HERE/..)"
+ROOT="$(realpath $HERE/../..)"
 FORCE=0
 OUTPUT_PATH="$ROOT/credentials"
 
