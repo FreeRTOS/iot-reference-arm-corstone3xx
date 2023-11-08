@@ -518,7 +518,7 @@ Follow the instructions described in the sections listed below to create an IoT
 thing for your device and attaching a policy to it.
 
 * [IoT thing](#creating-an-iot-thing-for-your-device)
-* [IoT policy](#creating-a-policy-and-attach-it-to-your-thing)
+* [IoT policy](#creating-a-policy-and-attach-it-to-your-certificate)
 
 ### Creating roles and policies
 

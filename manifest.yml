@@ -17,13 +17,6 @@ dependencies:
       type: "git"
       url: "https://git.gitlab.arm.com/iot/open-iot-sdk/arm-corstone-platform-bsp.git"
       path: "Bsp/arm-corstone-platform-bsp"
-  - name: "CMSIS_5"
-    license: "Apache-2.0"
-    version: "5.9.0"
-    repository:
-      type: "git"
-      url: "https://github.com/ARM-software/CMSIS_5.git"
-      path: "Bsp/arm-corstone-platform-bsp/CMSIS/CMSIS_5"
   - name: "trusted-firmware-m"
     license: "BSD-3-Clause"
     version: "e435409343c074ba8f00349c459a3066cf6dece1"

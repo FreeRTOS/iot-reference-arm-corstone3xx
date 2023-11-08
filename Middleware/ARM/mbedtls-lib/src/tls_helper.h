@@ -63,8 +63,8 @@ typedef struct TLSContext
  * @return The number of bytes actually read.
  */
 typedef int ( * NetworkRecv_t )( void * pvCallerContext,
-                                        unsigned char * pucReceiveBuffer,
-                                        size_t xReceiveLength );
+                                 unsigned char * pucReceiveBuffer,
+                                 size_t xReceiveLength );
 
 /**
  * @brief Defines callback type for sending bytes to the network.
@@ -76,8 +76,8 @@ typedef int ( * NetworkRecv_t )( void * pvCallerContext,
  * @return The number of bytes actually sent.
  */
 typedef int ( * NetworkSend_t )( void * pvCallerContext,
-                                        const unsigned char * pucData,
-                                        size_t xDataLength );
+                                 const unsigned char * pucData,
+                                 size_t xDataLength );
 
 /**
  * @brief Defines parameter structure for initializing the TLS interface.
@@ -103,9 +103,9 @@ typedef struct TLSHelperParams
 
     const char * pcServerCertificate;
     uint32_t ulServerCertificateLength;
-    const char * pClientCertLabel;   /**< @brief String representing the PKCS #11 label for the client certificate. */
-    const char * pPrivateKeyLabel;   /**< @brief String representing the PKCS #11 label for the private key. */
-    const char * pcLoginPIN;         /**< @brief A login Password used to retrive the credentials */
+    const char * pClientCertLabel; /**< @brief String representing the PKCS #11 label for the client certificate. */
+    const char * pPrivateKeyLabel; /**< @brief String representing the PKCS #11 label for the private key. */
+    const char * pcLoginPIN;       /**< @brief A login Password used to retrive the credentials */
 } TLSHelperParams_t;
 
 /**
@@ -116,7 +116,8 @@ typedef struct TLSHelperParams
  *
  * @return Zero on success. Error return codes have the high bit set.
  */
-BaseType_t TLS_Init( TLSHelperParams_t * pxParams, TLSContext_t * pxContext );
+BaseType_t TLS_Init( TLSHelperParams_t * pxParams,
+                     TLSContext_t * pxContext );
 
 /**
  * @brief Perform TLS handshake with the given TLS context.
@@ -136,12 +137,12 @@ void TLS_Cleanup( TLSContext_t * pxContext );
 
 
 int32_t TLS_Recv( TLSContext_t * pxContext,
-                     unsigned char * pucReadBuffer,
-                     size_t xReadLength );
+                  unsigned char * pucReadBuffer,
+                  size_t xReadLength );
 
 int32_t TLS_Send( TLSContext_t * pxContext,
-                     const unsigned char * pucMsg,
-                     size_t xMsgLength );
+                  const unsigned char * pucMsg,
+                  size_t xMsgLength );
 
 
 #endif /* ifndef TLS_HELPER_H */
