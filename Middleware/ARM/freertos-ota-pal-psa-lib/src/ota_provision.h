@@ -4,15 +4,15 @@
  */
 
 #ifndef _OTA_PROVISION_
-#define _OTA_PROVISION_
-#include "psa/crypto.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
+    #define _OTA_PROVISION_
+    #include "psa/crypto.h"
+    #ifdef __cplusplus
+    extern "C" {
+    #endif
 
-int ota_privision_code_signing_key(psa_key_handle_t * key_handle);
+    int ota_privision_code_signing_key( psa_key_handle_t * key_handle );
 
-#ifdef __cplusplus
+    #ifdef __cplusplus
 }
-#endif
-#endif
+    #endif
+#endif /* ifndef _OTA_PROVISION_ */

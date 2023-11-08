@@ -23,11 +23,11 @@
 
 
 static int Recv_Cb( void * pvCallerContext,
-                        unsigned char * pucReceiveBuffer,
-                        size_t xReceiveLength );
+                    unsigned char * pucReceiveBuffer,
+                    size_t xReceiveLength );
 static int Send_Cb( void * pvCallerContext,
-                        const unsigned char * pucData,
-                        size_t xDataLength );
+                    const unsigned char * pucData,
+                    size_t xDataLength );
 
 
 TransportStatus_t Transport_Connect( NetworkContext_t * pNetworkContext,
@@ -199,8 +199,8 @@ int32_t Transport_Send( NetworkContext_t * pNetworkContext,
  * @return The number of bytes actually read or appropriate error code.
  */
 static int Recv_Cb( void * pvCallerContext,
-                        unsigned char * pucReceiveBuffer,
-                        size_t xReceiveLength )
+                    unsigned char * pucReceiveBuffer,
+                    size_t xReceiveLength )
 {
     int rc;
     NetworkContext_t * pNetworkContext = ( NetworkContext_t * ) ( pvCallerContext );
@@ -236,8 +236,8 @@ static int Recv_Cb( void * pvCallerContext,
  * @return The number of bytes actually sent.
  */
 static int Send_Cb( void * pvCallerContext,
-                        const unsigned char * pucData,
-                        size_t xDataLength )
+                    const unsigned char * pucData,
+                    size_t xDataLength )
 {
     NetworkContext_t * pNetworkContext = ( NetworkContext_t * ) ( pvCallerContext );
     int rc;
@@ -265,6 +265,7 @@ TransportStatus_t Transport_Disconnect( NetworkContext_t * pNetworkContext )
     else
     {
         int32_t socketStatus;
+
         do
         {
             socketStatus = iotSocketClose( pNetworkContext->socket );

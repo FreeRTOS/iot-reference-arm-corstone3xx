@@ -12,11 +12,11 @@
 /**
  * \brief Initializes default UART device
  */
-void bsp_serial_init(void);
+void bsp_serial_init( void );
 
 /**
  * \brief Prints a string through the default UART device
  */
-void bsp_serial_print(char *str);
+void bsp_serial_print( char * str );
 
 #endif /* __SERIAL_H__ */

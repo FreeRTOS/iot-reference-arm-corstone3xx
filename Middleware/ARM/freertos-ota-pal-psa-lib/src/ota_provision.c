@@ -29,9 +29,9 @@ extern int convert_pem_to_der( const unsigned char * pucInput,
                                unsigned char * pucOutput,
                                size_t * pxOlen );
 
-int ota_privision_code_signing_key(psa_key_handle_t * key_handle)
+int ota_privision_code_signing_key( psa_key_handle_t * key_handle )
 {
-    uint8_t public_key_der[512];
+    uint8_t public_key_der[ 512 ];
     size_t xLength = 512;
     int result;
     psa_key_handle_t key_handle_tmp = 0;
@@ -39,9 +39,10 @@ int ota_privision_code_signing_key(psa_key_handle_t * key_handle)
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
 
     result = convert_pem_to_der( ( const unsigned char * ) cOTARSAPublicKey,
-                                            sizeof( cOTARSAPublicKey ),
-                                            public_key_der,
-                                            &xLength );
+                                 sizeof( cOTARSAPublicKey ),
+                                 public_key_der,
+                                 &xLength );
+
     if( result != 0 )
     {
         return result;
@@ -50,11 +51,13 @@ int ota_privision_code_signing_key(psa_key_handle_t * key_handle)
     psa_set_key_usage_flags( &attributes, PSA_KEY_USAGE_VERIFY_HASH );
     psa_set_key_algorithm( &attributes, PSA_ALG_RSA_PSS_ANY_SALT( PSA_ALG_SHA_256 ) );
     psa_set_key_type( &attributes, PSA_KEY_TYPE_RSA_PUBLIC_KEY );
-    psa_set_key_bits(&attributes, 3072);
-    status = psa_import_key(&attributes, ( const uint8_t *)public_key_der, xLength, &key_handle_tmp );
+    psa_set_key_bits( &attributes, 3072 );
+    status = psa_import_key( &attributes, ( const uint8_t * ) public_key_der, xLength, &key_handle_tmp );
+
     if( status == PSA_SUCCESS )
     {
         *key_handle = key_handle_tmp;
     }
+
     return status;
 }

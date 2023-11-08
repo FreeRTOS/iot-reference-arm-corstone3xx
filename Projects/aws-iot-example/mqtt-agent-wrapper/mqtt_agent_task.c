@@ -287,6 +287,7 @@ static BaseType_t prvSocketConnect( NetworkContext_t * pxNetworkContext )
     ServerInfo_t xServerInfo = { 0 };
 
     #ifdef democonfigUSE_AWS_IOT_CORE_BROKER
+
     /* ALPN protocols must be a NULL-terminated list of strings. Therefore,
      * the first entry will contain the actual ALPN protocol string while the
      * second entry must remain NULL. */
