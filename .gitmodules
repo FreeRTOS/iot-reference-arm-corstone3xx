@@ -55,3 +55,6 @@
 [submodule "unity"]
 	path = components/tools/unity/library
 	url = https://github.com/ThrowTheSwitch/Unity.git
+[submodule "ml_embedded_evaluation_kit"]
+	path = components/ai/ml_embedded_evaluation_kit/library
+	url = https://review.mlplatform.org/ml/ethos-u/ml-embedded-evaluation-kit.git
