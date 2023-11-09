@@ -196,7 +196,11 @@ int main()
     }
 
     /* Initialise system events group. */
-    vEventHelperInit();
+    if( xEventHelperInit() != 0 )
+    {
+        LogError( ( "System events group was not initialised successfully" ) );
+        return EXIT_FAILURE;
+    }
 
     /* Configure Mbed TLS memory APIs to use FreeRTOS heap APIs */
     mbedtls_platform_set_calloc_free( mbedtls_platform_calloc, mbedtls_platform_free );
