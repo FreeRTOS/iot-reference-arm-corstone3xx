@@ -1,0 +1,988 @@
+From 19e631994a533c5c7f2ce8fbb65c6f5f1bf363d2 Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Fri, 19 Jan 2024 17:41:31 +0000
+Subject: [PATCH 3/3] bsp: Add CMSIS-Driver implementation for VSI
+
+VSI CMSIS-Driver is added as it's needed in the
+FRI to be used by the ML applications. Hence, added
+for both corstone300 and corstone310 targets.
+
+Signed-off-by: Ahmed Ismail <Ahmed.Ismail@arm.com>
+---
+ corstone300/CMSIS_Driver/Driver_SAI.c      | 340 +++++++++++++++++++++
+ corstone300/CMSIS_Driver/Include/arm_vsi.h | 117 +++++++
+ corstone300/CMakeLists.txt                 |   1 +
+ corstone310/CMSIS_Driver/Driver_SAI.c      | 340 +++++++++++++++++++++
+ corstone310/CMSIS_Driver/Include/arm_vsi.h | 117 +++++++
+ corstone310/CMakeLists.txt                 |   1 +
+ 6 files changed, 916 insertions(+)
+ create mode 100644 corstone300/CMSIS_Driver/Driver_SAI.c
+ create mode 100644 corstone300/CMSIS_Driver/Include/arm_vsi.h
+ create mode 100644 corstone310/CMSIS_Driver/Driver_SAI.c
+ create mode 100644 corstone310/CMSIS_Driver/Include/arm_vsi.h
+
+diff --git a/corstone300/CMSIS_Driver/Driver_SAI.c b/corstone300/CMSIS_Driver/Driver_SAI.c
+new file mode 100644
+index 0000000..8158d09
+--- /dev/null
++++ b/corstone300/CMSIS_Driver/Driver_SAI.c
+@@ -0,0 +1,340 @@
++/* Copyright 2023 Arm Limited and/or its affiliates
++ * <open-source-office@arm.com>
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++#include <stddef.h>
++#include "Driver_SAI.h"
++#include "arm_vsi.h"
++#include "device_cfg.h"
++#include CMSIS_device_header
++
++#define ARM_SAI_DRV_VERSION    ARM_DRIVER_VERSION_MAJOR_MINOR( 1, 0 ) /* driver version */
++
++/* Audio Peripheral definitions */
++#define AudioI                 ARM_VSI0_NS   /* Audio Input access struct */
++#define AudioI_IRQn            ARM_VSI0_IRQn /* Audio Input Interrupt number */
++#define AudioI_Handler         VSI0_Handler  /* Audio Input Interrupt handler */
++
++/* Audio Peripheral registers */
++#define CONTROL                Regs[ 0 ] /* Control register */
++#define CHANNELS               Regs[ 1 ] /* Channel register */
++#define SAMPLE_BITS            Regs[ 2 ] /* Sample number of bits (8..32) register */
++#define SAMPLE_RATE            Regs[ 3 ] /* Sample rate (samples per second) register */
++#define BLOCK_SIZE             Regs[ 4 ] /* DMA block size register */
++
++/* Audio Control register definitions */
++#define CONTROL_ENABLE_Pos     0U                            /* CONTROL: ENABLE Position */
++#define CONTROL_ENABLE_Msk     ( 1UL << CONTROL_ENABLE_Pos ) /* CONTROL: ENABLE Mask */
++
++/* Audio channel control parameter */
++#ifndef SAI_NUMBER_OF_CHANNELS
++    #define SAI_NUMBER_OF_CHANNEL    1U
++#endif
++
++/* Driver Version */
++static const ARM_DRIVER_VERSION DriverVersion = { ARM_SAI_API_VERSION, ARM_SAI_DRV_VERSION };
++
++/* Driver Capabilities */
++static const ARM_SAI_CAPABILITIES DriverCapabilities =
++{
++    1, /* supports asynchronous Transmit/Receive */
++    0, /* supports synchronous Transmit/Receive */
++    1, /* supports user defined Protocol */
++    0, /* supports I2S Protocol */
++    0, /* supports MSB/LSB justified Protocol */
++    0, /* supports PCM short/long frame Protocol */
++    0, /* supports AC'97 Protocol */
++    0, /* supports Mono mode */
++    0, /* supports Companding */
++    0, /* supports MCLK (Master Clock) pin */
++    0, /* supports Frame error event: \ref ARM_SAI_EVENT_FRAME_ERROR */
++    0  /* reserved (must be zero) */
++};
++
++/* Event Callback */
++static ARM_SAI_SignalEvent_t CB_Event = NULL;
++
++/* Driver State */
++static uint8_t Initialized = 0U;
++
++/* Driver Current Power State */
++static ARM_POWER_STATE currentPowerState = ARM_POWER_OFF;
++
++/* Driver Current Status */
++static ARM_SAI_STATUS currentDriverStatus;
++
++/* VSI helper functions prototypes */
++static void ARM_EnableVSIInterrupts( void );
++static void ARM_DisableVSIInterrupts( void );
++
++/* Audio Input Interrupt Handler */
++void AudioI_Handler( void )
++{
++    AudioI->IRQ.Clear = 0x00000001U;
++    __DSB();
++    __ISB();
++
++    currentDriverStatus.rx_busy = 0U;
++
++    if( CB_Event != NULL )
++    {
++        CB_Event( ARM_SAI_EVENT_RECEIVE_COMPLETE );
++    }
++}
++
++/* */
++/*  CMSIS Driver APIs */
++/* */
++
++static ARM_DRIVER_VERSION ARM_SAI_GetVersion( void )
++{
++    /* Returns version information of the driver implementation in ARM_DRIVER_VERSION */
++    return DriverVersion;
++}
++
++static ARM_SAI_CAPABILITIES ARM_SAI_GetCapabilities( void )
++{
++    /* Retrieves information about the capabilities in this driver implementation. */
++    return DriverCapabilities;
++}
++
++static int32_t ARM_SAI_Initialize( ARM_SAI_SignalEvent_t cb_event )
++{
++    CB_Event = cb_event;
++
++    /* Initialize Audio Input Resources */
++    AudioI->CONTROL = 0U;
++    AudioI->CHANNELS = 0U;
++    AudioI->SAMPLE_BITS = 0U;
++    AudioI->SAMPLE_RATE = 0U;
++    AudioI->BLOCK_SIZE = 0U;
++
++    Initialized = 1U;
++
++    return ARM_DRIVER_OK;
++}
++
++static int32_t ARM_SAI_Uninitialize( void )
++{
++    if( Initialized == 0U )
++    {
++        return ARM_DRIVER_ERROR;
++    }
++
++    /* Un-initialize Audio Input Resources */
++    AudioI->CONTROL = 0U;
++    AudioI->CHANNELS = 0U;
++    AudioI->SAMPLE_BITS = 0U;
++    AudioI->SAMPLE_RATE = 0U;
++    AudioI->BLOCK_SIZE = 0U;
++
++    Initialized = 0U;
++
++    return ARM_DRIVER_OK;
++}
++
++static int32_t ARM_SAI_PowerControl( ARM_POWER_STATE state )
++{
++    if( Initialized == 0U )
++    {
++        return ARM_DRIVER_ERROR;
++    }
++
++    switch( state )
++    {
++        case ARM_POWER_OFF:
++            /* Disables related interrupts and DMA, disables peripherals, and terminates any pending data transfers */
++            ARM_DisableVSIInterrupts();
++
++            AudioI->Timer.Control = 0U;
++            AudioI->DMA.Control = 0U;
++            AudioI->IRQ.Clear = 0x00000001U;
++            AudioI->IRQ.Enable = 0x00000000U;
++            currentPowerState = ARM_POWER_OFF;
++
++            /* Transfers cannot be cancelled, instead we return busy status to pause any pending data transfers */
++            return ARM_DRIVER_ERROR_BUSY;
++
++        case ARM_POWER_LOW:
++            currentPowerState = ARM_POWER_LOW;
++
++            return ARM_DRIVER_ERROR_UNSUPPORTED;
++
++        case ARM_POWER_FULL:
++
++            /* Set-up peripheral for data transfers, enable interrupts (NVIC) and DMA */
++            if( currentPowerState != ARM_POWER_FULL )
++            {
++                AudioI->DMA.Control = ARM_VSI_DMA_Enable_Msk;
++                AudioI->IRQ.Clear = 0x00000001U;
++                AudioI->IRQ.Enable = 0x00000001U;
++
++                ARM_EnableVSIInterrupts();
++
++                currentPowerState = ARM_POWER_FULL;
++            }
++
++            break;
++    }
++
++    return ARM_DRIVER_OK;
++}
++
++static int32_t ARM_SAI_Receive( void * data,
++                                uint32_t num )
++{
++    if( Initialized == 0U )
++    {
++        return ARM_DRIVER_ERROR;
++    }
++
++    /* During the receive operation it is not allowed to call the function again */
++    if( currentDriverStatus.rx_busy == 1U )
++    {
++        return ARM_DRIVER_ERROR_BUSY;
++    }
++
++    currentDriverStatus.rx_busy = 1U;
++
++    if( num > 0 )
++    {
++        /* The driver shoud configures DMA or the interrupt system for continuous reception */
++        AudioI->DMA.Control = 0U;
++        AudioI->DMA.Address = ( uint32_t ) data;
++        AudioI->DMA.BlockNum = num;
++        AudioI->DMA.BlockSize = AudioI->BLOCK_SIZE;
++        uint32_t sample_rate = AudioI->SAMPLE_RATE;
++        uint32_t sample_size = ( AudioI->CHANNELS * ( ( AudioI->SAMPLE_BITS + 7U ) ) / 8U );
++
++        if( ( sample_size == 0U ) || ( sample_rate == 0U ) )
++        {
++            AudioI->Timer.Interval = 0xFFFFFFFFU;
++        }
++        else
++        {
++            AudioI->Timer.Interval = ( 1000000U * ( AudioI->DMA.BlockSize / sample_size ) ) / sample_rate;
++        }
++
++        AudioI->DMA.Control = ARM_VSI_DMA_Direction_P2M | ARM_VSI_DMA_Enable_Msk;
++        AudioI->CONTROL = CONTROL_ENABLE_Msk;
++        AudioI->Timer.Control = ARM_VSI_Timer_Trig_DMA_Msk | ARM_VSI_Timer_Trig_IRQ_Msk | ARM_VSI_Timer_Periodic_Msk
++                                | ARM_VSI_Timer_Run_Msk;
++    }
++    else
++    {
++        CB_Event( ARM_SAI_EVENT_RECEIVE_COMPLETE );
++    }
++
++    /* The receive function is non-blocking and returns as soon as the driver has started the operation */
++    return ARM_DRIVER_OK;
++}
++
++static uint32_t ARM_SAI_GetRxCount( void )
++{
++    if( Initialized == 0U )
++    {
++        return ARM_DRIVER_ERROR;
++    }
++
++    /* Returns the number of the currently received data items during an ARM_SAI_Receive operation. */
++    return( AudioI->Timer.Count );
++}
++
++static int32_t ARM_SAI_Control( uint32_t control,
++                                uint32_t arg1,
++                                uint32_t arg2 )
++{
++    if( Initialized == 0U )
++    {
++        return ARM_DRIVER_ERROR;
++    }
++
++    /* Enable or disable receiver; arg1 : 0=disable (default); 1=enable */
++    if( ( control & ARM_SAI_CONTROL_Msk ) == ARM_SAI_CONTROL_RX )
++    {
++        AudioI->CONTROL = arg1;
++    }
++
++    /* Configure transmitter. arg1 and arg2 provide additional configuration options,
++     * arg1: DMA Block size
++     * arg2: Sampling rate
++     */
++    if( ( control & ARM_SAI_CONTROL_Msk ) == ARM_SAI_CONFIGURE_RX )
++    {
++        AudioI->CONTROL |= control;
++
++        /* Note: The current implemented protocol is the user defined protocol which serves the Virtual Streaming Interface (VSI) */
++        if( ( control & ARM_SAI_PROTOCOL_Msk ) == ARM_SAI_PROTOCOL_USER )
++        {
++            AudioI->CHANNELS = SAI_NUMBER_OF_CHANNEL;
++            AudioI->SAMPLE_BITS = ( ( control & ARM_SAI_DATA_SIZE_Msk ) >> ARM_SAI_DATA_SIZE_Pos ) + 1U;
++            /* The DMA block size and the sampling rates are to be sent as function arguments */
++            AudioI->BLOCK_SIZE = arg1;
++            AudioI->SAMPLE_RATE = arg2;
++        }
++        else
++        {
++            /* For other protocols to be implemented */
++        }
++    }
++
++    return ARM_DRIVER_OK;
++}
++
++static ARM_SAI_STATUS ARM_SAI_GetStatus( void )
++{
++    ARM_SAI_STATUS driverStatus;
++
++    /* rx_busy flag can be copied from the static driver status structure */
++    driverStatus.rx_busy = currentDriverStatus.rx_busy;
++
++    /* If the receiver is enabled and data is to be received but the receive operation has not been started yet,
++     * then the rx_overflow flag should be set. */
++    if( ( AudioI->CONTROL & CONTROL_ENABLE_Msk ) )
++    {
++        if( driverStatus.rx_busy )
++        {
++            driverStatus.rx_overflow = 0U;
++        }
++        else
++        {
++            driverStatus.rx_overflow = 1U;
++        }
++    }
++    else
++    {
++        driverStatus.rx_overflow = 0U;
++    }
++
++    return driverStatus;
++}
++/* End SAI Interface */
++
++/* VSI helper functions definitions */
++static void ARM_EnableVSIInterrupts( void )
++{
++    NVIC_SetPriority( ARM_VSI0_IRQn, 6 );
++    NVIC_EnableIRQ( ARM_VSI0_IRQn );
++}
++
++static void ARM_DisableVSIInterrupts( void )
++{
++    NVIC_DisableIRQ( ARM_VSI0_IRQn );
++}
++
++extern ARM_DRIVER_SAI Driver_SAI0;
++ARM_DRIVER_SAI Driver_SAI0 =
++{
++    ARM_SAI_GetVersion,
++    ARM_SAI_GetCapabilities,
++    ARM_SAI_Initialize,
++    ARM_SAI_Uninitialize,
++    ARM_SAI_PowerControl,
++    NULL,
++    ARM_SAI_Receive,
++    NULL,
++    ARM_SAI_GetRxCount,
++    ARM_SAI_Control,
++    ARM_SAI_GetStatus
++};
+diff --git a/corstone300/CMSIS_Driver/Include/arm_vsi.h b/corstone300/CMSIS_Driver/Include/arm_vsi.h
+new file mode 100644
+index 0000000..a5c121c
+--- /dev/null
++++ b/corstone300/CMSIS_Driver/Include/arm_vsi.h
+@@ -0,0 +1,117 @@
++/* Copyright 2021-2023 Arm Limited and/or its affiliates
++ * <open-source-office@arm.com>
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++/*
++ * Virtual Streaming Interface (VSI)
++ */
++
++#ifndef __ARM_VSI_H
++    #define __ARM_VSI_H
++
++    #ifdef __cplusplus
++    extern "C" {
++    #endif
++
++    #ifndef __IM
++        #define __IM     volatile const /*! Defines 'read only' structure member permissions */
++    #endif
++    #ifndef __OM
++        #define __OM     volatile /*! Defines 'write only' structure member permissions */
++    #endif
++    #ifndef __IOM
++        #define __IOM    volatile /*! Defines 'read/write' structure member permissions */
++    #endif
++
++    #include <stdint.h>
++
++/**
++ * \brief  Structure type to access the virtual streaming interface.
++ */
++    typedef struct
++    {
++        struct
++        {
++            __IOM uint32_t Enable; /*!< Offset: 0x0000 (R/W) IRQ Enable */
++            __OM uint32_t Set;     /*!< Offset: 0x0004 (-/W) IRQ Set */
++            __OM uint32_t Clear;   /*!< Offset: 0x0008 (-/W) IRQ Clear */
++            __IM uint32_t Status;  /*!< Offset: 0x000C (R/-) IRQ Status */
++        } IRQ;                     /*!< Interrupt Request (IRQ) */
++        uint32_t reserved1[ 60 ];
++        struct
++        {
++            __IOM uint32_t Control;  /*!< Offset: 0x0100 (R/W) Timer Control */
++            __IOM uint32_t Interval; /*!< Offset: 0x0104 (R/W) Timer Interval Value (in microseconds) */
++            __IM uint32_t Count;     /*!< Offset: 0x0108 (R/-) Timer Overflow Count */
++        } Timer;                     /*!< Time counter with 1MHz input frequency */
++        uint32_t reserved2[ 61 ];
++        struct
++        {
++            __IOM uint32_t Control;   /*!< Offset: 0x0200 (R/W) DMA Control */
++            __IOM uint32_t Address;   /*!< Offset: 0x0204 (R/W) DMA Memory Start Address */
++            __IOM uint32_t BlockSize; /*!< Offset: 0x0208 (R/W) DMA Block Size (in bytes, multiple of 4) */
++            __IOM uint32_t BlockNum;  /*!< Offset: 0x020C (R/W) DMA Number of Blocks (must be 2^n) */
++            __IM uint32_t BlockIndex; /*!< Offset: 0x0210 (R/-) DMA Block Index */
++        } DMA;                        /*!< Direct Memory Access (DMA) Controller */
++        uint32_t reserved3[ 59 ];
++        __IOM uint32_t Regs[ 64 ];    /*!< Offset: 0x0300 (R/W) User Registers */
++    } ARM_VSI_Type;
++
++/* VSI Timer Control Definitions for Timer.Control register */
++    #define ARM_VSI_Timer_Run_Pos         0U                                    /*!< Timer Control: Run Position */
++    #define ARM_VSI_Timer_Run_Msk         ( 1UL << ARM_VSI_Timer_Run_Pos )      /*!< Timer Control: Run Mask */
++    #define ARM_VSI_Timer_Periodic_Pos    1U                                    /*!< Timer Control: Periodic Position */
++    #define ARM_VSI_Timer_Periodic_Msk    ( 1UL << ARM_VSI_Timer_Periodic_Pos ) /*!< Timer Control: Periodic Mask */
++    #define ARM_VSI_Timer_Trig_IRQ_Pos    2U                                    /*!< Timer Control: Trig_IRQ Position */
++    #define ARM_VSI_Timer_Trig_IRQ_Msk    ( 1UL << ARM_VSI_Timer_Trig_IRQ_Pos ) /*!< Timer Control: Trig_IRQ Mask */
++    #define ARM_VSI_Timer_Trig_DMA_Pos    3U                                    /*!< Timer Control: Trig_DAM Position */
++    #define ARM_VSI_Timer_Trig_DMA_Msk    ( 1UL << ARM_VSI_Timer_Trig_DMA_Pos ) /*!< Timer Control: Trig_DMA Mask */
++
++/* VSI DMA Control Definitions for DMA.Control register */
++    #define ARM_VSI_DMA_Enable_Pos        0U                                   /*!< DMA Control: Enable Position */
++    #define ARM_VSI_DMA_Enable_Msk        ( 1UL << ARM_VSI_DMA_Enable_Pos )    /*!< DMA Control: Enable Mask */
++    #define ARM_VSI_DMA_Direction_Pos     1U                                   /*!< DMA Control: Direction Position */
++    #define ARM_VSI_DMA_Direction_Msk     ( 1UL << ARM_VSI_DMA_Direction_Pos ) /*!< DMA Control: Direction Mask */
++    #define ARM_VSI_DMA_Direction_P2M     ( 0UL * ARM_VSI_DMA_Direction_Msk )  /*!< DMA Control: Direction P2M */
++    #define ARM_VSI_DMA_Direction_M2P     ( 1UL * ARM_VSI_DMA_Direction_Msk )  /*!< DMA Control: Direction M2P */
++
++/* Memory mapping of 8 VSI peripherals */
++    #define ARM_VSI0_BASE                 ( 0x5FF00000UL )                        /*!< VSI 0 Base Address */
++    #define ARM_VSI1_BASE                 ( 0x5FF10000UL )                        /*!< VSI 1 Base Address */
++    #define ARM_VSI2_BASE                 ( 0x5FF20000UL )                        /*!< VSI 2 Base Address */
++    #define ARM_VSI3_BASE                 ( 0x5FF30000UL )                        /*!< VSI 3 Base Address */
++    #define ARM_VSI4_BASE                 ( 0x5FF40000UL )                        /*!< VSI 4 Base Address */
++    #define ARM_VSI5_BASE                 ( 0x5FF50000UL )                        /*!< VSI 5 Base Address */
++    #define ARM_VSI6_BASE                 ( 0x5FF60000UL )                        /*!< VSI 6 Base Address */
++    #define ARM_VSI7_BASE                 ( 0x5FF70000UL )                        /*!< VSI 7 Base Address */
++    #define ARM_VSI0_BASE_NS              ( 0x4FF00000UL )                        /*!< VSI 0 Base Address (non-secure address space) */
++    #define ARM_VSI1_BASE_NS              ( 0x4FF10000UL )                        /*!< VSI 1 Base Address (non-secure address space) */
++    #define ARM_VSI2_BASE_NS              ( 0x4FF20000UL )                        /*!< VSI 2 Base Address (non-secure address space) */
++    #define ARM_VSI3_BASE_NS              ( 0x4FF30000UL )                        /*!< VSI 3 Base Address (non-secure address space) */
++    #define ARM_VSI4_BASE_NS              ( 0x4FF40000UL )                        /*!< VSI 4 Base Address (non-secure address space) */
++    #define ARM_VSI5_BASE_NS              ( 0x4FF50000UL )                        /*!< VSI 5 Base Address (non-secure address space) */
++    #define ARM_VSI6_BASE_NS              ( 0x4FF60000UL )                        /*!< VSI 6 Base Address (non-secure address space) */
++    #define ARM_VSI7_BASE_NS              ( 0x4FF70000UL )                        /*!< VSI 7 Base Address (non-secure address space) */
++    #define ARM_VSI0                      ( ( ARM_VSI_Type * ) ARM_VSI0_BASE )    /*!< VSI 0 struct */
++    #define ARM_VSI1                      ( ( ARM_VSI_Type * ) ARM_VSI1_BASE )    /*!< VSI 1 struct */
++    #define ARM_VSI2                      ( ( ARM_VSI_Type * ) ARM_VSI2_BASE )    /*!< VSI 2 struct */
++    #define ARM_VSI3                      ( ( ARM_VSI_Type * ) ARM_VSI3_BASE )    /*!< VSI 3 struct */
++    #define ARM_VSI4                      ( ( ARM_VSI_Type * ) ARM_VSI4_BASE )    /*!< VSI 4 struct */
++    #define ARM_VSI5                      ( ( ARM_VSI_Type * ) ARM_VSI5_BASE )    /*!< VSI 5 struct */
++    #define ARM_VSI6                      ( ( ARM_VSI_Type * ) ARM_VSI6_BASE )    /*!< VSI 6 struct */
++    #define ARM_VSI7                      ( ( ARM_VSI_Type * ) ARM_VSI7_BASE )    /*!< VSI 7 struct */
++    #define ARM_VSI0_NS                   ( ( ARM_VSI_Type * ) ARM_VSI0_BASE_NS ) /*!< VSI 0 struct (non-secure address space) */
++    #define ARM_VSI1_NS                   ( ( ARM_VSI_Type * ) ARM_VSI1_BASE_NS ) /*!< VSI 1 struct (non-secure address space) */
++    #define ARM_VSI2_NS                   ( ( ARM_VSI_Type * ) ARM_VSI2_BASE_NS ) /*!< VSI 2 struct (non-secure address space) */
++    #define ARM_VSI3_NS                   ( ( ARM_VSI_Type * ) ARM_VSI3_BASE_NS ) /*!< VSI 3 struct (non-secure address space) */
++    #define ARM_VSI4_NS                   ( ( ARM_VSI_Type * ) ARM_VSI4_BASE_NS ) /*!< VSI 4 struct (non-secure address space) */
++    #define ARM_VSI5_NS                   ( ( ARM_VSI_Type * ) ARM_VSI5_BASE_NS ) /*!< VSI 5 struct (non-secure address space) */
++    #define ARM_VSI6_NS                   ( ( ARM_VSI_Type * ) ARM_VSI6_BASE_NS ) /*!< VSI 6 struct (non-secure address space) */
++    #define ARM_VSI7_NS                   ( ( ARM_VSI_Type * ) ARM_VSI7_BASE_NS ) /*!< VSI 7 struct (non-secure address space) */
++
++    #ifdef __cplusplus
++    }
++    #endif
++
++#endif /* __ARM_VSI_H */
+diff --git a/corstone300/CMakeLists.txt b/corstone300/CMakeLists.txt
+index 8d9824f..339fbde 100644
+--- a/corstone300/CMakeLists.txt
++++ b/corstone300/CMakeLists.txt
+@@ -28,6 +28,7 @@ target_sources(arm-corstone-platform-bsp
+         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_AN552_MPC.c
+         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_Flash.c
+         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_I2C.c
++        ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_SAI.c
+         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_SPI.c
+         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_SSE300_PPC.c
+         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_USART.c
+diff --git a/corstone310/CMSIS_Driver/Driver_SAI.c b/corstone310/CMSIS_Driver/Driver_SAI.c
+new file mode 100644
+index 0000000..8158d09
+--- /dev/null
++++ b/corstone310/CMSIS_Driver/Driver_SAI.c
+@@ -0,0 +1,340 @@
++/* Copyright 2023 Arm Limited and/or its affiliates
++ * <open-source-office@arm.com>
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++#include <stddef.h>
++#include "Driver_SAI.h"
++#include "arm_vsi.h"
++#include "device_cfg.h"
++#include CMSIS_device_header
++
++#define ARM_SAI_DRV_VERSION    ARM_DRIVER_VERSION_MAJOR_MINOR( 1, 0 ) /* driver version */
++
++/* Audio Peripheral definitions */
++#define AudioI                 ARM_VSI0_NS   /* Audio Input access struct */
++#define AudioI_IRQn            ARM_VSI0_IRQn /* Audio Input Interrupt number */
++#define AudioI_Handler         VSI0_Handler  /* Audio Input Interrupt handler */
++
++/* Audio Peripheral registers */
++#define CONTROL                Regs[ 0 ] /* Control register */
++#define CHANNELS               Regs[ 1 ] /* Channel register */
++#define SAMPLE_BITS            Regs[ 2 ] /* Sample number of bits (8..32) register */
++#define SAMPLE_RATE            Regs[ 3 ] /* Sample rate (samples per second) register */
++#define BLOCK_SIZE             Regs[ 4 ] /* DMA block size register */
++
++/* Audio Control register definitions */
++#define CONTROL_ENABLE_Pos     0U                            /* CONTROL: ENABLE Position */
++#define CONTROL_ENABLE_Msk     ( 1UL << CONTROL_ENABLE_Pos ) /* CONTROL: ENABLE Mask */
++
++/* Audio channel control parameter */
++#ifndef SAI_NUMBER_OF_CHANNELS
++    #define SAI_NUMBER_OF_CHANNEL    1U
++#endif
++
++/* Driver Version */
++static const ARM_DRIVER_VERSION DriverVersion = { ARM_SAI_API_VERSION, ARM_SAI_DRV_VERSION };
++
++/* Driver Capabilities */
++static const ARM_SAI_CAPABILITIES DriverCapabilities =
++{
++    1, /* supports asynchronous Transmit/Receive */
++    0, /* supports synchronous Transmit/Receive */
++    1, /* supports user defined Protocol */
++    0, /* supports I2S Protocol */
++    0, /* supports MSB/LSB justified Protocol */
++    0, /* supports PCM short/long frame Protocol */
++    0, /* supports AC'97 Protocol */
++    0, /* supports Mono mode */
++    0, /* supports Companding */
++    0, /* supports MCLK (Master Clock) pin */
++    0, /* supports Frame error event: \ref ARM_SAI_EVENT_FRAME_ERROR */
++    0  /* reserved (must be zero) */
++};
++
++/* Event Callback */
++static ARM_SAI_SignalEvent_t CB_Event = NULL;
++
++/* Driver State */
++static uint8_t Initialized = 0U;
++
++/* Driver Current Power State */
++static ARM_POWER_STATE currentPowerState = ARM_POWER_OFF;
++
++/* Driver Current Status */
++static ARM_SAI_STATUS currentDriverStatus;
++
++/* VSI helper functions prototypes */
++static void ARM_EnableVSIInterrupts( void );
++static void ARM_DisableVSIInterrupts( void );
++
++/* Audio Input Interrupt Handler */
++void AudioI_Handler( void )
++{
++    AudioI->IRQ.Clear = 0x00000001U;
++    __DSB();
++    __ISB();
++
++    currentDriverStatus.rx_busy = 0U;
++
++    if( CB_Event != NULL )
++    {
++        CB_Event( ARM_SAI_EVENT_RECEIVE_COMPLETE );
++    }
++}
++
++/* */
++/*  CMSIS Driver APIs */
++/* */
++
++static ARM_DRIVER_VERSION ARM_SAI_GetVersion( void )
++{
++    /* Returns version information of the driver implementation in ARM_DRIVER_VERSION */
++    return DriverVersion;
++}
++
++static ARM_SAI_CAPABILITIES ARM_SAI_GetCapabilities( void )
++{
++    /* Retrieves information about the capabilities in this driver implementation. */
++    return DriverCapabilities;
++}
++
++static int32_t ARM_SAI_Initialize( ARM_SAI_SignalEvent_t cb_event )
++{
++    CB_Event = cb_event;
++
++    /* Initialize Audio Input Resources */
++    AudioI->CONTROL = 0U;
++    AudioI->CHANNELS = 0U;
++    AudioI->SAMPLE_BITS = 0U;
++    AudioI->SAMPLE_RATE = 0U;
++    AudioI->BLOCK_SIZE = 0U;
++
++    Initialized = 1U;
++
++    return ARM_DRIVER_OK;
++}
++
++static int32_t ARM_SAI_Uninitialize( void )
++{
++    if( Initialized == 0U )
++    {
++        return ARM_DRIVER_ERROR;
++    }
++
++    /* Un-initialize Audio Input Resources */
++    AudioI->CONTROL = 0U;
++    AudioI->CHANNELS = 0U;
++    AudioI->SAMPLE_BITS = 0U;
++    AudioI->SAMPLE_RATE = 0U;
++    AudioI->BLOCK_SIZE = 0U;
++
++    Initialized = 0U;
++
++    return ARM_DRIVER_OK;
++}
++
++static int32_t ARM_SAI_PowerControl( ARM_POWER_STATE state )
++{
++    if( Initialized == 0U )
++    {
++        return ARM_DRIVER_ERROR;
++    }
++
++    switch( state )
++    {
++        case ARM_POWER_OFF:
++            /* Disables related interrupts and DMA, disables peripherals, and terminates any pending data transfers */
++            ARM_DisableVSIInterrupts();
++
++            AudioI->Timer.Control = 0U;
++            AudioI->DMA.Control = 0U;
++            AudioI->IRQ.Clear = 0x00000001U;
++            AudioI->IRQ.Enable = 0x00000000U;
++            currentPowerState = ARM_POWER_OFF;
++
++            /* Transfers cannot be cancelled, instead we return busy status to pause any pending data transfers */
++            return ARM_DRIVER_ERROR_BUSY;
++
++        case ARM_POWER_LOW:
++            currentPowerState = ARM_POWER_LOW;
++
++            return ARM_DRIVER_ERROR_UNSUPPORTED;
++
++        case ARM_POWER_FULL:
++
++            /* Set-up peripheral for data transfers, enable interrupts (NVIC) and DMA */
++            if( currentPowerState != ARM_POWER_FULL )
++            {
++                AudioI->DMA.Control = ARM_VSI_DMA_Enable_Msk;
++                AudioI->IRQ.Clear = 0x00000001U;
++                AudioI->IRQ.Enable = 0x00000001U;
++
++                ARM_EnableVSIInterrupts();
++
++                currentPowerState = ARM_POWER_FULL;
++            }
++
++            break;
++    }
++
++    return ARM_DRIVER_OK;
++}
++
++static int32_t ARM_SAI_Receive( void * data,
++                                uint32_t num )
++{
++    if( Initialized == 0U )
++    {
++        return ARM_DRIVER_ERROR;
++    }
++
++    /* During the receive operation it is not allowed to call the function again */
++    if( currentDriverStatus.rx_busy == 1U )
++    {
++        return ARM_DRIVER_ERROR_BUSY;
++    }
++
++    currentDriverStatus.rx_busy = 1U;
++
++    if( num > 0 )
++    {
++        /* The driver shoud configures DMA or the interrupt system for continuous reception */
++        AudioI->DMA.Control = 0U;
++        AudioI->DMA.Address = ( uint32_t ) data;
++        AudioI->DMA.BlockNum = num;
++        AudioI->DMA.BlockSize = AudioI->BLOCK_SIZE;
++        uint32_t sample_rate = AudioI->SAMPLE_RATE;
++        uint32_t sample_size = ( AudioI->CHANNELS * ( ( AudioI->SAMPLE_BITS + 7U ) ) / 8U );
++
++        if( ( sample_size == 0U ) || ( sample_rate == 0U ) )
++        {
++            AudioI->Timer.Interval = 0xFFFFFFFFU;
++        }
++        else
++        {
++            AudioI->Timer.Interval = ( 1000000U * ( AudioI->DMA.BlockSize / sample_size ) ) / sample_rate;
++        }
++
++        AudioI->DMA.Control = ARM_VSI_DMA_Direction_P2M | ARM_VSI_DMA_Enable_Msk;
++        AudioI->CONTROL = CONTROL_ENABLE_Msk;
++        AudioI->Timer.Control = ARM_VSI_Timer_Trig_DMA_Msk | ARM_VSI_Timer_Trig_IRQ_Msk | ARM_VSI_Timer_Periodic_Msk
++                                | ARM_VSI_Timer_Run_Msk;
++    }
++    else
++    {
++        CB_Event( ARM_SAI_EVENT_RECEIVE_COMPLETE );
++    }
++
++    /* The receive function is non-blocking and returns as soon as the driver has started the operation */
++    return ARM_DRIVER_OK;
++}
++
++static uint32_t ARM_SAI_GetRxCount( void )
++{
++    if( Initialized == 0U )
++    {
++        return ARM_DRIVER_ERROR;
++    }
++
++    /* Returns the number of the currently received data items during an ARM_SAI_Receive operation. */
++    return( AudioI->Timer.Count );
++}
++
++static int32_t ARM_SAI_Control( uint32_t control,
++                                uint32_t arg1,
++                                uint32_t arg2 )
++{
++    if( Initialized == 0U )
++    {
++        return ARM_DRIVER_ERROR;
++    }
++
++    /* Enable or disable receiver; arg1 : 0=disable (default); 1=enable */
++    if( ( control & ARM_SAI_CONTROL_Msk ) == ARM_SAI_CONTROL_RX )
++    {
++        AudioI->CONTROL = arg1;
++    }
++
++    /* Configure transmitter. arg1 and arg2 provide additional configuration options,
++     * arg1: DMA Block size
++     * arg2: Sampling rate
++     */
++    if( ( control & ARM_SAI_CONTROL_Msk ) == ARM_SAI_CONFIGURE_RX )
++    {
++        AudioI->CONTROL |= control;
++
++        /* Note: The current implemented protocol is the user defined protocol which serves the Virtual Streaming Interface (VSI) */
++        if( ( control & ARM_SAI_PROTOCOL_Msk ) == ARM_SAI_PROTOCOL_USER )
++        {
++            AudioI->CHANNELS = SAI_NUMBER_OF_CHANNEL;
++            AudioI->SAMPLE_BITS = ( ( control & ARM_SAI_DATA_SIZE_Msk ) >> ARM_SAI_DATA_SIZE_Pos ) + 1U;
++            /* The DMA block size and the sampling rates are to be sent as function arguments */
++            AudioI->BLOCK_SIZE = arg1;
++            AudioI->SAMPLE_RATE = arg2;
++        }
++        else
++        {
++            /* For other protocols to be implemented */
++        }
++    }
++
++    return ARM_DRIVER_OK;
++}
++
++static ARM_SAI_STATUS ARM_SAI_GetStatus( void )
++{
++    ARM_SAI_STATUS driverStatus;
++
++    /* rx_busy flag can be copied from the static driver status structure */
++    driverStatus.rx_busy = currentDriverStatus.rx_busy;
++
++    /* If the receiver is enabled and data is to be received but the receive operation has not been started yet,
++     * then the rx_overflow flag should be set. */
++    if( ( AudioI->CONTROL & CONTROL_ENABLE_Msk ) )
++    {
++        if( driverStatus.rx_busy )
++        {
++            driverStatus.rx_overflow = 0U;
++        }
++        else
++        {
++            driverStatus.rx_overflow = 1U;
++        }
++    }
++    else
++    {
++        driverStatus.rx_overflow = 0U;
++    }
++
++    return driverStatus;
++}
++/* End SAI Interface */
++
++/* VSI helper functions definitions */
++static void ARM_EnableVSIInterrupts( void )
++{
++    NVIC_SetPriority( ARM_VSI0_IRQn, 6 );
++    NVIC_EnableIRQ( ARM_VSI0_IRQn );
++}
++
++static void ARM_DisableVSIInterrupts( void )
++{
++    NVIC_DisableIRQ( ARM_VSI0_IRQn );
++}
++
++extern ARM_DRIVER_SAI Driver_SAI0;
++ARM_DRIVER_SAI Driver_SAI0 =
++{
++    ARM_SAI_GetVersion,
++    ARM_SAI_GetCapabilities,
++    ARM_SAI_Initialize,
++    ARM_SAI_Uninitialize,
++    ARM_SAI_PowerControl,
++    NULL,
++    ARM_SAI_Receive,
++    NULL,
++    ARM_SAI_GetRxCount,
++    ARM_SAI_Control,
++    ARM_SAI_GetStatus
++};
+diff --git a/corstone310/CMSIS_Driver/Include/arm_vsi.h b/corstone310/CMSIS_Driver/Include/arm_vsi.h
+new file mode 100644
+index 0000000..a5c121c
+--- /dev/null
++++ b/corstone310/CMSIS_Driver/Include/arm_vsi.h
+@@ -0,0 +1,117 @@
++/* Copyright 2021-2023 Arm Limited and/or its affiliates
++ * <open-source-office@arm.com>
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++/*
++ * Virtual Streaming Interface (VSI)
++ */
++
++#ifndef __ARM_VSI_H
++    #define __ARM_VSI_H
++
++    #ifdef __cplusplus
++    extern "C" {
++    #endif
++
++    #ifndef __IM
++        #define __IM     volatile const /*! Defines 'read only' structure member permissions */
++    #endif
++    #ifndef __OM
++        #define __OM     volatile /*! Defines 'write only' structure member permissions */
++    #endif
++    #ifndef __IOM
++        #define __IOM    volatile /*! Defines 'read/write' structure member permissions */
++    #endif
++
++    #include <stdint.h>
++
++/**
++ * \brief  Structure type to access the virtual streaming interface.
++ */
++    typedef struct
++    {
++        struct
++        {
++            __IOM uint32_t Enable; /*!< Offset: 0x0000 (R/W) IRQ Enable */
++            __OM uint32_t Set;     /*!< Offset: 0x0004 (-/W) IRQ Set */
++            __OM uint32_t Clear;   /*!< Offset: 0x0008 (-/W) IRQ Clear */
++            __IM uint32_t Status;  /*!< Offset: 0x000C (R/-) IRQ Status */
++        } IRQ;                     /*!< Interrupt Request (IRQ) */
++        uint32_t reserved1[ 60 ];
++        struct
++        {
++            __IOM uint32_t Control;  /*!< Offset: 0x0100 (R/W) Timer Control */
++            __IOM uint32_t Interval; /*!< Offset: 0x0104 (R/W) Timer Interval Value (in microseconds) */
++            __IM uint32_t Count;     /*!< Offset: 0x0108 (R/-) Timer Overflow Count */
++        } Timer;                     /*!< Time counter with 1MHz input frequency */
++        uint32_t reserved2[ 61 ];
++        struct
++        {
++            __IOM uint32_t Control;   /*!< Offset: 0x0200 (R/W) DMA Control */
++            __IOM uint32_t Address;   /*!< Offset: 0x0204 (R/W) DMA Memory Start Address */
++            __IOM uint32_t BlockSize; /*!< Offset: 0x0208 (R/W) DMA Block Size (in bytes, multiple of 4) */
++            __IOM uint32_t BlockNum;  /*!< Offset: 0x020C (R/W) DMA Number of Blocks (must be 2^n) */
++            __IM uint32_t BlockIndex; /*!< Offset: 0x0210 (R/-) DMA Block Index */
++        } DMA;                        /*!< Direct Memory Access (DMA) Controller */
++        uint32_t reserved3[ 59 ];
++        __IOM uint32_t Regs[ 64 ];    /*!< Offset: 0x0300 (R/W) User Registers */
++    } ARM_VSI_Type;
++
++/* VSI Timer Control Definitions for Timer.Control register */
++    #define ARM_VSI_Timer_Run_Pos         0U                                    /*!< Timer Control: Run Position */
++    #define ARM_VSI_Timer_Run_Msk         ( 1UL << ARM_VSI_Timer_Run_Pos )      /*!< Timer Control: Run Mask */
++    #define ARM_VSI_Timer_Periodic_Pos    1U                                    /*!< Timer Control: Periodic Position */
++    #define ARM_VSI_Timer_Periodic_Msk    ( 1UL << ARM_VSI_Timer_Periodic_Pos ) /*!< Timer Control: Periodic Mask */
++    #define ARM_VSI_Timer_Trig_IRQ_Pos    2U                                    /*!< Timer Control: Trig_IRQ Position */
++    #define ARM_VSI_Timer_Trig_IRQ_Msk    ( 1UL << ARM_VSI_Timer_Trig_IRQ_Pos ) /*!< Timer Control: Trig_IRQ Mask */
++    #define ARM_VSI_Timer_Trig_DMA_Pos    3U                                    /*!< Timer Control: Trig_DAM Position */
++    #define ARM_VSI_Timer_Trig_DMA_Msk    ( 1UL << ARM_VSI_Timer_Trig_DMA_Pos ) /*!< Timer Control: Trig_DMA Mask */
++
++/* VSI DMA Control Definitions for DMA.Control register */
++    #define ARM_VSI_DMA_Enable_Pos        0U                                   /*!< DMA Control: Enable Position */
++    #define ARM_VSI_DMA_Enable_Msk        ( 1UL << ARM_VSI_DMA_Enable_Pos )    /*!< DMA Control: Enable Mask */
++    #define ARM_VSI_DMA_Direction_Pos     1U                                   /*!< DMA Control: Direction Position */
++    #define ARM_VSI_DMA_Direction_Msk     ( 1UL << ARM_VSI_DMA_Direction_Pos ) /*!< DMA Control: Direction Mask */
++    #define ARM_VSI_DMA_Direction_P2M     ( 0UL * ARM_VSI_DMA_Direction_Msk )  /*!< DMA Control: Direction P2M */
++    #define ARM_VSI_DMA_Direction_M2P     ( 1UL * ARM_VSI_DMA_Direction_Msk )  /*!< DMA Control: Direction M2P */
++
++/* Memory mapping of 8 VSI peripherals */
++    #define ARM_VSI0_BASE                 ( 0x5FF00000UL )                        /*!< VSI 0 Base Address */
++    #define ARM_VSI1_BASE                 ( 0x5FF10000UL )                        /*!< VSI 1 Base Address */
++    #define ARM_VSI2_BASE                 ( 0x5FF20000UL )                        /*!< VSI 2 Base Address */
++    #define ARM_VSI3_BASE                 ( 0x5FF30000UL )                        /*!< VSI 3 Base Address */
++    #define ARM_VSI4_BASE                 ( 0x5FF40000UL )                        /*!< VSI 4 Base Address */
++    #define ARM_VSI5_BASE                 ( 0x5FF50000UL )                        /*!< VSI 5 Base Address */
++    #define ARM_VSI6_BASE                 ( 0x5FF60000UL )                        /*!< VSI 6 Base Address */
++    #define ARM_VSI7_BASE                 ( 0x5FF70000UL )                        /*!< VSI 7 Base Address */
++    #define ARM_VSI0_BASE_NS              ( 0x4FF00000UL )                        /*!< VSI 0 Base Address (non-secure address space) */
++    #define ARM_VSI1_BASE_NS              ( 0x4FF10000UL )                        /*!< VSI 1 Base Address (non-secure address space) */
++    #define ARM_VSI2_BASE_NS              ( 0x4FF20000UL )                        /*!< VSI 2 Base Address (non-secure address space) */
++    #define ARM_VSI3_BASE_NS              ( 0x4FF30000UL )                        /*!< VSI 3 Base Address (non-secure address space) */
++    #define ARM_VSI4_BASE_NS              ( 0x4FF40000UL )                        /*!< VSI 4 Base Address (non-secure address space) */
++    #define ARM_VSI5_BASE_NS              ( 0x4FF50000UL )                        /*!< VSI 5 Base Address (non-secure address space) */
++    #define ARM_VSI6_BASE_NS              ( 0x4FF60000UL )                        /*!< VSI 6 Base Address (non-secure address space) */
++    #define ARM_VSI7_BASE_NS              ( 0x4FF70000UL )                        /*!< VSI 7 Base Address (non-secure address space) */
++    #define ARM_VSI0                      ( ( ARM_VSI_Type * ) ARM_VSI0_BASE )    /*!< VSI 0 struct */
++    #define ARM_VSI1                      ( ( ARM_VSI_Type * ) ARM_VSI1_BASE )    /*!< VSI 1 struct */
++    #define ARM_VSI2                      ( ( ARM_VSI_Type * ) ARM_VSI2_BASE )    /*!< VSI 2 struct */
++    #define ARM_VSI3                      ( ( ARM_VSI_Type * ) ARM_VSI3_BASE )    /*!< VSI 3 struct */
++    #define ARM_VSI4                      ( ( ARM_VSI_Type * ) ARM_VSI4_BASE )    /*!< VSI 4 struct */
++    #define ARM_VSI5                      ( ( ARM_VSI_Type * ) ARM_VSI5_BASE )    /*!< VSI 5 struct */
++    #define ARM_VSI6                      ( ( ARM_VSI_Type * ) ARM_VSI6_BASE )    /*!< VSI 6 struct */
++    #define ARM_VSI7                      ( ( ARM_VSI_Type * ) ARM_VSI7_BASE )    /*!< VSI 7 struct */
++    #define ARM_VSI0_NS                   ( ( ARM_VSI_Type * ) ARM_VSI0_BASE_NS ) /*!< VSI 0 struct (non-secure address space) */
++    #define ARM_VSI1_NS                   ( ( ARM_VSI_Type * ) ARM_VSI1_BASE_NS ) /*!< VSI 1 struct (non-secure address space) */
++    #define ARM_VSI2_NS                   ( ( ARM_VSI_Type * ) ARM_VSI2_BASE_NS ) /*!< VSI 2 struct (non-secure address space) */
++    #define ARM_VSI3_NS                   ( ( ARM_VSI_Type * ) ARM_VSI3_BASE_NS ) /*!< VSI 3 struct (non-secure address space) */
++    #define ARM_VSI4_NS                   ( ( ARM_VSI_Type * ) ARM_VSI4_BASE_NS ) /*!< VSI 4 struct (non-secure address space) */
++    #define ARM_VSI5_NS                   ( ( ARM_VSI_Type * ) ARM_VSI5_BASE_NS ) /*!< VSI 5 struct (non-secure address space) */
++    #define ARM_VSI6_NS                   ( ( ARM_VSI_Type * ) ARM_VSI6_BASE_NS ) /*!< VSI 6 struct (non-secure address space) */
++    #define ARM_VSI7_NS                   ( ( ARM_VSI_Type * ) ARM_VSI7_BASE_NS ) /*!< VSI 7 struct (non-secure address space) */
++
++    #ifdef __cplusplus
++    }
++    #endif
++
++#endif /* __ARM_VSI_H */
+diff --git a/corstone310/CMakeLists.txt b/corstone310/CMakeLists.txt
+index dfae235..57e3b1a 100644
+--- a/corstone310/CMakeLists.txt
++++ b/corstone310/CMakeLists.txt
+@@ -26,6 +26,7 @@ target_include_directories(arm-corstone-platform-bsp
+ target_sources(arm-corstone-platform-bsp
+     PRIVATE
+         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_MPC.c
++        ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_SAI.c
+         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_SPI.c
+         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_USART.c
+         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_TGU.c
+-- 
+2.34.1
+
