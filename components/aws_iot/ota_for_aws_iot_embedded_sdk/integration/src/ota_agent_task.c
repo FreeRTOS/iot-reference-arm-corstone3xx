@@ -71,6 +71,9 @@
 /* Include platform abstraction header. */
 #include "ota_pal.h"
 
+extern void vOtaNotActiveHook( void );
+extern void vOtaActiveHook( void );
+
 /*------------- Demo configurations -------------------------*/
 
 /**
@@ -560,9 +563,46 @@ static void otaAppCallback( OtaJobEvent_t event,
 
             break;
 
+        case OtaJobEventReceivedJob:
+            LogDebug( ( "Received OtaJobEventReceivedJob callback from OTA Agent." ) );
+            vOtaActiveHook();
+            return;
+
+        case OtaJobEventNoActiveJob:
+            LogDebug( ( "Received OtaJobEventNoActiveJob callback from OTA Agent." ) );
+            vOtaNotActiveHook();
+            return;
+
         default:
             LogWarn( ( "Received an unhandled callback event from OTA Agent, event = %d", event ) );
+            break;
+    }
 
+    OtaState_t state = OTA_GetState();
+
+    switch( state )
+    {
+        case OtaAgentStateNoTransition:
+        case OtaAgentStateInit:
+        case OtaAgentStateReady:
+        case OtaAgentStateSuspended:
+        case OtaAgentStateShuttingDown:
+        case OtaAgentStateStopped:
+            LogInfo( ( "OTA not active state `%d` from OTA Agent.", state ) );
+            vOtaNotActiveHook();
+            break;
+
+        case OtaAgentStateRequestingJob:
+        case OtaAgentStateCreatingFile:
+        case OtaAgentStateRequestingFileBlock:
+        case OtaAgentStateWaitingForFileBlock:
+        case OtaAgentStateClosingFile:
+            LogInfo( ( "OTA active state `%d` from OTA Agent.", state ) );
+            vOtaActiveHook();
+            break;
+
+        case OtaAgentStateWaitingForJob:
+        default:
             break;
     }
 }
