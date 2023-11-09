@@ -4,7 +4,7 @@
 
 # FreeRTOS must be first as other components depend on it
 add_subdirectory(freertos_kernel)
-
+add_subdirectory(ai EXCLUDE_FROM_ALL)
 add_subdirectory(aws_iot EXCLUDE_FROM_ALL)
 add_subdirectory(connectivity EXCLUDE_FROM_ALL)
 add_subdirectory(security EXCLUDE_FROM_ALL)
