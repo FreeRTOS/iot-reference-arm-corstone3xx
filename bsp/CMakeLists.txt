@@ -53,6 +53,7 @@ add_library(fri-bsp STATIC)
 target_sources(fri-bsp
     PRIVATE
         common/bsp_serial.c
+        common/mps3_leds.c
 )
 
 target_include_directories(fri-bsp
