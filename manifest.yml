@@ -110,7 +110,7 @@ dependencies:
       path: "components/aws_iot/tinycbor/library"
   - name: "toolchains"
     license: "Apache-2.0"
-    version: "v2022.09"
+    version: "f77e1ba2bb830f6950a88c34849cf3df9af4ad32"
     repository:
       type: "git"
       url: "https://git.gitlab.arm.com/iot/open-iot-sdk/toolchain.git"

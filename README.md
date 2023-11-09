@@ -48,6 +48,9 @@ This reference integration contains following two examples:
       [PKCS#11 PSA Shim](#pkcs11-psa-shim) and [coreMQTT-agent](https://docs.aws.amazon.com/freertos/latest/userguide/coremqtt-agent.html)
       library. In addition, [secure OTA](#secure-ota-updates) using [OTA agent](https://freertos.org/ota/index.html)
       and [AWS OTA PAL PSA implementation](#aws-ota-pal-psa-implementation).
+* [Keyword Detection](docs/keyword_detection.md)
+    * Demonstrates detecting keywords from an audio source using Machine Learning.
+      It also has all the features of the AWS IoT example.
 
 ### Secure TLS Connection
 
