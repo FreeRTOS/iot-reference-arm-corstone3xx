@@ -14,6 +14,8 @@ CLEAN=0
 BUILD_PATH="$ROOT/build"
 TARGET="corstone310"
 TARGET_PROCESSOR=""
+ML_INFERENCE_ENGINE="ETHOS"
+AUDIO_SOURCE="ROM"
 TOOLCHAIN="ARMCLANG"
 TOOLCHAIN_FILE=""
 BUILD=1
@@ -49,7 +51,9 @@ function build_with_cmake {
         -DARM_CORSTONE_BSP_TARGET_PLATFORM=$TARGET \
         -DAWS_CLIENT_PRIVATE_KEY_PEM_PATH=$PRIVATE_KEY_PATH \
         -DAWS_CLIENT_CERTIFICATE_PEM_PATH=$CERTIFICATE_PATH \
-        -DIOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR=$ROOT
+        -DIOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR=$ROOT \
+        -DML_INFERENCE_ENGINE=$ML_INFERENCE_ENGINE \
+        -DAUDIO_SOURCE=$AUDIO_SOURCE
 
 
         if [[ $BUILD -ne 0 && $INTEGRATION_TESTS -eq 0 ]]; then
@@ -73,13 +77,15 @@ Options:
     -p,--path                   Path to the build directory
     -c,--clean                  Clean build
     -t,--target                 Build target (corstone300 or corstone310)
+    -i,--inference              ML Inference engine selection (ETHOS | SOFTWARE)
+    -s,--audio                  Audio source (ROM)
     --toolchain                 Compiler (GNU or ARMCLANG)
     -q, --integration-tests     Build FreeRTOS integration tests
     --configure-only Create build tree but do not build
     --certificate_path          The full path for the AWS device certificate
     --private_key_path          The full path for the AWS device private key
 Examples:
-    blinky, aws-iot-example
+    blinky, aws-iot-example, keyword-detection
 EOF
 }
 
@@ -88,8 +94,8 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-SHORT=t:,c,h,q,p:
-LONG=target:,toolchain:,clean,help,configure-only,certificate_path:,private_key_path:,integration-tests:,path:
+SHORT=t:,i:,s:,c,h,q,p:
+LONG=target:,inference:,toolchain:,audio:,clean,help,configure-only,certificate_path:,private_key_path:,integration-tests:,path:
 OPTS=$(getopt -n build --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -111,6 +117,14 @@ do
       ;;
     -t | --target )
       TARGET=$2
+      shift 2
+      ;;
+    -i | --inference )
+      ML_INFERENCE_ENGINE=$2
+      shift 2
+      ;;
+    -s | --audio )
+      AUDIO_SOURCE=$2
       shift 2
       ;;
     --toolchain )
@@ -154,8 +168,32 @@ case "$1" in
         EXAMPLE="$1"
         PATH_TO_SOURCE="$ROOT/applications/aws_iot_example"
         ;;
+    keyword-detection)
+        EXAMPLE="$1"
+        PATH_TO_SOURCE="$ROOT/applications/keyword_detection"
+        ;;
     *)
-        echo "Missing example <blinky,aws-iot-example>"
+        echo "Missing example <blinky,aws-iot-example,keyword-detection>"
+        show_usage
+        exit 2
+        ;;
+esac
+
+case "$ML_INFERENCE_ENGINE" in
+    ETHOS | SOFTWARE )
+        ;;
+    *)
+        echo "Invalid inference selection <ETHOS|SOFTWARE>"
+        show_usage
+        exit 2
+        ;;
+esac
+
+case "$AUDIO_SOURCE" in
+    ROM )
+        ;;
+    *)
+        echo "Invalid audio source selection <ROM>"
         show_usage
         exit 2
         ;;

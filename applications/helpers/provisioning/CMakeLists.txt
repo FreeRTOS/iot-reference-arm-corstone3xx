@@ -50,7 +50,6 @@ add_dependencies(provisioning_data aws_clientcredential_keys_header)
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
     target_link_options(provisioning_data
         PRIVATE
-            "--specs=nosys.specs"
             "-nostartfiles"
     )
     target_add_scatter_file(provisioning_data ${CMAKE_CURRENT_LIST_DIR}/provisioning_data.ld)
