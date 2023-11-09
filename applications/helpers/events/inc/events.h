@@ -20,8 +20,9 @@ extern EventGroupHandle_t xSystemEvents;
 
 /**
  * @brief Create a system events group.
+ * @return  0 if the event group was created successfully, -1 otherwise.
  */
-void vEventHelperInit( void );
+int32_t xEventHelperInit( void );
 
 /**
  * @brief Wait until network is up and running.
