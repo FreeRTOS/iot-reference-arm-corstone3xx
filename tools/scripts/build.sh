@@ -78,7 +78,7 @@ Options:
     -c,--clean                  Clean build
     -t,--target                 Build target (corstone300 or corstone310)
     -i,--inference              ML Inference engine selection (ETHOS | SOFTWARE)
-    -s,--audio                  Audio source (ROM)
+    -s,--audio                  Audio source (ROM | VSI)
     --toolchain                 Compiler (GNU or ARMCLANG)
     -q, --integration-tests     Build FreeRTOS integration tests
     --configure-only Create build tree but do not build
@@ -196,8 +196,10 @@ esac
 case "$AUDIO_SOURCE" in
     ROM )
         ;;
+    VSI )
+        ;;
     *)
-        echo "Invalid audio source selection <ROM>"
+        echo "Invalid audio source selection <ROM | VSI>"
         show_usage
         exit 2
         ;;
