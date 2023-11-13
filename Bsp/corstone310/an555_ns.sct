@@ -20,7 +20,8 @@ LR_CODE (0x28000000 + ((((0) + (0x80000)) + 0x400))) {
         * (+RO)
     }
 
-    ER_DATA (0x21000000 + ((0x00200000))) {
+    ; The last 0x1000 bytes are reserved for the provisioning bundle
+    ER_DATA (0x21000000 + ((0x00200000))) (0x00200000 - 0x1000) {
         * (+ZI +RW)
     }
 

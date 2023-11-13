@@ -10,11 +10,11 @@
 
 __STACK_SIZE = 0x00002800;
 __HEAP_SIZE  = 0x00000400;
-
+PROVISIONING_SIZE = 0x1000;
 MEMORY
 {
   FLASH (rx)  : ORIGIN = (0x28080000 + 0x400), LENGTH = (0x300000 - 0x400 - 0x800)
-  RAM   (rwx) : ORIGIN = 0x21100000, LENGTH = 0x00100000
+  RAM   (rwx) : ORIGIN = 0x21100000, LENGTH = (0x00100000 - PROVISIONING_SIZE)
 }
 
 /* Linker script to place sections and symbol values.
