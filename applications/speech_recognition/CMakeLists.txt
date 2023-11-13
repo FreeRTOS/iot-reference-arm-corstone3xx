@@ -10,7 +10,7 @@ endif()
 
 set(ML_INFERENCE_ENGINE "ETHOS" CACHE STRING "Machine Learning inference engine (ETHOS)")
 
-set(AUDIO_SOURCE "ROM" CACHE STRING "Source of audio data (ROM)")
+set(AUDIO_SOURCE "ROM" CACHE STRING "Source of audio data (ROM | VSI)")
 
 # From: ota-for-aws-iot-embedded-sdk/source/include/ota_appversion32.h
 # struct version
@@ -163,6 +163,11 @@ if(${AUDIO_SOURCE} STREQUAL "ROM")
     target_include_directories(speech-recognition
         PRIVATE
             ${CMAKE_CURRENT_BINARY_DIR}
+    )
+elseif(${AUDIO_SOURCE} STREQUAL "VSI")
+    target_compile_definitions(speech-recognition
+        PRIVATE
+            AUDIO_VSI
     )
 endif()
 

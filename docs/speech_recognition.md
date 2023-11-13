@@ -6,6 +6,10 @@ The Speech Recognition application demonstrates identifying sentences on a voice
 
 When a sentence is infered, it is printed on the terminal and sent to the configured cloud provider.
 
+The following audio source configurations are supported:
+* ROM.
+* VSI (Virtual Streaming Interface).
+
 The sixth LED blinks at a regular interval to indicate that the system is alive and waits for input.
 
 ## Prerequisites
@@ -21,14 +25,16 @@ Follow the instructions descrived in [Setting Up AWS Connectivity](./setting_up_
 To build the Speech-Recognition example, run the following command:
 
 ```bash
-./tools/scripts/build.sh speech-recognition --certificate_path <certificate pem's path> --private_key_path <private key pem's path>
+./tools/scripts/build.sh speech-recognition --certificate_path <certificate pem's path> --private_key_path <private key pem's path> --target <corstone300/corstone310> --inference <ETHOS/SOFTWARE> --audio <ROM/VSI>
 ```
 * The `certificate pem's path` and `private key pem's path` should be the downloaded key's and certificate's path if you chose the **Auto-generate a new certificate** during the Thing creation. If you chose **Skip creating a certificate at this time** then these paths should locate the generated credential files that were created by the `./tools/scripts/generate_credentials.py` script in the previous step.
+
+* The `audio` is used to select the input audio source whether it's preloaded into `ROM` or using Arm's Virtual Streaming Interface `VSI`.
 
 Or, run the command below to perform a clean build:
 
 ```bash
-./tools/scripts/build.sh speech-recognition -c
+./tools/scripts/build.sh speech-recognition --certificate_path <certificate pem's path> --private_key_path <private key pem's path> --target <corstone300/corstone310> --inference <ETHOS/SOFTWARE> --audio <ROM/VSI> -c
 ```
 
 This will build the example with the Arm Compiler (armclang) by default, which is
@@ -48,10 +54,13 @@ The binary has to be loaded to the ```0x210FF000``` address so the ```speech-rec
 
 ## Running the application
 
+### Note:
+If you would like to run the speech recognition application using VSI configuration as the input audio source, you must run the [setup_python_vsi.sh](../tools/scripts/setup_python_vsi.sh) script to setup the needed python environment for VSI prior to running the application.
+
 To run the Speech-Recognition example, run the following command:
 
 ```bash
-./tools/scripts/run.sh speech-recognition
+./tools/scripts/run.sh speech-recognition --target <corstone300/corstone310> --audio <ROM/VSI>
 ```
 
 ### Expected output

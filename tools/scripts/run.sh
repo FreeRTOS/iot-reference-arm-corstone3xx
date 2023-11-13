@@ -26,6 +26,7 @@ Options:
     -p,--path   Build path
     -t,--target Target to run
     -f, --fvp_type  FVP type to use (fvp, vht)
+    -s, --audio Audio source (ROM, VSI)
 
 Examples:
     blinky, aws-iot-example, keyword-detection, speech-recognition
@@ -129,14 +130,24 @@ esac
 case "$AUDIO_SOURCE" in
     ROM )
       ;;
+    VSI )
+        if [ "$EXAMPLE" == "speech-recognition" ] || [ "$EXAMPLE" == "keyword-detection" ]; then
+            export APP_UNDERSCORED=$(echo ${EXAMPLE} | tr '-' '_')
+            export AVH_AUDIO_FILE=$ROOT/applications/$APP_UNDERSCORED/resources/test.wav
+        fi
+        AVH_AUDIO_OPTIONS="-C mps3_board.v_path=$ROOT/tools/scripts/"
+        export PYTHONHOME="/opt/python/3.9.18"
+        ;;
     *)
-      echo "Invalid audio source <ROM>"
+      echo "Invalid audio source <ROM | VSI>"
       show_usage
       exit 2
       ;;
 esac
 
+
 OPTIONS="-C mps3_board.visualisation.disable-visualisation=1 \
+-C core_clk.mul=200000000 \
 -C mps3_board.smsc_91c111.enabled=1 \
 -C mps3_board.hostbridge.userNetworking=1 \
 -C mps3_board.telnetterminal0.start_telnet=0 \
@@ -147,4 +158,4 @@ OPTIONS="-C mps3_board.visualisation.disable-visualisation=1 \
 -C mps3_board.DISABLE_GATING=1"
 
 # Start the FVP
-$FVP_BIN $OPTIONS -a $MERGED_IMAGE_PATH
+$FVP_BIN -a $MERGED_IMAGE_PATH $OPTIONS $AVH_AUDIO_OPTIONS

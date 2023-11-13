@@ -47,3 +47,7 @@ additional argument `--fvp_type vht` must be passed to the run example script.
 
 Follow the instructions described in [Setting Up your Development Environment](development_environment.md)
 to setup your development environment.
+
+### Setting up Python VSI environment
+
+Run the [setup_python_vsi.sh](../tools/scripts/setup_python_vsi.sh) script to setup the needed python environment for VSI to work.
