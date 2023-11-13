@@ -40,8 +40,9 @@ __ROM_SIZE = (0x300000 - 0x400 - 0xC00);
     <o1> RAM Size (in Bytes) <0x0-0xFFFFFFFF:8>
   </h>
  -----------------------------------------------------------------------------*/
+PROVISIONING_SIZE = 0x1000;
 __RAM_BASE = 0x21000000 + 0x00200000;
-__RAM_SIZE = 0x00200000;
+__RAM_SIZE = (0x00200000 - PROVISIONING_SIZE);
 
 /*--------------------- Stack / Heap Configuration ----------------------------
   <h> Stack / Heap Configuration
