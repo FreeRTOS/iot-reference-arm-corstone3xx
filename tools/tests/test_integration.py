@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Arm Limited. All rights reserved.
 # SPDX-License-Identifier: MIT
 
+import subprocess
 from timeit import default_timer as timer
 from pytest import fixture
 from aws_test_util import Flags, create_aws_resources, cleanup_aws_resources
@@ -22,7 +23,11 @@ def aws_resources(build_artefacts_path, credentials_path, signed_update_bin_name
         cleanup_aws_resources(flags)
 
 
-def test_integration(aws_resources, fvp):
+def test_integration(
+    aws_resources,
+    fvp_process: subprocess.Popen,
+    timeout_seconds: int,
+):
     end_string = "RunQualificationTest returned"
 
     start = timer()
@@ -38,9 +43,8 @@ def test_integration(aws_resources, fvp):
     ignored = 0
     failed_tests = []
 
-    # Timeout for the test is 20 minutes
-    while (current_time - start) < (20 * 60):
-        line = fvp.stdout.readline()
+    while (current_time - start) < timeout_seconds:
+        line = fvp_process.stdout.readline()
         if not line:
             break
         line = line.decode("utf-8")

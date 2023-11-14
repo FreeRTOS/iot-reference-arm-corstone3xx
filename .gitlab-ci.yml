@@ -237,18 +237,19 @@ integration-tests:
     - ./tools/ci/generate_credentials.sh -f -p applications/${APP_UNDERSCORED}/configs/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
-    - ./tools/scripts/build.sh -q ${APP}
+    - ./tools/scripts/build.sh -q ${APP} --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
     - pushd components/tools/freertos_libraries_integration_tests/library/tools/echo_server
     - go run echo_server.go&
     - popd
-    - sleep 1
+    - sleep 5
     - |
       pytest -s tools/tests/test_integration.py \
       --build-artefacts-path "build" \
       --fvp $FVP_BIN \
       --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
       --merged-elf-name "${APP}-tests_merged.elf" \
-      --signed-update-bin-name "${APP}-tests-update_signed.bin"
+      --signed-update-bin-name "${APP}-tests-update_signed.bin" \
+      --timeout-seconds 14400
   parallel:
     matrix:
       -
