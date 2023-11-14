@@ -130,6 +130,8 @@ def fvp_process(fvp_path, merged_elf_name, fvp_options):
         "mps3_board.hostbridge.userNetworking=1",
         "-C",
         "mps3_board.DISABLE_GATING=1",
+        "-C",
+        "ethosu.extra_args=--fast",
     ]
 
     cmdline.extend(fvp_options)
