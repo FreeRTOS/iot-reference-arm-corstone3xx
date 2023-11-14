@@ -28,7 +28,7 @@ def pytest_addoption(parser):
     parser.addoption("--fvp-options", action="store", default="")
     parser.addoption("--merged-elf-name", action="store", default="")
     parser.addoption("--signed-update-bin-name", action="store", default="")
-    parser.addoption("--timeout-seconds", type=int, action="store", default="")
+    parser.addoption("--timeout-seconds", type=int, action="store", default=1800)
     parser.addoption("--pass-output-file", action="store", default="")
     parser.addoption("--fail-output-file", action="store", default="")
     parser.addoption("--pass-ota-output-file", action="store", default="")
