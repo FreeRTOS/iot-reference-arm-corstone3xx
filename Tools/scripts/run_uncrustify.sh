@@ -4,4 +4,6 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
-find Projects Config -iname "*.[hc]" -exec uncrustify --check -c Tools/uncrustify.cfg {} +
+git submodule deinit --all -f
+find . -iname "*.[hc]" -exec uncrustify --replace --no-backup --if-changed -c Tools/uncrustify.cfg -l C {} +
+git submodule update --init --recursive
