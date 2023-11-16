@@ -22,8 +22,8 @@ def aws_resources(build_artefacts_path, credentials_path, signed_update_bin_name
 def test_ota(
     aws_resources,
     fvp_process: subprocess.Popen,
-    pass_output_file: str,
-    fail_output_file: str,
+    pass_ota_output_file: str,
+    fail_ota_output_file: str,
     timeout_seconds: int,
 ) -> None:
     """
@@ -33,16 +33,16 @@ def test_ota(
     aws_resources: Input coming out as a result of executiong of aws_resources function
                    defined above.
     fvp_process (subprocess.Popen): FVP execution process
-    pass_output_file (str): Path to the file containing the output when application
+    pass_ota_output_file (str): Path to the file containing the output when application
                             runs without errors.
-    fail_output_file (str): Path to the file containing the output when application
+    fail_ota_output_file (str): Path to the file containing the output when application
                             runs with errors.
     timeout_seconds (int): Timeout in seconds to wait before terminating the test.
     """
-    with open(pass_output_file, "r") as file:
+    with open(pass_ota_output_file, "r") as file:
         pass_output = file.readlines()
         pass_output = [line.replace("\n", "") for line in pass_output]
-    with open(fail_output_file, "r") as file:
+    with open(fail_ota_output_file, "r") as file:
         fail_output = file.readlines()
         fail_output = [line.replace("\n", "") for line in fail_output]
 
