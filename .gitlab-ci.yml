@@ -130,8 +130,8 @@ test-ota:
       --merged-elf-name "${APP}_merged.elf" \
       --signed-update-bin-name "${APP}-update_signed.bin" \
       --timeout-seconds 900 \
-      --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
-      --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
+      --pass-ota-output-file "applications/${APP_UNDERSCORED}/tests/pass_ota_output.log" \
+      --fail-ota-output-file "applications/${APP_UNDERSCORED}/tests/fail_ota_output.log"
   parallel:
     matrix:
       -
