@@ -54,8 +54,7 @@ def test_ota(
         line = fvp_process.stdout.readline()
         if not line:
             break
-        line = line.decode("utf-8")
-        line = line.rstrip()
+        line = line.decode("utf-8", errors="ignore").rstrip()
         print(line)
         if pass_output[index] in line:
             index += 1

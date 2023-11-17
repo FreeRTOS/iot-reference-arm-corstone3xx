@@ -37,7 +37,7 @@ def test_application_output(
         line = fvp_process.stdout.readline()
         if not line:
             break
-        line = line.decode("utf-8").rstrip()
+        line = line.decode("utf-8", errors="ignore").rstrip()
         if line:
             print(line)
         if pass_output[index] in line:
