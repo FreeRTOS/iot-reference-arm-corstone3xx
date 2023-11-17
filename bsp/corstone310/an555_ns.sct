@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-LR_CODE (0x28000000 + ((((0) + (0x80000)) + 0x400))) {
-    ER_CODE (0x28000000 + ((((0) + (0x80000)) + 0x400))) (((0x300000) - 0x400 - 0xC00)) {
+; #define FLASH_NS_PARTITION_SIZE 0x340000
+; #define FLASH_S_PARTITION_SIZE  0x40000
+; #define ROM_START               0x28000000
+; #define BL2_HEADER_SIZE         0x400
+; #define BL2_TRAILER_SIZE        0xC00
+
+LR_CODE (0x28000000 + ((((0) + (0x40000)) + 0x400))) {
+    ER_CODE (0x28000000 + ((((0) + (0x40000)) + 0x400))) (((0x340000) - 0x400 - 0xC00)) {
         *.o (RESET +First)
         * (+RO)
     }
