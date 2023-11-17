@@ -31,8 +31,14 @@
     <o1> Flash Size (in Bytes) <0x0-0xFFFFFFFF:8>
   </h>
   -----------------------------------------------------------------------------*/
-__ROM_BASE = (0x28000000 + 0x80000 + 0x400);
-__ROM_SIZE = (0x300000 - 0x400 - 0xC00);
+FLASH_NS_PARTITION_SIZE = 0x340000;
+FLASH_S_PARTITION_SIZE = 0x40000;
+ROM_START = 0x28000000;
+BL2_HEADER_SIZE = 0x400;
+BL2_TRAILER_SIZE = 0xC00;
+
+__ROM_BASE = (ROM_START + FLASH_S_PARTITION_SIZE + BL2_HEADER_SIZE);
+__ROM_SIZE = (FLASH_NS_PARTITION_SIZE - BL2_HEADER_SIZE - BL2_TRAILER_SIZE);
 
 /*--------------------- Embedded RAM Configuration ----------------------------
   <h> RAM Configuration
