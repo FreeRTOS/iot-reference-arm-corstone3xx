@@ -1342,7 +1342,7 @@ int xOtaProvisionCodeSigningKey( psa_key_handle_t * pxKeyHandle,
 {
     uint8_t pucPubKeyDerFormatBuffer[ DER_FORMAT_BUFFER_LENGTH ];
     size_t xPubKeyDerLength = DER_FORMAT_BUFFER_LENGTH;
-    size_t xPubKeyPemLength = strlen( pxProvisioningParamsBundle->codeSigningPublicKey );
+    size_t xPubKeyPemLength = strlen( ( const char * ) pxProvisioningParamsBundle->codeSigningPublicKey );
     int result = 0;
     psa_status_t status = PSA_SUCCESS;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
