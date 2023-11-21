@@ -26,13 +26,6 @@ jobs:
       - name: Run spellings check
         uses: FreeRTOS/CI-CD-Github-Actions/spellings@main
 
-  formatting:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-      - name: Check formatting
-        uses: FreeRTOS/CI-CD-Github-Actions/formatting@main
-
   link-verifier:
     runs-on: ubuntu-latest
     steps:
@@ -71,3 +64,18 @@ jobs:
         run: |
           git-secrets --register-aws
           git-secrets --scan
+
+  formatting:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v3
+        with:
+          path: ${{ github.workspace }}
+          submodules: 'recursive'
+      - name: Check formatting
+        shell: bash
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install fd-find
+          ./tools/scripts/run_uncrustify.sh
