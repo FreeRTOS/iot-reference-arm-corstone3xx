@@ -48,6 +48,8 @@ pre-commit:
   stage: quality-check
   script:
     - pip install . -t $PWD
+    - apt-get update -y
+    - apt-get install fd-find -y
     - cp $PWD/bin/banned-api-hook $PWD/banned-api-hook
     - export PATH="$PWD:$PATH";
     - pre-commit run --all-files --verbose --show-diff-on-failure
