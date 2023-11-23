@@ -9,12 +9,47 @@
 #include "Driver_USART.h"
 #include "bsp_serial.h"
 
+#include "FreeRTOS.h"
+#include "semphr.h"
+
+#define STDIN_FILENO     0
+#define STDOUT_FILENO    1
+#define STDERR_FILENO    2
+
+typedef enum
+{
+    WRITE_ERROR_SEND_FAIL = -3,
+    WRITE_ERROR_SYNC_FAILED = -2,
+    WRITE_ERROR_INVALID_ARGS = -1,
+    WRITE_ERROR_NONE = 0
+} WriteError_t;
+
+typedef struct
+{
+    WriteError_t error;
+    unsigned int charsWritten;
+} WriteResult_t;
+
 extern ARM_DRIVER_USART Driver_USART0;
+
+static SemaphoreHandle_t xLoggingMutex = NULL;
+
+static bool prvValidFdHandle( int fd );
+static void prvWriteChars( int fd,
+                           const unsigned char * str,
+                           unsigned int len,
+                           WriteResult_t * result );
 
 void bsp_serial_init( void )
 {
     Driver_USART0.Initialize( NULL );
     Driver_USART0.Control( ARM_USART_MODE_ASYNCHRONOUS, DEFAULT_UART_BAUDRATE );
+
+    if( xLoggingMutex == NULL )
+    {
+        xLoggingMutex = xSemaphoreCreateMutex();
+        configASSERT( xLoggingMutex );
+    }
 }
 
 void bsp_serial_print( char * str )
@@ -27,10 +62,6 @@ void bsp_serial_print( char * str )
 /* Retarget armclang, which requires all IO system calls to be overridden together. */
 
     #include <rt_sys.h>
-
-    #define STDIN_FILENO     0
-    #define STDOUT_FILENO    1
-    #define STDERR_FILENO    2
 
     FILEHANDLE _sys_open( const char * name,
                           int openmode )
@@ -73,20 +104,24 @@ void bsp_serial_print( char * str )
                     unsigned int len,
                     int mode )
     {
-        /* From <rt_sys.h>: `mode' exists for historical reasons and must be ignored. */
+        /* From <rt_sys.h>: `mode` exists for historical reasons and must be ignored. */
         ( void ) mode;
 
-        if( ( fd != STDOUT_FILENO ) && ( fd != STDERR_FILENO ) )
-        {
-            return -1;
-        }
+        WriteResult_t result = { .error = WRITE_ERROR_NONE, .charsWritten = 0 };
+        prvWriteChars( ( int ) fd, str, len, &result );
 
-        if( Driver_USART0.Send( str, len ) != ARM_DRIVER_OK )
+        if( ( result.error == WRITE_ERROR_NONE ) && ( result.charsWritten == len ) )
         {
-            return -1;
+            return 0;
         }
-
-        return 0;
+        else if( result.error == WRITE_ERROR_SEND_FAIL )
+        {
+            return len - result.charsWritten;
+        }
+        else
+        {
+            return ( int ) result.error;
+        }
     }
 
     int _sys_read( FILEHANDLE fd,
@@ -133,12 +168,50 @@ void bsp_serial_print( char * str )
                 char * str,
                 int len )
     {
-        if( Driver_USART0.Send( str, len ) == ARM_DRIVER_OK )
-        {
-            return len;
-        }
+        WriteResult_t result = { .error = WRITE_ERROR_NONE, .charsWritten = 0 };
 
-        return 0;
+        prvWriteChars( fd, str, len, &result );
+
+        return ( ( result.error == WRITE_ERROR_NONE ) && ( result.charsWritten == len ) ) ? result.charsWritten : -1;
     }
 
 #endif /* if defined( __ARMCOMPILER_VERSION ) */
+
+static bool prvValidFdHandle( int fd )
+{
+    return ( bool ) ( ( fd == STDOUT_FILENO ) || ( fd == STDERR_FILENO ) );
+}
+
+static void prvWriteChars( int fd,
+                           const unsigned char * str,
+                           unsigned int len,
+                           WriteResult_t * result )
+{
+    result->charsWritten = 0;
+
+    if( prvValidFdHandle( fd ) == false )
+    {
+        result->error = WRITE_ERROR_INVALID_ARGS;
+        return;
+    }
+
+    if( xSemaphoreTake( xLoggingMutex, portMAX_DELAY ) != pdTRUE )
+    {
+        result->error = WRITE_ERROR_SYNC_FAILED;
+        return;
+    }
+
+    bool allCharsWritten = ( bool ) ( Driver_USART0.Send( str, len ) == ARM_DRIVER_OK );
+
+    ( void ) xSemaphoreGive( xLoggingMutex );
+
+    if( allCharsWritten == true )
+    {
+        result->charsWritten = len;
+        result->error = WRITE_ERROR_NONE;
+    }
+    else
+    {
+        result->error = WRITE_ERROR_SEND_FAIL;
+    }
+}

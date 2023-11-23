@@ -1,0 +1,1 @@
+serial: Fix multithread synchronisation
