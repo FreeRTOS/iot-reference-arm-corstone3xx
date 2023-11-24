@@ -4,6 +4,21 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
-git submodule deinit --all -f
-find . -iname "*.[hc]" -exec uncrustify --replace --no-backup --if-changed -c Tools/uncrustify.cfg -l C {} +
-git submodule update --init --recursive
+# Ensure the new line is used to split the output of the `git submodule status`
+# command into an array
+IFS=$'\n'
+
+submodules_status=($(git submodule status))
+
+exclude_pattern="-E "
+for submodule_status in "${submodules_status[@]}"
+do
+    # Ensure the space is used to split the submodule status into an array
+    IFS=" "
+    submodule_status_parts=($submodule_status)
+    submodule_path = "${submodule_status_parts[1]}"
+    exclude_pattern+="${submodule_path} -E "
+done
+exclude_pattern+="./build"
+
+fdfind -E $exclude_pattern -e c -e h --exec uncrustify --no-backup --replace --if-changed -c Tools/uncrustify.cfg -l C
