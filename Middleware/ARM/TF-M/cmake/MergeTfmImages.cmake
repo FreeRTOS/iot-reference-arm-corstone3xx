@@ -33,11 +33,11 @@ function(iot_reference_arm_corstone3xx_tf_m_merge_images target bl2_address tfm_
         DEPENDS
             $<TARGET_FILE_DIR:${target}>/${target}_signed.bin
         COMMAND
-            ${srec_cat} ${BINARY_DIR}/install/outputs/bl2.bin -Binary -offset ${bl2_address}
-                ${BINARY_DIR}/install/outputs/tfm_s_signed.bin -Binary -offset ${tfm_s_address}
+            ${srec_cat} ${BINARY_DIR}/api_ns/bin/bl2.bin -Binary -offset ${bl2_address}
+                ${BINARY_DIR}/api_ns/bin/tfm_s_signed.bin -Binary -offset ${tfm_s_address}
                 $<TARGET_FILE_DIR:${target}>/${target}_signed.bin -Binary -offset ${ns_address}
                 ${ns_provisioning_data_param}
-                ${CMAKE_BINARY_DIR}/Middleware/ARM/TF-M/tf-m-build-prefix/src/tf-m-build-build/install/outputs/encrypted_provisioning_bundle.bin -Binary -offset ${s_prov_bundle_address}
+                ${CMAKE_BINARY_DIR}/Middleware/ARM/TF-M/tf-m-build-prefix/src/tf-m-build-build/api_ns/bin/encrypted_provisioning_bundle.bin -Binary -offset ${s_prov_bundle_address}
                 -o $<TARGET_FILE_DIR:${target}>/${target}_merged.hex
         COMMAND
             ${objcopy} -I ihex -O elf32-little

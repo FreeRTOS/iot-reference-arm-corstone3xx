@@ -8,20 +8,20 @@
 # <BINARY_DIR> is a placeholder keyword in ExternalProject_Add.
 
 set(tfm_ns_interface_generated
-    <BINARY_DIR>/install/interface/src/tfm_tz_psa_ns_api.c
-    <BINARY_DIR>/install/interface/src/tfm_ps_api.c
-    <BINARY_DIR>/install/interface/src/tfm_its_api.c
-    <BINARY_DIR>/install/interface/src/tfm_crypto_api.c
-    <BINARY_DIR>/install/interface/src/tfm_attest_api.c
-    <BINARY_DIR>/install/interface/src/tfm_platform_api.c
-    <BINARY_DIR>/install/interface/src/os_wrapper/tfm_ns_interface_rtos.c
+    <BINARY_DIR>/api_ns/interface/src/tfm_tz_psa_ns_api.c
+    <BINARY_DIR>/api_ns/interface/src/tfm_ps_api.c
+    <BINARY_DIR>/api_ns/interface/src/tfm_its_api.c
+    <BINARY_DIR>/api_ns/interface/src/tfm_crypto_api.c
+    <BINARY_DIR>/api_ns/interface/src/tfm_attest_api.c
+    <BINARY_DIR>/api_ns/interface/src/tfm_platform_api.c
+    <BINARY_DIR>/api_ns/interface/src/os_wrapper/tfm_ns_interface_rtos.c
 )
 if(TFM_CMAKE_ARGS MATCHES "TFM_PARTITION_FIRMWARE_UPDATE=ON")
-    list(APPEND tfm_ns_interface_generated <BINARY_DIR>/install/interface/src/tfm_fwu_api.c)
+    list(APPEND tfm_ns_interface_generated <BINARY_DIR>/api_ns/interface/src/tfm_fwu_api.c)
 endif()
 
 set(s_veneers_generated
-    <BINARY_DIR>/install/interface/lib/s_veneers.o
+    <BINARY_DIR>/api_ns/interface/lib/s_veneers.o
 )
 
 include(ExternalProject)
@@ -35,13 +35,6 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "ARMClang")
 else()
     message(FATAL_ERROR "Unsupported compiler: ${CMAKE_C_COMPILER_ID}")
 endif()
-
-execute_process(COMMAND git am --abort
-    COMMAND git am ${CMAKE_CURRENT_SOURCE_DIR}/0001-cs310-tfm-Fix-Ethos-U-git-link.patch
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/trusted-firmware-m"
-    OUTPUT_QUIET
-    ERROR_QUIET
-)
 
 ExternalProject_Add(
     tf-m-build
