@@ -69,8 +69,9 @@ add_executable(blinky main.c)
 add_dependencies(blinky trusted_firmware-m-build)
 target_link_libraries(blinky
     freertos_kernel
-    tfm-ns-interface
     fri-bsp
+    tfm-ns-interface
+    toolchain-override
 )
 
 set_linker_script(blinky)

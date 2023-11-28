@@ -31,6 +31,21 @@ elseif(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone310")
     set(NS_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x213FF000 CACHE STRING "Non-Secure provisioning bundle loading address")
 endif()
 
+if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+    # Execute the command as CMAKE_C_COMPILER_VERSION is not guaranteed to be defined.
+    EXECUTE_PROCESS( COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE ARM_GNU_TOOLCHAIN_VERSION )
+endif()
+
+# The `toolchain-override` is an INTERFACE library
+# as it would not contain any source file in case
+# of the Arm Compiler For Embedded
+add_library(toolchain-override INTERFACE)
+
+target_sources(toolchain-override
+    PUBLIC
+        $<$<VERSION_GREATER_EQUAL:${ARM_GNU_TOOLCHAIN_VERSION},11.3.1>:${CMAKE_CURRENT_LIST_DIR}/common/syscalls_stub.c>
+)
+
 # BSP serial library
 
 add_library(fri-bsp STATIC)
