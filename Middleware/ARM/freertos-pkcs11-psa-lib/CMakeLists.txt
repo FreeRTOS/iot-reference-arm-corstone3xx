@@ -13,7 +13,7 @@ ExternalProject_Get_Property(tf-m-build BINARY_DIR)
 target_include_directories(freertos-pkcs11-psa
     PUBLIC
         freertos-pkcs11-psa
-        ${BINARY_DIR}/install/interface/include
+        ${BINARY_DIR}/api_ns/interface/include
 )
 
 target_link_libraries(freertos-pkcs11-psa

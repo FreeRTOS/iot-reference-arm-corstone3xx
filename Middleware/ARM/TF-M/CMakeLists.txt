@@ -13,8 +13,7 @@ add_dependencies(tfm-ns-interface tf-m-build)
 
 target_include_directories(tfm-ns-interface
     PUBLIC
-        ${BINARY_DIR}/generated/interface/include
-        ${BINARY_DIR}/install/interface/include
+        ${BINARY_DIR}/api_ns/interface/include
 )
 
 target_link_libraries(tfm-ns-interface
