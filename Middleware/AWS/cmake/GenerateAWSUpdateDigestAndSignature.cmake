@@ -26,7 +26,7 @@ function(iot_reference_arm_corstone3xx_generate_aws_update_digest_and_signature 
                 -pkeyopt digest:sha256
                 -pkeyopt rsa_padding_mode:pss
                 -pkeyopt rsa_mgf1_md:sha256
-                -inkey ${BINARY_DIR}/install/image_signing/keys/generated_private_key_ns.pem
+                -inkey ${BINARY_DIR}/api_ns/image_signing/keys/image_ns_signing_private_key.pem
                 -in  $<TARGET_FILE_DIR:${target}>/${digest_name}.bin
                 -out  $<TARGET_FILE_DIR:${target}>/${signature_name}.bin
         COMMAND

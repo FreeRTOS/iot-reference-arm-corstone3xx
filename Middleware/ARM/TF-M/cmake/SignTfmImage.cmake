@@ -25,8 +25,8 @@ function(iot_reference_arm_corstone3xx_tf_m_sign_image target signed_target_name
             # Sign the non-secure (application) image for TF-M bootloader (BL2)
             python3 ${BINARY_DIR}/api_ns/image_signing/scripts/wrapper/wrapper.py
                 -v ${version}
-                --layout ${BINARY_DIR}/install/image_signing/layout_files/signing_layout_ns.o
-                -k ${BINARY_DIR}/install/image_signing/keys/generated_private_key_ns.pem
+                --layout ${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o
+                -k ${BINARY_DIR}/api_ns/image_signing/keys/image_ns_signing_private_key.pem
                 --public-key-format full
                 --align 1 --pad-header ${pad_option} -H 0x400 -s auto
                 --measured-boot-record
