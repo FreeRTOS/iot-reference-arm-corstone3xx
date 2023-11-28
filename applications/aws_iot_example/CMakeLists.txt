@@ -122,6 +122,7 @@ target_link_libraries(aws-iot-example
         mbedtls-threading-freertos
         ota-for-aws-iot-embedded-sdk
         tfm-ns-interface
+        toolchain-override
 )
 
 set_linker_script(aws-iot-example)
