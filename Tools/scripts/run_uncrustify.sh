@@ -16,7 +16,7 @@ do
     # Ensure the space is used to split the submodule status into an array
     IFS=" "
     submodule_status_parts=($submodule_status)
-    submodule_path = "${submodule_status_parts[1]}"
+    submodule_path="${submodule_status_parts[1]}"
     exclude_pattern+="${submodule_path} -E "
 done
 exclude_pattern+="./build"
