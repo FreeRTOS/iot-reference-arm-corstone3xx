@@ -57,12 +57,6 @@ __HEAP_SIZE  = 0x000B0000;
  *-------------------- <<< end of configuration section >>> -------------------
  */
 
-/* ARMv8-M stack sealing:
-   to use ARMv8-M stack sealing set __STACKSEAL_SIZE to 8 otherwise keep 0
- */
-__STACKSEAL_SIZE = 8;
-
-
 MEMORY
 {
   FLASH (rx)  : ORIGIN = __ROM_BASE, LENGTH = __ROM_SIZE
@@ -99,7 +93,6 @@ MEMORY
  *   __StackLimit
  *   __StackTop
  *   __stack
- *   __StackSeal      (only if ARMv8-M stack sealing is used)
  */
 ENTRY(Reset_Handler)
 
@@ -259,7 +252,7 @@ SECTIONS
   } > RAM
   PROVIDE(__RAM_segment_used_end__ = __HeapLimit);
 
-  .stack (ORIGIN(RAM) + LENGTH(RAM) - __STACK_SIZE - __STACKSEAL_SIZE) (COPY) :
+  .stack (ORIGIN(RAM) + LENGTH(RAM) - __STACK_SIZE) (COPY) :
   {
     . = ALIGN(8);
     __StackLimit = .;
@@ -268,15 +261,6 @@ SECTIONS
     __StackTop = .;
   } > RAM
   PROVIDE(__stack = __StackTop);
-
-  /* ARMv8-M stack sealing: */
-  .stackseal (ORIGIN(RAM) + LENGTH(RAM) - __STACKSEAL_SIZE) (COPY) :
-  {
-    . = ALIGN(8);
-    __StackSeal = .;
-    . = . + 8;
-    . = ALIGN(8);
-  } > RAM
 
   /* Check if data + heap + stack exceeds RAM limit */
   ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
