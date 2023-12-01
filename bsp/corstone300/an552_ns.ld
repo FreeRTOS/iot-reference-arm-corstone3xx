@@ -66,6 +66,8 @@ SECTIONS
     /* .zero.table */
     . = ALIGN(4);
     __zero_table_start__ = .;
+    LONG (ADDR(.bss))
+    LONG (SIZEOF(.bss) / 4)
     __zero_table_end__ = .;
 
     KEEP(*(.init))
