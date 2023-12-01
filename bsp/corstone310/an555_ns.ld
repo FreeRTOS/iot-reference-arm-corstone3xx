@@ -104,6 +104,21 @@ SECTIONS
     KEEP(*(.vectors))
     *(.text*)
 
+    . = ALIGN(4);
+    __copy_table_start__ = .;
+    LONG (LOADADDR(.data))
+    LONG (ADDR(.data))
+    LONG (SIZEOF(.data) / 4)
+    LONG (LOADADDR(.model))
+    LONG (ADDR(.model))
+    LONG (SIZEOF(.model) / 4)
+    __copy_table_end__ = .;
+
+    /* .zero.table */
+    . = ALIGN(4);
+    __zero_table_start__ = .;
+    __zero_table_end__ = .;
+
     KEEP(*(.init))
     KEEP(*(.fini))
 
@@ -137,28 +152,6 @@ SECTIONS
     *(.ARM.exidx* .gnu.linkonce.armexidx.*)
   } > FLASH
   __exidx_end = .;
-
-  .copy.table :
-  {
-    . = ALIGN(4);
-    __copy_table_start__ = .;
-
-    LONG (__etext)
-    LONG (__data_start__)
-    LONG ((__data_end__ - __data_start__) / 4)
-    LONG (__ddr_load_address__)
-    LONG (__ddr_start__)
-    LONG ((__ddr_end__ - __ddr_start__) / 4)
-
-    __copy_table_end__ = .;
-  } > FLASH
-
-  .zero.table :
-  {
-    . = ALIGN(4);
-    __zero_table_start__ = .;
-    __zero_table_end__ = .;
-  } > FLASH
 
   /**
    * Location counter can end up 2byte aligned with narrow Thumb code but
