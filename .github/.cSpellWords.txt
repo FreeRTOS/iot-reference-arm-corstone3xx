@@ -17,9 +17,11 @@ CMAC
 cmsis
 CMSIS
 CMSIS's
+coremqtt
 COSE
 CSRS
 Customisation
+DCMAKE
 DCONFIG
 demultiplexing
 dgst
@@ -58,7 +60,9 @@ mcuboot
 MCUBOOT
 mbed
 Mbed
+mbedcrypto
 MBEDTLSSL
+mbedx509
 Merkle
 MFLN
 mqtt
