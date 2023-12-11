@@ -16,6 +16,12 @@ def get_absolute_path(filename) -> str:
 
 
 def pytest_addoption(parser):
+    parser.addoption(
+        "--audio-file-path",
+        action="store",
+        default="",
+        help="Path to the input audio file to be used by applications.",
+    )
     parser.addoption("--build-artefacts-path", action="store", default="")
     parser.addoption("--credentials-path", action="store", default="credentials")
     parser.addoption("--fvp", action="store", default="FVP_Corstone_SSE-310")
@@ -27,6 +33,13 @@ def pytest_addoption(parser):
     parser.addoption("--fail-output-file", action="store", default="")
     parser.addoption("--pass-ota-output-file", action="store", default="")
     parser.addoption("--fail-ota-output-file", action="store", default="")
+    parser.addoption(
+        "--pythonhome-path",
+        type=str,
+        action="store",
+        default="",
+        help="PYTHONHOME path to be used to configure FVP's working environemnt",
+    )
 
 
 @pytest.fixture()
@@ -42,6 +55,14 @@ def credentials_path(pytestconfig):
 @pytest.fixture
 def fvp_path(pytestconfig):
     yield pytestconfig.getoption("--fvp")
+
+
+@pytest.fixture
+def audio_file_path(pytestconfig):
+    os.environ["AVH_AUDIO_FILE"] = str(
+        get_absolute_path(pytestconfig.getoption("--audio-file-path"))
+    )
+    yield pytestconfig.getoption("--audio-file-path")
 
 
 @pytest.fixture
@@ -100,8 +121,15 @@ def fail_ota_output_file(pytestconfig):
     yield get_absolute_path(pytestconfig.getoption("--fail-ota-output-file"))
 
 
+@pytest.fixture
+def pythonhome_path(pytestconfig):
+    yield pytestconfig.getoption("--pythonhome-path")
+
+
 @pytest.fixture(scope="function")
-def fvp_process(fvp_path, merged_elf_name, fvp_options):
+def fvp_process(
+    fvp_path, merged_elf_name, fvp_options, audio_file_path, pythonhome_path
+):
     # Fixture of the FVP, when it returns, the FVP is started and
     # traces are accessible through the .stdout of the object returned.
     # When the test is terminated, the FVP subprocess is closed.
@@ -137,6 +165,19 @@ def fvp_process(fvp_path, merged_elf_name, fvp_options):
     cmdline.extend(fvp_options)
 
     fvp_env = os.environ.copy()
+
+    # The FVP VSI python script path option is used only in case of VSI as input
+    # audio source where audio file path would point to the input audio file.
+    # If this option is used with ROM as audio source, it would break if PYTHONHOME
+    # path is not set.
+    if audio_file_path:
+        vsi_options = [
+            "-C",
+            f"mps3_board.v_path={Path(__file__).parent.parent / 'scripts'}",
+        ]
+        cmdline.extend(vsi_options)
+    if pythonhome_path != "":
+        fvp_env["PYTHONHOME"] = pythonhome_path
     proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, env=fvp_env)
     yield proc
     proc.terminate()

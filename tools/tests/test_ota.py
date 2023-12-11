@@ -9,7 +9,15 @@ from aws_test_util import Flags, create_aws_resources, cleanup_aws_resources
 
 
 @fixture(scope="function")
-def aws_resources(build_artefacts_path, credentials_path, signed_update_bin_name):
+def setup_resources(build_artefacts_path, credentials_path, signed_update_bin_name):
+    """
+    Setup resources needed to run the test.
+
+    build_artefacts_path: Path to all the artefacts needed to create AWS resources.
+    credentials_path: Path to AWS credentials.
+    signed_update_bin_name: Name of the binary to be used for the OTA update.
+    """
+
     flags = Flags(build_artefacts_path, credentials_path, signed_update_bin_name)
     flags = create_aws_resources(flags)
     try:
@@ -20,7 +28,7 @@ def aws_resources(build_artefacts_path, credentials_path, signed_update_bin_name
 
 
 def test_ota(
-    aws_resources,
+    setup_resources,
     fvp_process: subprocess.Popen,
     pass_ota_output_file: str,
     fail_ota_output_file: str,
@@ -30,8 +38,8 @@ def test_ota(
     Compare the actual output on the FVP with the expectations in
     pass and fail output files for the OTA update test.
 
-    aws_resources: Input coming out as a result of executiong of aws_resources function
-                   defined above.
+    setup_resources: Input coming out as a result of executing of setup_resources
+                  function defined above.
     fvp_process (subprocess.Popen): FVP execution process
     pass_ota_output_file (str): Path to the file containing the output when application
                             runs without errors.

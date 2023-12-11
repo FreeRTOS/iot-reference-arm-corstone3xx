@@ -23,10 +23,12 @@ variables:
   TARGET: [corstone310, corstone300]
   TOOLCHAIN: [ARMCLANG, GNU]
   INFERENCE: [ETHOS]
+  AUDIO: [ROM, VSI]
 .pipeline_config_applications_sw: &pipeline_config_applications_sw
   TARGET: [corstone310, corstone300]
   TOOLCHAIN: [ARMCLANG, GNU]
   INFERENCE: [SOFTWARE]
+  AUDIO: [ROM, VSI]
 
 stages:
   - quality-check
@@ -86,15 +88,16 @@ build-applications:
       ./tools/scripts/build.sh ${APP} \
         --target $TARGET \
         --inference $INFERENCE \
+        --audio $AUDIO \
         --toolchain $TOOLCHAIN \
         --certificate_path $PWD/certificate.pem \
         --private_key_path $PWD/private_key.pem
     - |
       if [ $APP == "blinky" ];then
-        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_build.tar.gz \
+        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz \
           build/${APP}_merged.elf
       else
-        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_build.tar.gz \
+        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz \
           build/${APP}_merged.elf \
           build/${APP}-update_signed.bin \
           build/update-signature.txt \
@@ -111,27 +114,60 @@ build-applications:
 
   artifacts:
     paths:
-      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_build.tar.gz
+      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
     expire_in: 1 week
 
 test-applications-output:
   extends: .test_job
   script:
-    - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_build.tar.gz
+    - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - |
-      pytest -s tools/tests/test_application_output.py \
-      --build-artefacts-path "build" \
-      --fvp $FVP_BIN \
-      --merged-elf-name "${APP}_merged.elf" \
-      --timeout-seconds 900 \
-      --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
-      --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
+      if [[ $AUDIO == "VSI" ]]; then
+        apt-get -y update
+        apt-get -y install make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev liblzma-dev tk-dev
+        mkdir /tmp/python_vsi_setup
+        pushd /tmp/python_vsi_setup
+        wget https://www.python.org/ftp/python/3.9.18/Python-3.9.18.tgz
+        tar xzf Python-3.9.18.tgz
+        cd Python-3.9.18
+        ./configure --prefix=/opt/python/3.9.18/ --enable-optimizations
+        make -j "$(nproc)"
+        make altinstall
+        popd
+        rm -rf /tmp/python_vsi_setup
+        pytest -s tools/tests/test_application_output.py \
+        --audio-file-path "applications/${APP_UNDERSCORED}/resources/test.wav" \
+        --build-artefacts-path "build" \
+        --fvp $FVP_BIN \
+        --merged-elf-name "${APP}_merged.elf" \
+        --timeout-seconds 900 \
+        --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
+        --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log" \
+        --pythonhome-path "/opt/python/3.9.18"
+      else
+        pytest -s tools/tests/test_application_output.py \
+        --build-artefacts-path "build" \
+        --fvp $FVP_BIN \
+        --merged-elf-name "${APP}_merged.elf" \
+        --timeout-seconds 900 \
+        --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
+        --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
+      fi
   parallel:
     matrix:
        -
          << : *pipeline_config_applications_ethos
          APP: [blinky, keyword-detection, speech-recognition]
+       -
+         << : *pipeline_config_applications_sw
+         APP: [keyword-detection]
+
+  artifacts:
+    paths:
+      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
+      - ${TARGET}_aws-iot-example_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
+    expire_in: 1 week
 
 # The test-ota job should wait for build-applications job to finish as
 # test-ota job uses the output build artifacts from build-applications job.
@@ -141,22 +177,47 @@ test-applications-output:
 test-ota:
   extends: .test_job
   needs:
-    - job: build-applications
-      artifacts: true
     - job: test-applications-output
+      artifacts: true
   script:
-    - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_build.tar.gz
+    - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - |
-      pytest -s tools/tests/test_ota.py \
-      --build-artefacts-path "build" \
-      --fvp $FVP_BIN \
-      --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
-      --merged-elf-name "${APP}_merged.elf" \
-      --signed-update-bin-name "${APP}-update_signed.bin" \
-      --timeout-seconds 1800 \
-      --pass-ota-output-file "applications/${APP_UNDERSCORED}/tests/pass_ota_output.log" \
-      --fail-ota-output-file "applications/${APP_UNDERSCORED}/tests/fail_ota_output.log"
+      if [[ $AUDIO == "VSI" ]]; then
+        apt-get -y update
+        apt-get -y install make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev liblzma-dev tk-dev
+        mkdir /tmp/python_vsi_setup
+        pushd /tmp/python_vsi_setup
+        wget https://www.python.org/ftp/python/3.9.18/Python-3.9.18.tgz
+        tar xzf Python-3.9.18.tgz
+        cd Python-3.9.18
+        ./configure --prefix=/opt/python/3.9.18/ --enable-optimizations
+        make -j "$(nproc)"
+        make altinstall
+        popd
+        rm -rf /tmp/python_vsi_setup
+        pytest -s tools/tests/test_ota.py \
+        --audio-file-path "applications/${APP_UNDERSCORED}/resources/test.wav" \
+        --build-artefacts-path "build" \
+        --fvp $FVP_BIN \
+        --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
+        --merged-elf-name "${APP}_merged.elf" \
+        --signed-update-bin-name "${APP}-update_signed.bin" \
+        --timeout-seconds 1800 \
+        --pass-ota-output-file "applications/${APP_UNDERSCORED}/tests/pass_ota_output.log" \
+        --fail-ota-output-file "applications/${APP_UNDERSCORED}/tests/fail_ota_output.log" \
+        --pythonhome-path "/opt/python/3.9.18"
+      else
+        pytest -s tools/tests/test_ota.py \
+        --build-artefacts-path "build" \
+        --fvp $FVP_BIN \
+        --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
+        --merged-elf-name "${APP}_merged.elf" \
+        --signed-update-bin-name "${APP}-update_signed.bin" \
+        --timeout-seconds 1800 \
+        --pass-ota-output-file "applications/${APP_UNDERSCORED}/tests/pass_ota_output.log" \
+        --fail-ota-output-file "applications/${APP_UNDERSCORED}/tests/fail_ota_output.log"
+      fi
   parallel:
     matrix:
       -
