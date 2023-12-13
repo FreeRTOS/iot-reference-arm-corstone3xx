@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 3.21.0 FATAL_ERROR)
 
-project(iot-reference-arm-corstone3xx LANGUAGES C ASM)
+project(iot-reference-arm-corstone3xx LANGUAGES C CXX ASM)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/tools/cmake)
 
