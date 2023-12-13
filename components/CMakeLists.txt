@@ -15,4 +15,7 @@ if(CMAKE_CROSSCOMPILING)
 elseif(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
     # Test tools must be available before any component as they are used for unit testing
     add_subdirectory(tools)
+
+    # FreeRTOS must be first as other components depend on it
+    add_subdirectory(freertos_kernel)
 endif()
