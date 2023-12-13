@@ -280,6 +280,18 @@ test-ml-applications-output:
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
 
+unit-tests:
+  extends: .base-job-rules
+  tags:
+    - iotmsw-amd64
+  stage: quality-check
+  script:
+    - cmake -S . -B build_unit_test -GNinja -DOPT_ENABLE_COVERAGE=ON
+    - cmake --build build_unit_test
+    - ctest --test-dir build_unit_test --output-on-failure
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+
 integration-tests:
   extends: .test_job
   stage: test
