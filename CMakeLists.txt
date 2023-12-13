@@ -8,13 +8,29 @@ project(iot-reference-arm-corstone3xx LANGUAGES C ASM)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/tools/cmake)
 
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "The build type" FORCE)
 endif()
 
-set(CMAKE_EXECUTABLE_SUFFIX ".axf" PARENT_SCOPE)
+if(CMAKE_CROSSCOMPILING)
+    set(CMAKE_EXECUTABLE_SUFFIX ".axf" PARENT_SCOPE)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON PARENT_SCOPE)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON PARENT_SCOPE)
+endif()
 
-add_subdirectory(bsp)
-add_subdirectory(components EXCLUDE_FROM_ALL)
+# CMAKE_PROJECT_NAME is the sub-project to build. E.g. 'blinky-example', or any other application.
+# We only unit test if the build script has set CMAKE_PROJECT_NAME to the name of the project, and
+# not an application's name (i.e. 'iot-reference-arm-corstone3xx').
+if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    include(CTest)
+    include(AddUnitTest)
+endif()
+
+
+if(CMAKE_CROSSCOMPILING)
+    add_subdirectory(bsp)
+    add_subdirectory(components EXCLUDE_FROM_ALL)
+else()
+    add_subdirectory(components)
+endif()

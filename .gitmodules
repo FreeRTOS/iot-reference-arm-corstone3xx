@@ -70,3 +70,9 @@
 [submodule "components/graphics/arm-2d/library"]
 	path = components/graphics/arm-2d/library
 	url = https://github.com/ARM-software/Arm-2D.git
+[submodule "fff"]
+	path = components/tools/fff/library
+	url = https://github.com/meekrosoft/fff.git
+[submodule "googletest"]
+	path = components/tools/googletest/library
+	url = https://github.com/google/googletest.git
