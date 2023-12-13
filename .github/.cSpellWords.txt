@@ -40,6 +40,7 @@ coremqtt
 COSE
 CLRF
 CSRS
+ctest
 Customisation
 DACTIVATION
 DARM
@@ -224,6 +225,7 @@ UDBL
 umean
 uncrustify
 unusued
+utilises
 USART
 UYVY
 VCLK
