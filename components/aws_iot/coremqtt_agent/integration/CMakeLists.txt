@@ -2,7 +2,9 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
-if(CMAKE_CROSSCOMPILING)
+if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
+    add_subdirectory(tests)
+else()
     include(${coremqtt_agent_SOURCE_DIR}/mqttAgentFilePaths.cmake)
 
     add_library(coremqtt-agent

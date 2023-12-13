@@ -1,5 +1,6 @@
 # Build directory
 build
+build_unit_test
 
 # Cache directory
 .cache
