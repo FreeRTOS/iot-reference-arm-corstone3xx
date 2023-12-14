@@ -8,7 +8,7 @@ default:
   image: ${OPEN_IOT_SDK_DOCKER_REGISTRY}/open-iot-sdk:${OPEN_IOT_SDK_DOCKER_VERSION}
 
 include:
-  local: '$PWD/ci/pipeline-baseline-fri.yml'
+  local: '$PWD/tools/ci/pipeline-baseline-fri.yml'
 
 variables:
   OPEN_IOT_SDK_DOCKER_VERSION: v1
@@ -72,20 +72,21 @@ build-applications:
   stage: build
   extends: .base_job
   script:
-    - ./ci/generate_credentials.sh -f -p Config/aws_configs
+    - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
+    - ./tools/ci/generate_credentials.sh -f -p applications/${APP_UNDERSCORED}/configs/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
-    - ./Tools/scripts/build.sh ${APP} --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
+    - ./tools/scripts/build.sh ${APP} --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
     - |
       if [ $APP == "aws-iot-example" ];then
         tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz \
-          build/Projects/${APP}/${APP}_merged.elf \
-          build/Projects/${APP}/${APP}-update_signed.bin \
-          build/Projects/${APP}/update-signature.txt \
-          Config/aws_configs
+          build/${APP}_merged.elf \
+          build/${APP}-update_signed.bin \
+          build/update-signature.txt \
+          applications/${APP_UNDERSCORED}/configs/aws_configs
       else
         tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz \
-          build/Projects/${APP}/${APP}_merged.elf
+          build/${APP}_merged.elf
       fi
   parallel:
     matrix:
@@ -101,14 +102,15 @@ test-applications-output:
   extends: .test_job
   script:
     - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz
+    - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - |
-      pytest -s Tools/tests/test_application_output.py \
-      --build-artefacts-path "build/Projects/${APP}" \
+      pytest -s tools/tests/test_application_output.py \
+      --build-artefacts-path "build" \
       --fvp $FVP_BIN \
       --merged-elf-name "${APP}_merged.elf" \
       --timeout-seconds 600 \
-      --pass-output-file "Projects/${APP}/tests/pass_output.log" \
-      --fail-output-file "Projects/${APP}/tests/fail_output.log"
+      --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
+      --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
   parallel:
     matrix:
        -
@@ -119,16 +121,17 @@ test-ota:
   extends: .test_job
   script:
     - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_build.tar.gz
+    - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - |
-      pytest -s Tools/tests/test_ota.py \
-      --build-artefacts-path "build/Projects/${APP}" \
+      pytest -s tools/tests/test_ota.py \
+      --build-artefacts-path "build" \
       --fvp $FVP_BIN \
-      --credentials-path "Config/aws_configs" \
+      --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
       --merged-elf-name "${APP}_merged.elf" \
       --signed-update-bin-name "${APP}-update_signed.bin" \
       --timeout-seconds 900 \
-      --pass-output-file "Projects/${APP}/tests/pass_output.log" \
-      --fail-output-file "Projects/${APP}/tests/fail_output.log"
+      --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
+      --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
   parallel:
     matrix:
       -
@@ -142,19 +145,20 @@ integration-tests:
   rules:
     - if: ( $SCHEDULED_JOB_TO_RUN == "integration-tests" )
   script:
-    - ./ci/generate_credentials.sh -f -p Config/aws_configs
+    - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
+    - ./tools/ci/generate_credentials.sh -f -p applications/${APP_UNDERSCORED}/configs/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
-    - ./Tools/scripts/build.sh -q ${APP}
-    - pushd Middleware/FreeRTOS/FreeRTOS-Libraries-Integration-Tests/tools/echo_server
+    - ./tools/scripts/build.sh -q ${APP}
+    - pushd components/tools/freertos_libraries_integration_tests/library/tools/echo_server
     - go run echo_server.go&
     - popd
     - sleep 1
     - |
-      pytest -s Tools/tests/test_integration.py \
-      --build-artefacts-path "build/Projects/${APP}" \
+      pytest -s tools/tests/test_integration.py \
+      --build-artefacts-path "build" \
       --fvp $FVP_BIN \
-      --credentials-path "Config/aws_configs" \
+      --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
       --merged-elf-name "${APP}-tests_merged.elf" \
       --signed-update-bin-name "${APP}-tests-update_signed.bin"
   parallel:
@@ -172,4 +176,4 @@ aws-cleanup:
   rules:
     - if: $SCHEDULED_JOB_TO_RUN == "cleanup"
   script:
-    - python -u ./ci/aws_cleanup.py
+    - python -u ./tools/ci/aws_cleanup.py

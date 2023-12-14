@@ -22,13 +22,28 @@ porting of this integration across platforms easy.
 * [Corstone-300](https://developer.arm.com/Processors/Corstone-300)
 * [Corstone-310](https://developer.arm.com/Processors/Corstone-310)
 
+
+## Directory structure
+
+The project contains the following subdirectories:
+
+| Subdirectory | Description |
+| ---          | ---         |
+|[applications](./applications/)| Contains applications that consume the components integrated in this reference integration. The applications can be built for all supported boards mentioned above.|
+|[bsp](./bsp/)| Contains dependencies for the board support package (BSP) utilized in device drivers, firmware booting, and other functionalities that enable an embedded operating system to operate within a specific hardware environment.|
+|[components](./components/)| Contains dependencies employed in the development of complete IoT applications fetched via Git Submodules. Read [this](./components/README.md) for more info.|
+|[docs](./docs/)| Contains various documentation to work with this project.|
+|[release_changes](./release_changes)| Contains the release changes to be compiled to generate a release note.|
+|[tools](./tools/)| Contains all the tools created by this projects that are not imported from any components.|
+
+
 ## Examples
 
 This reference integration contains following two examples:
 
-* [Blinky example](Docs/blinky.md)
+* [Blinky example](docs/blinky.md)
     * Demonstrates FreeRTOS kernel and TF-M integration
-* [AWS IoT example](Docs/aws-iot-example.md)
+* [AWS IoT example](docs/aws_iot_example.md)
     * Demonstrates [secure connectivity](#secure-tls-connection) to AWS IoT core using [Mbed TLS](#mbed-tls),
       [PKCS#11 PSA Shim](#pkcs11-psa-shim) and [coreMQTT-agent](https://docs.aws.amazon.com/freertos/latest/userguide/coremqtt-agent.html)
       library. In addition, [secure OTA](#secure-ota-updates) using [OTA agent](https://freertos.org/ota/index.html)
@@ -120,7 +135,7 @@ See [CONTRIBUTING](CONTRIBUTING.md) for more information.
 
 ## License
 
-Source code located in the *Projects*, *Middleware/FreeRTOS* directory is
+Source code located in the *applications* directory is
 available under the terms of the MIT License. See the [LICENSE](./LICENSE) file
 for more details.
 

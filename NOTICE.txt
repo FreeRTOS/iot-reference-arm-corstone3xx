@@ -1,5 +1,5 @@
 ** mbedTLS; version 2.28.3 -- https://github.com/Mbed-TLS/mbedtls.git
-** IoT_VSocket-lib; version 6b1b5140242c01127f18f54aeab63c9c1cd59e03 -- https://github.com/FreeRTOS/iot-reference-arm-corstone3xx/tree/main/Middleware/ARM/IoT_VSocket-lib
+** IoT_VSocket-lib; version 6b1b5140242c01127f18f54aeab63c9c1cd59e03 -- https://github.com/FreeRTOS/iot-reference-arm-corstone3xx/tree/main/components/connectivity/iot_vsocket
 ** AVH; version ab37f6126c94fee7bbd061f77716745dfbb77592 -- https://github.com/ARM-software/AVH.git
 ** IoT_Socket; version 1e15f55ae08c2169c0e4a59216e78a4906a66af8 -- https://github.com/MDK-Packs/IoT_Socket.git
 ** arm-corstone-platform-bsp; version v0.1.0 -- https://git.gitlab.arm.com/iot/open-iot-sdk/arm-corstone-platform-bsp.git
