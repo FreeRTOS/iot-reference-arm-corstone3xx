@@ -89,7 +89,7 @@ add_subdirectory(../helpers ${CMAKE_BINARY_DIR}/helpers)
 
 # Add main application executable
 add_executable(aws-iot-example
-    mqtt_demo_pub_sub.c
+    ../helpers/mqtt/src/mqtt_demo_pub_sub.c
     main.c
 )
 target_include_directories(aws-iot-example
@@ -198,7 +198,7 @@ target_link_libraries(freertos-libraries-integration-tests-config
 
 # Add FreeRTOS Libraries Integration Tests application executable
 add_executable(aws-iot-example-tests
-    mqtt_demo_pub_sub.c
+    ../helpers/mqtt/src/mqtt_demo_pub_sub.c
     main.c
 )
 target_include_directories(aws-iot-example-tests
