@@ -75,14 +75,14 @@ dependencies:
       path: "components/aws_iot/coremqtt/library"
   - name: "coreJSON"
     license: "MIT"
-    version: "a1c702e6d216222ef45a520d8ba2aba315a1ea78"
+    version: "v3.2.0"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/coreJSON.git"
       path: "components/aws_iot/corejson/library"
   - name: "corePKCS11"
     license: "MIT"
-    version: "ccba578b731c5f7ce351704c0a1f49831f640718"
+    version: "v3.5.0"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/corePKCS11.git"
@@ -96,7 +96,7 @@ dependencies:
       path: "components/connectivity/backoff_algorithm/library"
   - name: "ota-for-aws-iot-embedded-sdk"
     license: "MIT"
-    version: "406415ef38d9f0fbabd69735623008fd090043b3"
+    version: "v3.4.0"
     repository:
       type: "git"
       url: "https://github.com/aws/ota-for-aws-iot-embedded-sdk.git"
