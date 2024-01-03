@@ -1,0 +1,99 @@
+From 86cfeca0659249f3f823f490e3a1bfdd6aae0a8e Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Wed, 3 Jan 2024 09:58:49 +0000
+Subject: [PATCH] corstone300: Modify ISRAM0 to be non-secure partition
+
+ISRAM0 is modified to be non-secure application storage
+and secure data would be placed inside Data tightly
+coupled memory (DTCM).
+
+The reason behind this change is that some applications
+need more RAM memory than 1MB (ISRAM1 size) so with this
+change we should have 2MB (ISRAM0 + ISRAM1 sizes) of RAM
+for the application (non-secure side).
+
+Signed-off-by: Ahmed Ismail <Ahmed.Ismail@arm.com>
+---
+ .../common/partition/region_defs.h            |  8 +++----
+ .../arm/mps3/corstone300/common/target_cfg.c  | 23 ++++++++++---------
+ 2 files changed, 16 insertions(+), 15 deletions(-)
+
+diff --git a/platform/ext/target/arm/mps3/corstone300/common/partition/region_defs.h b/platform/ext/target/arm/mps3/corstone300/common/partition/region_defs.h
+index 1fecd538d..9e78ce4fb 100755
+--- a/platform/ext/target/arm/mps3/corstone300/common/partition/region_defs.h
++++ b/platform/ext/target/arm/mps3/corstone300/common/partition/region_defs.h
+@@ -88,8 +88,8 @@
+ #define S_CODE_LIMIT    (S_CODE_START + S_CODE_SIZE - 1)
+ 
+ /* Secure Data stored in ISRAM0 */
+-#define S_DATA_START    (ISRAM0_BASE_S)
+-#define S_DATA_SIZE     (ISRAM0_SIZE - S_RAM_CODE_SIZE)
++#define S_DATA_START    (DTCM0_BASE_S)
++#define S_DATA_SIZE     (DTCM_BLK_SIZE * DTCM_BLK_NUM - S_RAM_CODE_SIZE)
+ #define S_DATA_LIMIT    (S_DATA_START + S_DATA_SIZE - 1)
+ 
+ #ifdef CORSTONE300_FVP
+@@ -109,8 +109,8 @@
+ #define NS_CODE_LIMIT   (NS_CODE_START + NS_CODE_SIZE - 1)
+ 
+ /* Non-Secure Data stored in ISRAM1 */
+-#define NS_DATA_START   (ISRAM1_BASE_NS)
+-#define NS_DATA_SIZE    (ISRAM1_SIZE)
++#define NS_DATA_START   (ISRAM0_BASE_NS)
++#define NS_DATA_SIZE    (ISRAM0_SIZE + ISRAM1_SIZE)
+ #define NS_DATA_LIMIT   (NS_DATA_START + NS_DATA_SIZE - 1)
+ 
+ /* NS partition information is used for MPC and SAU configuration */
+diff --git a/platform/ext/target/arm/mps3/corstone300/common/target_cfg.c b/platform/ext/target/arm/mps3/corstone300/common/target_cfg.c
+index 36a393956..e3330d736 100644
+--- a/platform/ext/target/arm/mps3/corstone300/common/target_cfg.c
++++ b/platform/ext/target/arm/mps3/corstone300/common/target_cfg.c
+@@ -444,12 +444,13 @@ void sau_and_idau_cfg(void)
+                 | SAU_RLAR_ENABLE_Msk;
+ #endif
+ 
+-    /* Configure DTCM */
++    /* Configure ISRAM0: secure, ISRAM1: non-secure */
++
+     SAU->RNR = 2;
+-    SAU->RBAR = (DTCM0_BASE_NS & SAU_RBAR_BADDR_Msk);
+-    SAU->RLAR = ((DTCM0_BASE_NS + (DTCM_BLK_SIZE * DTCM_BLK_NUM) - 1)
++    SAU->RBAR = (ISRAM0_BASE_NS & SAU_RBAR_BADDR_Msk);
++    SAU->RLAR = ((ISRAM0_BASE_NS + ISRAM0_SIZE - 1)
+                  & SAU_RBAR_BADDR_Msk) | SAU_RLAR_ENABLE_Msk;
+-    /* Configure ISRAM0: secure, ISRAM1: non-secure */
++
+     SAU->RNR = 3;
+     SAU->RBAR = (ISRAM1_BASE_NS & SAU_RBAR_BADDR_Msk);
+     SAU->RLAR = ((ISRAM1_BASE_NS + ISRAM1_SIZE - 1)
+@@ -509,13 +510,6 @@ enum tfm_plat_err_t mpc_init_cfg(void)
+         ERROR_MSG("Failed to Initialize TGU for DTCM!");
+         return TFM_PLAT_ERR_SYSTEM_ERR;
+     }
+-    ret = Driver_DTCM_TGU_ARMV8_M.ConfigRegion(DTCM0_BASE_NS,
+-                          (DTCM0_BASE_NS + (DTCM_BLK_SIZE * DTCM_BLK_NUM) - 1),
+-                          ARM_MPC_ATTR_NONSECURE);
+-    if (ret != ARM_DRIVER_OK) {
+-        ERROR_MSG("Failed to Configure TGU for DTCM!");
+-        return TFM_PLAT_ERR_SYSTEM_ERR;
+-    }
+ 
+     ret = Driver_SRAM_MPC.Initialize();
+     if (ret != ARM_DRIVER_OK) {
+@@ -535,6 +529,13 @@ enum tfm_plat_err_t mpc_init_cfg(void)
+         ERROR_MSG("Failed to Initialize MPC for ISRAM0!");
+         return TFM_PLAT_ERR_SYSTEM_ERR;
+     }
++    ret = Driver_ISRAM0_MPC.ConfigRegion(MPC_ISRAM0_RANGE_BASE_NS,
++                                         MPC_ISRAM0_RANGE_LIMIT_NS,
++                                         ARM_MPC_ATTR_NONSECURE);
++    if (ret != ARM_DRIVER_OK) {
++        ERROR_MSG("Failed to Configure MPC for ISRAM1!");
++        return TFM_PLAT_ERR_SYSTEM_ERR;
++    }
+ 
+     ret = Driver_ISRAM1_MPC.Initialize();
+     if (ret != ARM_DRIVER_OK) {
+-- 
+2.34.1
+
