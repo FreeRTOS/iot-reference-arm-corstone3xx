@@ -8,13 +8,53 @@
  * the git tag 5.8.0 of the CMSIS_5 repository.
  */
 
-__STACK_SIZE = 0x00002800;
-__HEAP_SIZE  = 0x00000400;
+/*
+ *-------- <<< Use Configuration Wizard in Context Menu >>> -------------------
+ */
+
+/*---------------------- Flash Configuration ----------------------------------
+  <h> Flash Configuration
+    <o0> Flash Base Address <0x0-0xFFFFFFFF:8>
+    <o1> Flash Size (in Bytes) <0x0-0xFFFFFFFF:8>
+  </h>
+  -----------------------------------------------------------------------------*/
+FLASH_NS_PARTITION_SIZE = 0x340000;
+FLASH_S_PARTITION_SIZE = 0x40000;
+ROM_START = 0x28000000;
+BL2_HEADER_SIZE = 0x400;
+BL2_TRAILER_SIZE = 0xC00;
+
+__ROM_BASE = (ROM_START + FLASH_S_PARTITION_SIZE + BL2_HEADER_SIZE);
+__ROM_SIZE = (FLASH_NS_PARTITION_SIZE - BL2_HEADER_SIZE - BL2_TRAILER_SIZE);
+
+/*--------------------- Embedded RAM Configuration ----------------------------
+  <h> RAM Configuration
+    <o0> RAM Base Address    <0x0-0xFFFFFFFF:8>
+    <o1> RAM Size (in Bytes) <0x0-0xFFFFFFFF:8>
+  </h>
+ -----------------------------------------------------------------------------*/
 PROVISIONING_SIZE = 0x1000;
+__RAM_BASE = 0x21000000;
+__RAM_SIZE = (0x00200000 - PROVISIONING_SIZE);
+
+/*--------------------- Stack / Heap Configuration ----------------------------
+  <h> Stack / Heap Configuration
+    <o0> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
+    <o1> Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
+  </h>
+  -----------------------------------------------------------------------------*/
+__STACK_SIZE = 0x00001000;
+__HEAP_SIZE  = 0x000B0000;
+
+/*
+ *-------------------- <<< end of configuration section >>> -------------------
+ */
+
 MEMORY
 {
-  FLASH (rx)  : ORIGIN = (0x28040000 + 0x400), LENGTH = (0x340000 - 0x400 - 0x800)
-  RAM   (rwx) : ORIGIN = 0x21100000, LENGTH = (0x00100000 - PROVISIONING_SIZE)
+  FLASH (rx)  : ORIGIN = __ROM_BASE, LENGTH = __ROM_SIZE
+  RAM   (rwx) : ORIGIN = __RAM_BASE, LENGTH = __RAM_SIZE
+  DDR   (rwx) : ORIGIN = 0x60000000, LENGTH = 0x10000000
 }
 
 /* Linker script to place sections and symbol values.
@@ -61,6 +101,9 @@ SECTIONS
     LONG (LOADADDR(.data))
     LONG (ADDR(.data))
     LONG (SIZEOF(.data) / 4)
+    LONG (LOADADDR(.model))
+    LONG (ADDR(.model))
+    LONG (SIZEOF(.model) / 4)
     __copy_table_end__ = .;
 
     /* .zero.table */
@@ -107,13 +150,11 @@ SECTIONS
   /**
    * Location counter can end up 2byte aligned with narrow Thumb code but
    * __etext is assumed by startup code to be the LMA of a section in RAM
-   * which must be 4byte aligned.
-   * This __etext variable is kept for backward compatibility with older,
-   * ASM based startup files.
+   * which must be 4byte aligned
    */
-  PROVIDE(__etext = LOADADDR(.data));
+  __etext = ALIGN (4);
 
-  .data : ALIGN(4)
+  .data : AT (__etext)
   {
     __data_start__ = .;
     *(vtable)
@@ -142,10 +183,41 @@ SECTIONS
 
     KEEP(*(.jcr*))
     . = ALIGN(4);
+    *(tasks_share)
     /* All data end */
     __data_end__ = .;
 
-  } > RAM AT > FLASH
+  } > RAM
+
+  .model : AT ( LOADADDR(.data) + SIZEOF(.data) )
+  {
+    __ddr_start__ = .;
+    . = ALIGN(16);
+    /* nn model's baked in input matrices */
+    *(ifm)
+    . = ALIGN(16);
+    /* nn model's default space */
+    *(nn_model)
+    . = ALIGN (16);
+    /* labels */
+    *(labels)
+    __ddr_end__ = .;
+  } > DDR
+
+  __ddr_load_address__ = LOADADDR(.model);
+
+  .activationbuf :
+  {
+    . = ALIGN (16);
+    *(.bss.NoInit.activation_buf_sram)
+  } > DDR AT > DDR
+
+  .vsibuffer :
+  {
+    . = ALIGN (4);
+    /* Buffer for transferring VSI audio data from S to NS */
+    *(.bss.NoInit.vsi_audio_buffer)
+  } > DDR AT > DDR
 
   .bss :
   {
