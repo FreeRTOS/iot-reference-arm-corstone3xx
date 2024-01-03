@@ -89,7 +89,7 @@ dependencies:
       path: "components/aws_iot/corepkcs11/library"
   - name: "backoffAlgorithm"
     license: "MIT"
-    version: "5db5777c8fa787f0b7851adc8a7e3e12985e7667"
+    version: "v1.3.0"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/backoffAlgorithm.git"
