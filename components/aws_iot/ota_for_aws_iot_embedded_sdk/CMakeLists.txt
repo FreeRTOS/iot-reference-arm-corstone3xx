@@ -9,7 +9,7 @@ set(ota_for_aws_iot_embedded_sdk_SOURCE_DIR
 )
 
 execute_process(COMMAND git am --abort
-    COMMAND git am ${CMAKE_CURRENT_SOURCE_DIR}/integration/patches/0001-Replace-strnlen-with-strlen.patch
+    COMMAND git am ${CMAKE_CURRENT_SOURCE_DIR}/integration/patches/0001-Add-non-constant-appFirmwareVersion-extern.patch
     WORKING_DIRECTORY ${ota_for_aws_iot_embedded_sdk_SOURCE_DIR}
     OUTPUT_QUIET
     ERROR_QUIET
