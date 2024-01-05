@@ -70,3 +70,14 @@ target_elf_to_bin(provisioning_data provisioning_data)
 add_custom_target(provisioning_data_bin ALL
     SOURCES provisioning_data.bin
 )
+
+add_library(provisioning-lib
+    dev_mode_key_provisioning.c
+    ${corepkcs11_SOURCE_DIR}/source/dependency/3rdparty/mbedtls_utils/mbedtls_utils.c
+)
+
+target_link_libraries(provisioning-lib
+    corepkcs11
+    freertos_kernel
+    mbedtls
+)

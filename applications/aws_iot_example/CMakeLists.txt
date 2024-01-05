@@ -89,10 +89,8 @@ add_subdirectory(../helpers ${CMAKE_BINARY_DIR}/helpers)
 
 # Add main application executable
 add_executable(aws-iot-example
-    dev_mode_key_provisioning.c
-    main.c
     mqtt_demo_pub_sub.c
-    ${corepkcs11_SOURCE_DIR}/source/dependency/3rdparty/mbedtls_utils/mbedtls_utils.c
+    main.c
 )
 target_include_directories(aws-iot-example
     PUBLIC
@@ -121,6 +119,7 @@ target_link_libraries(aws-iot-example
         mbedtls
         mbedtls-threading-freertos
         ota-for-aws-iot-embedded-sdk
+        provisioning-lib
         tfm-ns-interface
         toolchain-override
 )
@@ -199,10 +198,8 @@ target_link_libraries(freertos-libraries-integration-tests-config
 
 # Add FreeRTOS Libraries Integration Tests application executable
 add_executable(aws-iot-example-tests
-    dev_mode_key_provisioning.c
-    main.c
     mqtt_demo_pub_sub.c
-    ${corepkcs11_SOURCE_DIR}/source/dependency/3rdparty/mbedtls_utils/mbedtls_utils.c
+    main.c
 )
 target_include_directories(aws-iot-example-tests
     PUBLIC
@@ -233,6 +230,7 @@ target_link_libraries(aws-iot-example-tests
         fri-bsp
         helpers-events
         ota-for-aws-iot-embedded-sdk
+        provisioning-lib
         mbedtls
         mbedtls-threading-freertos
         tfm-ns-interface
