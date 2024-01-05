@@ -1,0 +1,27 @@
+From a75eef190220626f7f2419f6844df441d4f2f5ff Mon Sep 17 00:00:00 2001
+From: Devaraj Ranganna <devaraj.ranganna@arm.com>
+Date: Wed, 26 Jul 2023 11:05:47 +0100
+Subject: [PATCH] Do not define __PASTE macro for Arm compiler
+
+Signed-off-by: Devaraj Ranganna <devaraj.ranganna@arm.com>
+---
+ ./source/dependency/3rdparty/pkcs11/pkcs11.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/source/dependency/3rdparty/pkcs11/pkcs11.h b/source/dependency/3rdparty/pkcs11/pkcs11.h
+index 0d78dd7..ecead72 100644
+--- a/source/dependency/3rdparty/pkcs11/pkcs11.h
++++ b/source/dependency/3rdparty/pkcs11/pkcs11.h
+@@ -187,7 +187,9 @@ extern "C" {
+  */
+ #include "pkcs11t.h"
+ 
++#ifndef __ARMCC_VERSION
+ #define __PASTE(x,y)      x##y
++#endif
+ 
+ 
+ /* ==============================================================
+-- 
+2.25.1
+

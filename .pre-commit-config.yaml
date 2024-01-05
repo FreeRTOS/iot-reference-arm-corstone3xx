@@ -7,17 +7,21 @@
 exclude: >
     .patch|
     (?x)^(
-        Bsp/arm-corstone-platform-bsp/|
-        Middleware/ARM/freertos-ota-pal-psa-lib/freertos-ota-pal-psa/|
-        Middleware/ARM/freertos-pkcs11-psa-lib/freertos-pkcs11-psa/|
-        Middleware/ARM/IoT_Socket-lib/IoT_Socket/|
-        Middleware/ARM/IoT_VSocket-lib/AVH/|
-        Middleware/ARM/IoT_VSocket-lib/transport_interface_api.h|
-        Middleware/ARM/mbedtls-lib/|
-        Middleware/ARM/TF-M/trusted-firmware-m/|
-        Middleware/AWS/|
-        Middleware/FreeRTOS/|
-        Middleware/Unity/
+        bsp/library/|
+        components/security/freertos_ota_pal_psa/library/|
+        components/security/freertos-pkcs11-psa/library/|
+        components/connectivity/iot_socket/library/|
+        components/connectivity/iot_vsocket/library/|
+        components/connectivity/iot_vsocket/integration/inc/transport_interface_api.h|
+        components/security/mbedtls/|
+        components/security/trusted_firmware-m/library/|
+        components/aws_iot/|
+        components/connectivity/backoff_algorithm/|
+        applications/helpers/logging/|
+        components/freertos_kernel/|
+        components/connectivity/freertos_plus_tcp/|
+        components/tools/freertos_libraries_integration_tests/|
+        components/tools/unity/
     )
 
 repos:
@@ -33,7 +37,7 @@ repos:
     hooks:
     -   id: gitlint
         args:
-        - "--config ci/gitlint/.gitlint"
+        - "--config tools/ci/gitlint/.gitlint"
 -   repo: https://github.com/psf/black
     rev: 23.10.1
     hooks:
@@ -76,7 +80,7 @@ repos:
         name: uncrustify
         description: Run 'uncrustify' C/C++ code formatter
         language: script
-        entry: Tools/scripts/run_uncrustify.sh
+        entry: tools/scripts/run_uncrustify.sh
         require_serial: true
 -   repo: local
     hooks:
@@ -92,5 +96,5 @@ repos:
         name: dependencies-check
         description: Checks listed dependencies in manifest.yml
         language: script
-        entry: Tools/scripts/run_dependencies_check.sh
+        entry: tools/scripts/run_dependencies_check.sh
         require_serial: true

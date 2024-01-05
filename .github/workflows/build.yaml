@@ -41,7 +41,11 @@ jobs:
       - name: Install GNU Arm toolchain
         shell: bash
         run: |
-          sudo apt-get -y install gcc-arm-none-eabi
+          sudo apt-get -y install tar
+          pushd $HOME
+          wget https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz
+          tar -xf arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz
+          popd
       - name: Generate dummy device credentials
         shell: bash
         run: |
@@ -49,20 +53,21 @@ jobs:
           export IOT_OTA_CLIENT_CERT="dummy_certificate"
           export IOT_OTA_CLIENT_PRIV="dummy_priv_key"
           export IOT_OTA_CLIENT_PUB="dummy_pub_key"
-          ./ci/generate_credentials.sh -f -p Config/aws_configs
+          ./tools/ci/generate_credentials.sh -f -p applications/aws_iot_example/configs/aws_configs
           git config --global user.email "ci@example.com"
           git config --global user.name "ci"
       - name: Build the project
         shell: bash
         run: |
-          ./Tools/scripts/build.sh aws-iot-example --toolchain GNU --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
+          export PATH=$HOME/arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi/bin:$PATH
+          ./tools/scripts/build.sh aws-iot-example --toolchain GNU --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
       - name: Copy artifacts
         shell: bash
         run: |
           tar -czf gnu_build.tar.gz \
-          build/Projects/aws-iot-example/aws-iot-example_merged.elf \
-          build/Projects/aws-iot-example/aws-iot-example-update_signed.bin \
-          build/Projects/aws-iot-example/update-signature.txt
+          build/aws-iot-example_merged.elf \
+          build/aws-iot-example-update_signed.bin \
+          build/update-signature.txt
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v3
         with:
