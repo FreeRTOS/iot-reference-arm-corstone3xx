@@ -10,6 +10,13 @@ set(arm_corstone_platform_bsp_SOURCE_DIR
     "Path to Arm Corstone-3xx Platform CMSIS-Driver Based Board Support Package source code"
 )
 
+execute_process(COMMAND git am --abort
+    COMMAND git am ${CMAKE_CURRENT_LIST_DIR}/patches/0001-corstone300-Add-missing-FVP-VSI-handlers.patch
+    WORKING_DIRECTORY ${arm_corstone_platform_bsp_SOURCE_DIR}
+    OUTPUT_QUIET
+    ERROR_QUIET
+)
+
 add_subdirectory(library)
 
 target_compile_definitions(arm-corstone-platform-bsp
