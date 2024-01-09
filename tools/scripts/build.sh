@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -66,10 +66,11 @@ function show_usage {
     cat <<EOF
 Usage: $0 [options] example
 
-Download dependencies, apply patches and build an example.
+Apply patches and build an example.
 
 Options:
     -h,--help                   Show this help
+    -p,--path                   Path to the build directory
     -c,--clean                  Clean build
     -t,--target                 Build target (corstone300 or corstone310)
     --toolchain                 Compiler (GNU or ARMCLANG)
@@ -87,8 +88,8 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-SHORT=t:,c,h,q
-LONG=target:,toolchain:,clean,help,configure-only,certificate_path:,private_key_path:,integration-tests
+SHORT=t:,c,h,q,p:
+LONG=target:,toolchain:,clean,help,configure-only,certificate_path:,private_key_path:,integration-tests:,path:
 OPTS=$(getopt -n build --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -103,6 +104,10 @@ do
     -c | --clean )
       CLEAN=1
       shift
+      ;;
+    -p | --path )
+      BUILD_PATH=$2
+      shift 2
       ;;
     -t | --target )
       TARGET=$2
