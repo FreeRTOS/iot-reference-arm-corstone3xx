@@ -79,16 +79,16 @@ git submodule update --init --recursive
 
   * Arm GNU Toolchain
 
-    This project has been tested with the *10.3-2021.10* release of the Arm
+    This project has been tested with the *13.2.Rel1-2023.10* release of the Arm
     GNU Toolchain. You can download it and make it available in your development
     environment as follows:
 
     ```bash
-    wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-`uname -m`-linux.tar.bz2
+    wget https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz
 
-    tar xf gcc-arm-none-eabi-10.3-2021.10-`uname -m`-linux.tar.bz2 --directory ~/
+    tar xf arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz --directory ~/
 
-    echo PATH=\"$HOME/gcc-arm-none-eabi-10.3-2021.10/bin:\$PATH\" >> ~/.bashrc
+    echo PATH=\"$HOME/arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi/bin:\$PATH\" >> ~/.bashrc
     source ~/.bashrc
     ```
 

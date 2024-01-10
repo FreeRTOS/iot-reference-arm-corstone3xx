@@ -1,4 +1,4 @@
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -48,7 +48,7 @@ set(CMAKE_EXECUTABLE_SUFFIX ".axf")
 # Set global optimization level to reduce code size while keeping the debug experience.
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
     add_compile_options(-Og)
-elseif(CMAKE_C_COMPILER_ID STREQUAL "ARMClang")
+elseif(${CMAKE_C_COMPILER_ID} STREQUAL "ARMClang")
     add_compile_options(-O1)
 endif()
 
