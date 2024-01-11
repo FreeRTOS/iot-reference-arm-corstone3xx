@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -31,8 +31,8 @@ Examples:
 EOF
 }
 
-SHORT=t:,f:,h
-LONG=target:,fvp_type:,help
+SHORT=t:,f:,h,p:
+LONG=target:,fvp_type:,help,path:
 OPTS=$(getopt -n run --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -43,6 +43,10 @@ do
     -h | --help )
       show_usage
       exit 0
+      ;;
+    -p | --path )
+      BUILD_PATH=$2
+      shift 2
       ;;
     -t | --target )
       TARGET=$2
