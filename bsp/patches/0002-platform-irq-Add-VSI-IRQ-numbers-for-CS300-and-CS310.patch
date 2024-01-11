@@ -1,0 +1,64 @@
+From 04a6768cdef39c846be8754671027dc26ab49d79 Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Thu, 11 Jan 2024 09:47:24 +0000
+Subject: [PATCH 2/3] platform-irq: Add VSI IRQ numbers for CS300 and CS310
+
+VSI IRQ numbers should be defined in IRQ enum for both
+Corstone-300 and Corstone-310 platforms to prevent any
+undefined behavior while enabling VSI interrupts.
+
+Signed-off-by: Ahmed Ismail <Ahmed.Ismail@arm.com>
+---
+ corstone300/Board/Platform/platform_irq.h | 12 +++++++++++-
+ corstone310/Board/Platform/platform_irq.h | 12 +++++++++++-
+ 2 files changed, 22 insertions(+), 2 deletions(-)
+
+diff --git a/corstone300/Board/Platform/platform_irq.h b/corstone300/Board/Platform/platform_irq.h
+index ae706ba..122aa15 100755
+--- a/corstone300/Board/Platform/platform_irq.h
++++ b/corstone300/Board/Platform/platform_irq.h
+@@ -149,7 +149,17 @@ typedef enum _IRQn_Type {
+     UARTRX5_IRQn                       = 125,   /* UART 5 RX Interrupt */
+     UARTTX5_IRQn                       = 126,   /* UART 5 TX Interrupt */
+     UART5_IRQn                         = 127,   /* UART 5 combined Interrupt */
+-    /* Reserved                        = 128:130   Reserved */
++#ifdef CORSTONE300_FVP
++    /* Reserved                        = 128:223,   Reserved */
++    ARM_VSI0_IRQn                      = 224,   /* VSI 0 Handler */
++    ARM_VSI1_IRQn                      = 225,   /* VSI 1 Handler */
++    ARM_VSI2_IRQn                      = 226,   /* VSI 2 Handler */
++    ARM_VSI3_IRQn                      = 227,   /* VSI 3 Handler */
++    ARM_VSI4_IRQn                      = 228,   /* VSI 4 Handler */
++    ARM_VSI5_IRQn                      = 229,   /* VSI 5 Handler */
++    ARM_VSI6_IRQn                      = 230,   /* VSI 6 Handler */
++    ARM_VSI7_IRQn                      = 231    /* VSI 7 Handler */
++#endif
+ } IRQn_Type;
+ 
+ #endif  /* __PLATFORM_IRQ_H__ */
+diff --git a/corstone310/Board/Platform/platform_irq.h b/corstone310/Board/Platform/platform_irq.h
+index 913b083..ab85ddb 100644
+--- a/corstone310/Board/Platform/platform_irq.h
++++ b/corstone310/Board/Platform/platform_irq.h
+@@ -166,7 +166,17 @@ typedef enum _IRQn_Type {
+     UARTRX5_IRQn                       = 125,   /* UART 5 RX Interrupt */
+     UARTTX5_IRQn                       = 126,   /* UART 5 TX Interrupt */
+     UART5_Combined_IRQn                = 127,   /* UART 5 combined Interrupt */
+-    /* Reserved                        = 128:130   Reserved */
++#ifdef CORSTONE310_FVP
++    /* Reserved                        = 128:223,   Reserved */
++    ARM_VSI0_IRQn                      = 224,   /* VSI 0 Handler */
++    ARM_VSI1_IRQn                      = 225,   /* VSI 1 Handler */
++    ARM_VSI2_IRQn                      = 226,   /* VSI 2 Handler */
++    ARM_VSI3_IRQn                      = 227,   /* VSI 3 Handler */
++    ARM_VSI4_IRQn                      = 228,   /* VSI 4 Handler */
++    ARM_VSI5_IRQn                      = 229,   /* VSI 5 Handler */
++    ARM_VSI6_IRQn                      = 230,   /* VSI 6 Handler */
++    ARM_VSI7_IRQn                      = 231    /* VSI 7 Handler */
++#endif
+ } IRQn_Type;
+ 
+ #endif  /* __PLATFORM_IRQ_H__ */
+-- 
+2.34.1
+
