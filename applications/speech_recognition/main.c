@@ -32,6 +32,10 @@
 
 #include "FreeRTOSConfig.h"
 
+#ifdef AUDIO_VSI
+    #include "Driver_SAI.h"
+#endif
+
 /*
  * Semihosting is a mechanism that enables code running on an ARM target
  * to communicate and use the Input/Output facilities of a host computer
@@ -49,6 +53,15 @@
 
 extern void vStartOtaTask( void );
 extern int32_t network_startup( void );
+
+#ifdef AUDIO_VSI
+    void vVsiCallbackTask( void * arg );
+    static void prvStartVsiCallbackTask( void );
+    extern uint32_t ulVsiEvent;
+    extern void (* pxOnVsiEvent)( void * );
+    extern void * pvVsiContext;
+    TaskHandle_t xVsiTaskHandle = NULL;
+#endif
 
 psa_key_handle_t xOTACodeVerifyKeyHandle = 0;
 QueueHandle_t xMlMqttQueue = NULL;
@@ -210,6 +223,10 @@ int main( void )
 
     vStartBlinkTask();
 
+    #ifdef AUDIO_VSI
+        prvStartVsiCallbackTask();
+    #endif
+
     void * dspMLConnection = pvDspGetMlConnection();
 
     vStartMlTask( dspMLConnection );
@@ -289,3 +306,38 @@ int main( void )
         *pulTimerTaskStackSize = ( uint32_t ) configTIMER_TASK_STACK_DEPTH;
     }
 #endif /* if ( configSUPPORT_STATIC_ALLOCATION == 1 ) */
+
+#ifdef AUDIO_VSI
+    void vVsiCallbackTask( void * arg )
+    {
+        ( void ) arg;
+
+        while( 1 )
+        {
+            ( void ) ulTaskNotifyTake( pdTRUE, portMAX_DELAY );
+
+            if( ( ulVsiEvent & ARM_SAI_EVENT_RECEIVE_COMPLETE ) && ( pxOnVsiEvent ) )
+            {
+                pxOnVsiEvent( pvVsiContext );
+            }
+
+            if( ulVsiEvent & ARM_SAI_EVENT_RX_OVERFLOW )
+            {
+                LogError( ( "VSI Receive Overflow Error \r\n" ) );
+            }
+        }
+    }
+
+    static void prvStartVsiCallbackTask( void )
+    {
+        if( xTaskCreate( vVsiCallbackTask,
+                         "VSI_CALLBACK_TASK",
+                         appCONFIG_VSI_CALLBACK_TASK_STACK_SIZE,
+                         NULL,
+                         appCONFIG_VSI_CALLBACK_TASK_PRIORITY,
+                         &xVsiTaskHandle ) != pdPASS )
+        {
+            LogError( ( "Failed to create Vsi Callback Task\r\n" ) );
+        }
+    }
+#endif /* ifdef AUDIO_VSI */
