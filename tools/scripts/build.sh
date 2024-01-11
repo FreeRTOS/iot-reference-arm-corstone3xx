@@ -189,13 +189,13 @@ case "$TOOLCHAIN" in
       ;;
 esac
 
-if [ ! -f "$CERTIFICATE_PATH" ]; then
+if [ "$EXAMPLE" != "blinky" ] && [ ! -f "$CERTIFICATE_PATH" ]; then
     echo "The --certificate_path must be set to an existing file."
     show_usage
     exit 2
 fi
 
-if [ ! -f "$PRIVATE_KEY_PATH" ]; then
+if [ "$EXAMPLE" != "blinky" ] && [ ! -f "$PRIVATE_KEY_PATH" ]; then
     echo "The --private_key_path must be set to an existing file."
     show_usage
     exit 2
