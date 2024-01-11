@@ -48,6 +48,8 @@
 #define appCONFIG_BLINK_TASK_STACK_SIZE             ( configMINIMAL_STACK_SIZE )
 #define appCONFIG_BLINK_TASK_PRIORITY               ( tskIDLE_PRIORITY )
 
+#define appCONFIG_VSI_CALLBACK_TASK_STACK_SIZE      ( configMINIMAL_STACK_SIZE )
+#define appCONFIG_VSI_CALLBACK_TASK_PRIORITY        ( tskIDLE_PRIORITY + 2 )
 
 
 /** @brief Increase backoff algorithm timeout by 8 seconds when device advisor

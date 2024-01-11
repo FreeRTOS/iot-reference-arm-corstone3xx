@@ -39,36 +39,32 @@ extern EventGroupHandle_t xSystemEvents;
 __attribute__((section(".bss.NoInit.vsi_audio_buffer"))) __attribute__((aligned(4)))
 int16_t shared_audio_buffer[AUDIO_BUFFER_SIZE / 2];
 
-/* Audio events definitions */
-#define SEND_COMPLETED_Pos         0U                              /* Event: Send complete bit position */
-#define RECEIVE_COMPLETED_Pos      1U                              /* Event: Receive complete bit position */
-#define TX_UNDERFLOW_Pos           2U                              /* Event: Tx underflow bit position */
-#define RX_OVERFLOW_Pos            3U                              /* Event: Rx overflow bit position */
-#define FRAME_ERROR_Pos            4U                              /* Event: Frame error bit position */
-#define SEND_COMPLETE_Msk          (1UL << SEND_COMPLETED_Pos)     /* Event: Send complete Mask */
-#define RECEIVE_COMPLETE_Msk       (1UL << RECEIVE_COMPLETED_Pos)  /* Event: Receive complete Mask */
-#define TX_UNDERFLOW_Msk           (1UL << TX_UNDERFLOW_Pos)       /* Event: Tx underflow Mask */
-#define RX_OVERFLOW_Msk            (1UL << RX_OVERFLOW_Pos)        /* Event: Rx overflow Mask */
-#define FRAME_ERROR_Msk            (1UL << FRAME_ERROR_Pos)        /* Event: Frame error Mask */
-
 extern ARM_DRIVER_SAI Driver_SAI0;
+extern TaskHandle_t xVsiTaskHandle;
+
+uint32_t ulVsiEvent;
 
 extern "C" {
 // Audio driver data
-void (*on_event_signal)(void *);
-void *on_event_ctx = nullptr;
+void (*pxOnVsiEvent)(void *);
+void *pvVsiContext = nullptr;
 }
 
 // Audio driver callback function for event management
 static void prvArmSaiSignalEvent(uint32_t event)
 {
-    if ((event & RECEIVE_COMPLETE_Msk) == ARM_SAI_EVENT_RECEIVE_COMPLETE)
+    if(xVsiTaskHandle == NULL)
     {
-        if (on_event_signal)
-        {
-            on_event_signal(on_event_ctx);
-        }
+        LogError( ( "VSI Task is not created\r\n" ) );
+        return;
     }
+
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    ulVsiEvent = event;
+
+    vTaskNotifyGiveFromISR( xVsiTaskHandle, &xHigherPriorityTaskWoken );
+
+    portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 
 
@@ -108,8 +104,8 @@ static int prvAudioDrvSetup(void (*event_handler)(void *), void *event_handler_p
         return -1;
     }
 
-    on_event_signal = event_handler;
-    on_event_ctx = event_handler_ptr;
+    pxOnVsiEvent = event_handler;
+    pvVsiContext = event_handler_ptr;
 
     return 0;
 }
