@@ -9,7 +9,7 @@ macro(set_linker_script executable_target)
             PRIVATE
                 $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone300>:-T ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone300/an552_ns.ld>
                 $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone310>:-T ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone310/an555_ns.ld>
-                -Wl,--gc-sections
+                -Wl,--gc-sections,-Map=${executable_target}.map
                 --specs=nosys.specs
         )
     else()
