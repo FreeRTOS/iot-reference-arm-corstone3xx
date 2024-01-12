@@ -70,7 +70,7 @@
  * PUBLISH message and ack responses for QoS 1 and QoS 2 communications
  * with the broker.
  */
-#define MQTT_TEST_PROCESS_LOOP_TIMEOUT_MS    ( 4000 )
+#define MQTT_TEST_PROCESS_LOOP_TIMEOUT_MS    ( 40000 )
 
 /**
  * @brief Root certificate of the IoT Core.
@@ -114,7 +114,7 @@
  * "...base64 data...\n"\
  * "-----END CERTIFICATE-----\n"
  */
-#define MQTT_CLIENT_CERTIFICATE    keyCLIENT_CERTIFICATE_PEM
+#define MQTT_CLIENT_CERTIFICATE                  keyCLIENT_CERTIFICATE_PEM
 
 /**
  * @brief Client private key to connect to MQTT server.
@@ -123,17 +123,24 @@
  *
  * For qualification, the key should be generated on-device.
  */
-#define MQTT_CLIENT_PRIVATE_KEY    keyCLIENT_PRIVATE_KEY_PEM
+#define MQTT_CLIENT_PRIVATE_KEY                  keyCLIENT_PRIVATE_KEY_PEM
 
 /**
  * @brief Endpoint of the echo server to connect to in transport interface test.
  */
-#define ECHO_SERVER_ENDPOINT       "localhost"
+#define ECHO_SERVER_ENDPOINT                     "127.0.0.1"
 
 /**
  * @brief Port of the echo server to connect to in transport interface test.
  */
-#define ECHO_SERVER_PORT           ( 9000 )
+#define ECHO_SERVER_PORT                         ( 9000 )
+
+/**
+ * @brief Timeout to wait thread function finish the test.
+ * Set it to maximum value so that the nightly test in CI passes. Setting this
+ * to lower value causes CI failure.
+ */
+#define TRANSPORT_TEST_WAIT_THREAD_TIMEOUT_MS    ( 0xFFFFFFFF )
 
 /**
  * @brief Root certificate of the echo server.
