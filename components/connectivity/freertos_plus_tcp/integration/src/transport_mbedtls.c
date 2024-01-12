@@ -42,6 +42,7 @@
 
 /* FreeRTOS includes. */
 #include "FreeRTOS.h"
+#include "FreeRTOS_Sockets.h"
 
 /* Transport header. */
 #include "transport_interface_api.h"
@@ -116,6 +117,24 @@ TransportStatus_t Transport_Connect( NetworkContext_t * pNetworkContext,
         /* Create a TCP connection to the host. */
         if( status == TRANSPORT_STATUS_SUCCESS )
         {
+            /* Set socket receive timeout. */
+            transportTimeout = pdMS_TO_TICKS( recvTimeoutMs );
+            /* Setting the receive block time cannot fail. */
+            ( void ) FreeRTOS_setsockopt( pNetworkContext->socket,
+                                          0,
+                                          FREERTOS_SO_RCVTIMEO,
+                                          &transportTimeout,
+                                          sizeof( TickType_t ) );
+
+            /* Set socket send timeout. */
+            transportTimeout = pdMS_TO_TICKS( sendTimeoutMs );
+            /* Setting the send block time cannot fail. */
+            ( void ) FreeRTOS_setsockopt( pNetworkContext->socket,
+                                          0,
+                                          FREERTOS_SO_SNDTIMEO,
+                                          &transportTimeout,
+                                          sizeof( TickType_t ) );
+
             LogInfo( ( "Initiating TCP connection with host: %s:%d\r\n", pServerInfo->pHostName, pServerInfo->port ) );
             socketStatus = FreeRTOS_connect( pNetworkContext->socket, &serverAddress, sizeof( serverAddress ) );
 
@@ -149,24 +168,6 @@ TransportStatus_t Transport_Connect( NetworkContext_t * pNetworkContext,
 
             if( pNetworkContext->pTLSContext != NULL )
             {
-                /* Set socket receive timeout. */
-                transportTimeout = pdMS_TO_TICKS( recvTimeoutMs );
-                /* Setting the receive block time cannot fail. */
-                ( void ) FreeRTOS_setsockopt( pNetworkContext->socket,
-                                              0,
-                                              FREERTOS_SO_RCVTIMEO,
-                                              &transportTimeout,
-                                              sizeof( TickType_t ) );
-
-                /* Set socket send timeout. */
-                transportTimeout = pdMS_TO_TICKS( sendTimeoutMs );
-                /* Setting the send block time cannot fail. */
-                ( void ) FreeRTOS_setsockopt( pNetworkContext->socket,
-                                              0,
-                                              FREERTOS_SO_SNDTIMEO,
-                                              &transportTimeout,
-                                              sizeof( TickType_t ) );
-
                 if( TLS_Init( &tlsHelperParams,
                               ( TLSContext_t * ) ( pNetworkContext->pTLSContext ) ) == pdPASS )
                 {
@@ -239,50 +240,48 @@ int32_t Transport_Recv( NetworkContext_t * pNetworkContext,
                         void * pBuffer,
                         size_t bytesToRecv )
 {
-    int32_t rc = -1;
+    int32_t numberOfBytesReceived = -1;
 
     if( ( pNetworkContext == NULL ) || ( pBuffer == NULL ) || ( bytesToRecv == 0 ) )
     {
-        rc = -1;
+        numberOfBytesReceived = -1;
+    }
+    else if( pNetworkContext->pTLSContext != NULL )
+    {
+        /* Secure TCP connection */
+        numberOfBytesReceived = TLS_Recv( ( TLSContext_t * ) ( pNetworkContext->pTLSContext ), pBuffer, bytesToRecv );
     }
     else
     {
-        if( pNetworkContext->pTLSContext != NULL )
-        {
-            rc = TLS_Recv( ( TLSContext_t * ) ( pNetworkContext->pTLSContext ), pBuffer, bytesToRecv );
-        }
-        else
-        {
-            LogError( ( "Transport_Recv: TLS context is NULL" ) );
-        }
+        /* Unsecure TCP connection */
+        numberOfBytesReceived = FreeRTOS_recv( pNetworkContext->socket, pBuffer, bytesToRecv, 0 );
     }
 
-    return rc;
+    return numberOfBytesReceived;
 }
 
 int32_t Transport_Send( NetworkContext_t * pNetworkContext,
                         const void * pMessage,
                         size_t bytesToSend )
 {
-    int32_t rc = -1;
+    int32_t numberOfBytesSent = -1;
 
     if( ( pNetworkContext == NULL ) || ( pMessage == NULL ) || ( bytesToSend == 0 ) )
     {
-        rc = -1;
+        numberOfBytesSent = -1;
+    }
+    else if( pNetworkContext->pTLSContext != NULL )
+    {
+        /* Secure TCP connection */
+        numberOfBytesSent = TLS_Send( ( TLSContext_t * ) ( pNetworkContext->pTLSContext ), pMessage, bytesToSend );
     }
     else
     {
-        if( pNetworkContext->pTLSContext != NULL )
-        {
-            rc = TLS_Send( ( TLSContext_t * ) ( pNetworkContext->pTLSContext ), pMessage, bytesToSend );
-        }
-        else
-        {
-            LogError( ( "Transport_Send: TLS context is NULL" ) );
-        }
+        /* Unsecure TCP connection */
+        numberOfBytesSent = FreeRTOS_send( pNetworkContext->socket, pMessage, bytesToSend, 0 );
     }
 
-    return rc;
+    return numberOfBytesSent;
 }
 
 /**
