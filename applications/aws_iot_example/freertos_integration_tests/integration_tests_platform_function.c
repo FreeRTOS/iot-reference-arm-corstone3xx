@@ -171,7 +171,7 @@ int FRTest_ThreadTimedJoin( FRTestThreadHandle_t threadHandle,
     BaseType_t ret = xSemaphoreTake( task->mutex, pdMS_TO_TICKS( timeoutMs ) );
 
     configASSERT( ret == pdTRUE );
-    free( task );
+    FRTest_MemoryFree( task );
     return 0;
 }
 
