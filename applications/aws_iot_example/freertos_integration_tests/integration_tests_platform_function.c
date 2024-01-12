@@ -29,7 +29,7 @@ static NetworkContext_t xNetworkContext = { 0 };
 static NetworkContext_t xSecondNetworkContext = { 0 };
 static TransportInterface_t xTransport = { 0 };
 
-#define TRANSPORT_SEND_RECV_TIMEOUT_MS    ( 750 )
+#define TRANSPORT_SEND_RECV_TIMEOUT_MS    ( 3000 )
 
 static NetworkConnectStatus_t prvTransportNetworkConnect( void * pNetworkContext,
                                                           TestHostInfo_t * pHostInfo,
