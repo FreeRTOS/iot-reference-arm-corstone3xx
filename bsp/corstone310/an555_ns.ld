@@ -70,7 +70,7 @@ MEMORY
 {
   FLASH (rx)  : ORIGIN = __ROM_BASE, LENGTH = __ROM_SIZE
   RAM   (rwx) : ORIGIN = __RAM_BASE, LENGTH = __RAM_SIZE
-  DDR   (rwx) : ORIGIN = 0x60000000, LENGTH = 0x02000000
+  DDR   (rwx) : ORIGIN = 0x60000000, LENGTH = 0x10000000
   DMA   (rwx) : ORIGIN = 0x80000000, LENGTH = 0x02000000
 }
 
@@ -229,10 +229,12 @@ SECTIONS
     *(.bss.NoInit.activation_buf_sram)
   } > DDR AT > DDR
 
-  .dma :
+  .vsibuffer :
   {
-    *(.bss.NoInit.audio_buf)
-  } > DMA AT > DMA
+    . = ALIGN (4);
+    /* Buffer for transferring VSI audio data from S to NS */
+    *(.bss.NoInit.vsi_audio_buffer)
+  } > DDR AT > DDR
 
   .bss :
   {
