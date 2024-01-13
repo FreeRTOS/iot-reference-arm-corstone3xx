@@ -51,7 +51,7 @@ LR_CODE (ROM_START + ((((0) + (FLASH_S_PARTITION_SIZE)) + BL2_HEADER_SIZE))) {
     ; This region should have 3 cycle read latency from
     ; both Cortex-M55 and Ethos-U55
     ;-----------------------------------------------------
-    ddr.bin       0x60000000  NOCOMPRESS ALIGN 16 0x02000000
+    ddr.bin       0x60000000  NOCOMPRESS ALIGN 16 0x10000000
     {
         ; nn model's baked in input matrices
         *.o (ifm)
@@ -68,11 +68,8 @@ LR_CODE (ROM_START + ((((0) + (FLASH_S_PARTITION_SIZE)) + BL2_HEADER_SIZE))) {
 
         ; activation buffers a.k.a tensor arena when memory mode dedicated sram
         *.o (.bss.NoInit.activation_buf_sram)
-    }
 
-    dma 0x8FFF0000 UNINIT ALIGN 16 0xFFFF
-    {
-        ; Buffer for transferring VSI audio data from S to NS.
-        *.o (.bss.NoInit.audio_buf)
+        ; Buffer for transferring VSI audio data from S to NS
+        *.o (.bss.NoInit.vsi_audio_buffer)
     }
 }
