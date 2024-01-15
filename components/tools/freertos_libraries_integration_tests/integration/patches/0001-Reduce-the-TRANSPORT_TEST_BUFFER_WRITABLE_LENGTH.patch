@@ -1,7 +1,7 @@
-From 45f93b31eb4f27430ddb45936cc7c5531bcd71ff Mon Sep 17 00:00:00 2001
-From: Devaraj Ranganna <devaraj.ranganna@arm.com>
-Date: Wed, 17 Jan 2024 15:47:18 +0000
-Subject: [PATCH] Reduce the `TRANSPORT_TEST_BUFFER_WRITABLE_LENGTH`
+From 1d60cee487496adb9098b998d5484e8d3ba652a7 Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Mon, 5 Feb 2024 16:21:39 +0000
+Subject: [PATCH 1/2] Reduce the `TRANSPORT_TEST_BUFFER_WRITABLE_LENGTH`
 
 The `TRANSPORT_TEST_BUFFER_WRITABLE_LENGTH` is set to `2048`. Reduce it
 to `1350`, so that the test data can be sent in a single ethernet
@@ -26,5 +26,5 @@ index 32009dc..ccc6507 100644
  #define TRANSPORT_TEST_BUFFER_TOTAL_LENGTH        \
      ( TRANSPORT_TEST_BUFFER_PREFIX_GUARD_LENGTH + \
 -- 
-2.25.1
+2.34.1
 
