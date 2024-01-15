@@ -7,9 +7,13 @@ from pytest import fixture
 from aws_test_util import Flags, create_aws_resources, cleanup_aws_resources
 import re
 
-Cases = "Full_OTA_PAL, otaPal_CloseFile_ValidSignature"
-Output = "Test cannot succeed as the filename is hardcoded in test"
-ignore_tests = {Cases: Output}
+# If you have failing test cases to ignore,
+# specify the test suites and test cases as shown below
+# afterwards remove the empty ignore_tests dictionary.
+# Cases = "TestSuite1, TestCase_1, TestSuite2, TestCase_2, TestSuiten, TestCase_n"
+# Output = "Reason to ignore"
+# ignore_tests = {Cases: Output}
+ignore_tests = {}
 
 
 @fixture(scope="function")
