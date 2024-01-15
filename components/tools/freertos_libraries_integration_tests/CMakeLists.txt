@@ -8,10 +8,13 @@ set(freertos_libraries_integration_tests_SOURCE_DIR
     "Path to FreeRTOS-Libraries-Integration-Tests source code"
 )
 
-execute_process(COMMAND git apply ${CMAKE_CURRENT_SOURCE_DIR}/integration/patches/0001-Reduce-the-TRANSPORT_TEST_BUFFER_WRITABLE_LENGTH.patch
-    WORKING_DIRECTORY "${freertos_libraries_integration_tests_SOURCE_DIR}"
-    OUTPUT_QUIET
-    ERROR_QUIET
+include(ApplyPatches)
+
+set(PATCH_FILES_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/integration/patches")
+set(PATCH_FILES
+    "${PATCH_FILES_DIRECTORY}/0001-Reduce-the-TRANSPORT_TEST_BUFFER_WRITABLE_LENGTH.patch"
+    "${PATCH_FILES_DIRECTORY}/0002-closefile-validsignature-test-Fix-test-bugs.patch"
 )
+iot_reference_arm_corstone3xx_apply_patches("${freertos_libraries_integration_tests_SOURCE_DIR}" "${PATCH_FILES}")
 
 add_subdirectory(integration)
