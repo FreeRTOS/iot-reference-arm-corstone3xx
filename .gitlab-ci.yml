@@ -237,6 +237,7 @@ integration-tests:
     - ./tools/ci/generate_credentials.sh -f -p applications/${APP_UNDERSCORED}/configs/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
+    - git config --global core.autocrlf input
     - ./tools/scripts/build.sh -q ${APP} --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
     - pushd components/tools/freertos_libraries_integration_tests/library/tools/echo_server
     - go run echo_server.go&
