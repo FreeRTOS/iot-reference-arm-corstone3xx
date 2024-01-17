@@ -59,14 +59,10 @@ function(assert_defined var_name)
     endif()
 endfunction()
 
-# Note: tensorflow.cmake modifies these variables. Save the current values and restore after.
-set(TEMP_CMAKE_SYSTEM_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
+# Preserve the content of `ETHOS_U_NPU_ID` before including
+# the `tensorflow.cmake` CMake module which overrides it.
 set(TEMP_ETHOS_U_NPU_ID ${ETHOS_U_NPU_ID})
-# Note: tensorflow.cmake only has support up to cortex-m55.
-set(CMAKE_SYSTEM_PROCESSOR "cortex-m55")
 include(${CMAKE_SCRIPTS_DIR}/tensorflow.cmake)
-# Note: tensorflow.cmake variable restoration.
-set(CMAKE_SYSTEM_PROCESSOR ${TEMP_CMAKE_SYSTEM_PROCESSOR})
 set(ETHOS_U_NPU_ID ${TEMP_ETHOS_U_NPU_ID})
 
 # Manually add libs
