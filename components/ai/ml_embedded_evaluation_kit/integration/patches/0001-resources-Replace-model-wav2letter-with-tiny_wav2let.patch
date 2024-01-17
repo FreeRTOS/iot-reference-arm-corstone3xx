@@ -1,7 +1,7 @@
-From 34238f5d40992d6f2adbda9d793bd51c6b5ea985 Mon Sep 17 00:00:00 2001
+From e691803e130d1aced38c21e98c41ce40bda44ffe Mon Sep 17 00:00:00 2001
 From: Hugues Kamba-Mpiana <hugues.kambampiana@arm.com>
 Date: Tue, 19 Dec 2023 14:09:27 +0000
-Subject: [PATCH] resources: Replace model wav2letter with tiny_wav2letter
+Subject: [PATCH 1/4] resources: Replace model wav2letter with tiny_wav2letter
 
 `wav2letter` model needs singificant amount of memory (around 14Mb),
 where as `tiny_wav2letter` needs around 4Mb.
@@ -10,13 +10,13 @@ the `asr` and `kws` use cases.
 
 Signed-off-by: Hugues Kamba-Mpiana <hugues.kambampiana@arm.com>
 ---
- set_up_default_resources.py           | 18 +++++++++---------
+ set_up_default_resources.py           | 16 ++++++++--------
  source/use_case/asr/usecase.cmake     |  4 ++--
  source/use_case/kws_asr/usecase.cmake |  4 ++--
- 3 files changed, 13 insertions(+), 13 deletions(-)
+ 3 files changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/set_up_default_resources.py b/set_up_default_resources.py
-index b442432..a0d6149 100755
+index b442432..2cb987d 100755
 --- a/set_up_default_resources.py
 +++ b/set_up_default_resources.py
 @@ -51,16 +51,16 @@ json_uc_res = [
@@ -97,5 +97,5 @@ index de84bfd..9bfbbd0 100644
  
  USER_OPTION(${use_case}_MODEL_TFLITE_PATH_KWS "NN models file to be used for KWS in the evaluation application. Model files must be in tflite format."
 -- 
-2.34.1
+2.40.1
 

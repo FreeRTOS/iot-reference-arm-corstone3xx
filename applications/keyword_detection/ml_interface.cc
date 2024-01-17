@@ -1,4 +1,4 @@
-/* Copyright 2021-2023 Arm Limited and/or its affiliates
+/* Copyright 2021-2024 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  * SPDX-License-Identifier: MIT
  */
@@ -10,10 +10,15 @@
 
 #include "ml_interface.h"
 #include "AudioUtils.hpp"
+#include "AppContext.hpp"
 #include "BufAttributes.hpp"
 #include "demo_config.h"
 extern "C" {
 #include "events.h"
+#ifdef USE_ETHOS
+#include "ethosu_driver.h"
+#include "ethosu_npu_init.h"
+#endif
 }
 #include "KwsClassifier.hpp"
 #include "KwsProcessing.hpp"
@@ -24,13 +29,7 @@ extern "C" {
 #include "MicroNetKwsModel.hpp"
 #include "mqtt_agent_task.h"
 #include "TensorFlowLiteMicro.hpp"
-#include "UseCaseCommonUtils.hpp"
 #include CMSIS_device_header
-#include "device_mps3.h"   /* FPGA level definitions and functions. */
-#include "ethos-u55.h"     /* Mem map and configuration definitions of the Ethos U55 */
-#include "ethosu_driver.h" /* Arm Ethos-U55 driver header */
-#include "timer_mps3.h"     /* Timer functions. */
-#include "timing_adapter.h" /* Driver header of the timing adapter */
 
 #include <algorithm>
 #include <array>
@@ -890,111 +889,25 @@ extern struct ethosu_driver ethosu_drv; /* Default Ethos-U55 device driver */
  **/
 static int prvArmNpuInit(void);
 
-/**
- * @brief   Defines the Ethos-U interrupt handler: just a wrapper around the default
- *          implementation.
- **/
-extern "C" {
-void ETHOS_U55_Handler(void)
-{
-    /* Call the default interrupt handler from the NPU driver */
-    ethosu_irq_handler(&ethosu_drv);
-}
-}
-
-/**
- * @brief  Initialises the NPU IRQ
- **/
-static void prvArmNpuIrqInit(void)
-{
-    const IRQn_Type ethosu_irqnum = (IRQn_Type)EthosU_IRQn;
-
-    /* Enable the IRQ */
-    NVIC_EnableIRQ(ethosu_irqnum);
-
-    LogDebug( ( "EthosU IRQ#: %u, Handler: 0x%p\n", ethosu_irqnum, ETHOS_U55_Handler ) );
-}
-
-static int prvArmNpuTimingAdapterInit(void)
-{
-#if defined(TA0_BASE)
-    struct timing_adapter ta_0;
-    struct timing_adapter_settings ta_0_settings = {.maxr = TA0_MAXR,
-                                                    .maxw = TA0_MAXW,
-                                                    .maxrw = TA0_MAXRW,
-                                                    .rlatency = TA0_RLATENCY,
-                                                    .wlatency = TA0_WLATENCY,
-                                                    .pulse_on = TA0_PULSE_ON,
-                                                    .pulse_off = TA0_PULSE_OFF,
-                                                    .bwcap = TA0_BWCAP,
-                                                    .perfctrl = TA0_PERFCTRL,
-                                                    .perfcnt = TA0_PERFCNT,
-                                                    .mode = TA0_MODE,
-                                                    .maxpending = 0, /* This is a read-only parameter */
-                                                    .histbin = TA0_HISTBIN,
-                                                    .histcnt = TA0_HISTCNT};
-
-    if (0 != ta_init(&ta_0, TA0_BASE)) {
-        LogError( ( "TA0 initialisation failed\n" ) );
-        return 1;
-    }
-
-    ta_set_all(&ta_0, &ta_0_settings);
-#endif /* defined (TA0_BASE) */
-
-#if defined(TA1_BASE)
-    struct timing_adapter ta_1;
-    struct timing_adapter_settings ta_1_settings = {.maxr = TA1_MAXR,
-                                                    .maxw = TA1_MAXW,
-                                                    .maxrw = TA1_MAXRW,
-                                                    .rlatency = TA1_RLATENCY,
-                                                    .wlatency = TA1_WLATENCY,
-                                                    .pulse_on = TA1_PULSE_ON,
-                                                    .pulse_off = TA1_PULSE_OFF,
-                                                    .bwcap = TA1_BWCAP,
-                                                    .perfctrl = TA1_PERFCTRL,
-                                                    .perfcnt = TA1_PERFCNT,
-                                                    .mode = TA1_MODE,
-                                                    .maxpending = 0, /* This is a read-only parameter */
-                                                    .histbin = TA1_HISTBIN,
-                                                    .histcnt = TA1_HISTCNT};
-
-    if (0 != ta_init(&ta_1, TA1_BASE)) {
-        LogError( ( "TA1 initialisation failed\n" ) );
-        return 1;
-    }
-
-    ta_set_all(&ta_1, &ta_1_settings);
-#endif /* defined (TA1_BASE) */
-
-    return 0;
-}
-
 static int prvArmNpuInit(void)
 {
     int err = 0;
 
-    /* If the platform has timing adapter blocks along with Ethos-U55 core
-     * block, initialise them here. */
-    // cppcheck-suppress knownConditionTrueFalse
-    if (0 != (err = prvArmNpuTimingAdapterInit())) {
+    SCB_EnableICache();
+    SCB_EnableDCache();
+
+#if defined(ETHOS_U_NPU_TIMING_ADAPTER_ENABLED)
+    /* If the platform has timing adapter blocks along with Ethos-U core
+    * block, initialise them here. */
+    if (0 != (err = arm_ethosu_timing_adapter_init())) {
+        LogError( ("Failed to init timing adapter\n") );
         return err;
     }
+#endif /* ETHOS_U_NPU_TIMING_ADAPTER_ENABLED */
 
-    /* Initialise the IRQ */
-    prvArmNpuIrqInit();
-
-    /* Initialise Ethos-U55 device */
-    void *const ethosu_base_address = reinterpret_cast<void *const>(SEC_ETHOS_U55_BASE);
-
-    if (0
-        != (err = ethosu_init(&ethosu_drv,         /* Ethos-U55 driver device pointer */
-                              ethosu_base_address, /* Ethos-U55's base address. */
-                              NULL,                /* Pointer to fast mem area - NULL for U55. */
-                              0,                   /* Fast mem region size. */
-                              0,                   /* Security enable. */
-                              0))) {               /* Privilege enable. */
-        LogError( ( "failed to initalise Ethos-U55 device\n" ) );
+    // Initialize the ethos NPU
+    if (0 != (err = arm_ethosu_npu_init())) {
+        LogError( ("Failed to init arm npu\n") );
         return err;
     }
 

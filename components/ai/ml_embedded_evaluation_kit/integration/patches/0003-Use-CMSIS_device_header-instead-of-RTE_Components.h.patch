@@ -1,0 +1,40 @@
+From 75e29cf7fd59978d06d8594efd2c883c40cd56e1 Mon Sep 17 00:00:00 2001
+From: Gabor Abonyi <gabor.abonyi@arm.com>
+Date: Tue, 16 Jan 2024 14:48:44 +0100
+Subject: [PATCH 3/4] Use CMSIS_device_header instead of RTE_Components.h
+
+Signed-off-by: Gabor Abonyi <gabor.abonyi@arm.com>
+---
+ source/hal/source/components/npu/ethosu_cpu_cache.c | 2 +-
+ source/hal/source/components/npu/ethosu_npu_init.c  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/source/hal/source/components/npu/ethosu_cpu_cache.c b/source/hal/source/components/npu/ethosu_cpu_cache.c
+index d5f5e47..42fedba 100644
+--- a/source/hal/source/components/npu/ethosu_cpu_cache.c
++++ b/source/hal/source/components/npu/ethosu_cpu_cache.c
+@@ -17,7 +17,7 @@
+ 
+ #include "ethosu_cpu_cache.h"
+ 
+-#include "RTE_Components.h"         /* For CPU related defintiions */
++#include CMSIS_device_header        /* For CPU related defintiions */
+ #include "ethosu_driver.h"          /* Arm Ethos-U driver header */
+ #include "log_macros.h"             /* Logging macros */
+ 
+diff --git a/source/hal/source/components/npu/ethosu_npu_init.c b/source/hal/source/components/npu/ethosu_npu_init.c
+index dbee2ff..0bce70e 100644
+--- a/source/hal/source/components/npu/ethosu_npu_init.c
++++ b/source/hal/source/components/npu/ethosu_npu_init.c
+@@ -17,7 +17,7 @@
+ 
+ #include "ethosu_npu_init.h"
+ 
+-#include "RTE_Components.h"         /* For CPU related defintiions */
++#include CMSIS_device_header        /* For CPU related defintiions */
+ #include "log_macros.h"             /* Logging functions */
+ 
+ #include "ethosu_mem_config.h"      /* Arm Ethos-U memory config */
+-- 
+2.40.1
+

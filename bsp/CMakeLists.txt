@@ -1,4 +1,4 @@
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: Apache-2.0
 
@@ -44,6 +44,10 @@ if(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone300")
     set(NS_IMAGE_LOAD_ADDRESS 0x28040000 CACHE STRING "Non-secure user application loading address")
     set(S_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x10022000 CACHE STRING "Secure provisioning bundle loading address")
     set(NS_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x211FF000 CACHE STRING "Non-Secure provisioning bundle loading address")
+    set(ETHOS_U_BASE_ADDR "0x48102000" CACHE STRING "Ethos-U NPU base address" FORCE)
+    set(ETHOS_U_IRQN "56" CACHE STRING "Ethos-U NPU Interrupt" FORCE)
+    set(ETHOS_U_SEC_ENABLED "0" CACHE STRING "Ethos-U NPU Security enable" FORCE)
+    set(ETHOS_U_PRIV_ENABLED "0" CACHE STRING "Ethos-U NPU Privilege enable" FORCE)
     target_compile_definitions(arm-corstone-platform-bsp PUBLIC CORSTONE300_FVP)
 elseif(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone310")
     set(BL2_IMAGE_LOAD_ADDRESS 0x11000000 CACHE STRING "Bootload image loading address")
@@ -51,6 +55,10 @@ elseif(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone310")
     set(NS_IMAGE_LOAD_ADDRESS 0x28040000 CACHE STRING "Non-secure user application loading address")
     set(S_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x11022000 CACHE STRING "Secure provisioning bundle loading address")
     set(NS_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x213FF000 CACHE STRING "Non-Secure provisioning bundle loading address")
+    set(ETHOS_U_BASE_ADDR "0x40004000" CACHE STRING "Ethos-U NPU base address" FORCE)
+    set(ETHOS_U_IRQN "16" CACHE STRING "Ethos-U NPU Interrupt" FORCE)
+    set(ETHOS_U_SEC_ENABLED "0" CACHE STRING "Ethos-U NPU Security enable" FORCE)
+    set(ETHOS_U_PRIV_ENABLED "0" CACHE STRING "Ethos-U NPU Privilege enable" FORCE)
     target_compile_definitions(arm-corstone-platform-bsp PUBLIC CORSTONE310_FVP)
 endif()
 

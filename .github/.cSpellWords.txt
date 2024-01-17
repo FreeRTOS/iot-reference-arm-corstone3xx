@@ -62,6 +62,7 @@ IDAQAB
 indet
 inkey
 iotdeviceadvisor
+IRQN
 ISRAM
 istty
 JITP
