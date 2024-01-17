@@ -28,6 +28,18 @@ target_link_libraries(provisioning_data PRIVATE
 
 ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
 
+if(INTEGRATION_TESTS EQUAL 1)
+    set(
+        CODE_SIGNING_PUBLIC_KEY_PEM_PATH
+        ${freertos_libraries_integration_tests_SOURCE_DIR}/src/ota/test_files/tfm-rsa-sha256-signer.crt.pem
+    )
+else()
+    set(
+        CODE_SIGNING_PUBLIC_KEY_PEM_PATH
+        ${BINARY_DIR}/api_ns/image_signing/keys/image_ns_signing_public_key.pem
+    )
+endif()
+
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/aws_clientcredential_keys.h
     DEPENDS ${AWS_CLIENT_PRIVATE_KEY_PEM_PATH}
     DEPENDS ${AWS_CLIENT_CERTIFICATE_PEM_PATH}
@@ -36,7 +48,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/aws_clientcredential_keys.
             ${CMAKE_CURRENT_BINARY_DIR}
             --path-to-client-private-key-pem ${AWS_CLIENT_PRIVATE_KEY_PEM_PATH}
             --path-to-client-certificate-pem ${AWS_CLIENT_CERTIFICATE_PEM_PATH}
-            --path-to-code-signing-public-key-pem ${BINARY_DIR}/api_ns/image_signing/keys/image_ns_signing_public_key.pem
+            --path-to-code-signing-public-key-pem ${CODE_SIGNING_PUBLIC_KEY_PEM_PATH}
 )
 
 add_custom_target(aws_clientcredential_keys_header
