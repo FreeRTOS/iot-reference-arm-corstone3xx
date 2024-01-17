@@ -18,5 +18,3 @@ set(PATCH_FILES
     "${PATCH_FILES_DIRECTORY}/0001-toolchain-Fix-Arm-GNU-Toolchain-13.2-Rel1-compatibil.patch"
 )
 iot_reference_arm_corstone3xx_apply_patches("${ml_embedded_evaluation_kit_SOURCE_DIR}" "${PATCH_FILES}")
-
-add_subdirectory(integration)
