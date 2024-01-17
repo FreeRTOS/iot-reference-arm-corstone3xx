@@ -1,0 +1,34 @@
+From 70721e0c00a9e698df467e81e1ad3b54cf76edf4 Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Wed, 17 Jan 2024 11:00:09 +0000
+Subject: [PATCH] ota-abort: Fix successful abortion check
+
+PsaStatus variable should be initialized before
+being accessed as in the happy path scenario the
+variable wouldn't be modified as the psa_fwu_cancel()
+and psa_fwu_clean() functions wouldn't be failing. Hence
+the variable would be accessed before being initialized
+means that a garbage value would be checked
+which is not the correct case.
+
+Signed-off-by: Ahmed Ismail <Ahmed.Ismail@arm.com>
+---
+ ota_pal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ota_pal.c b/ota_pal.c
+index 14b2e80..165c146 100644
+--- a/ota_pal.c
++++ b/ota_pal.c
+@@ -282,7 +282,7 @@ OtaPalStatus_t otaPal_Abort( OtaFileContext_t * const pFileContext )
+     }
+     else
+     {
+-        psa_status_t lPsaStatus;
++        psa_status_t lPsaStatus = PSA_SUCCESS;
+         if( psa_fwu_cancel( xOTAComponentID ) != PSA_SUCCESS )
+         {
+             lPsaStatus = OTA_PAL_COMBINE_ERR( OtaPalAbortFailed, 0 );
+-- 
+2.34.1
+
