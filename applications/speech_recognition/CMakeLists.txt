@@ -1,4 +1,4 @@
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -31,35 +31,31 @@ set(MCUBOOT_IMAGE_VERSION_NS_UPDATE "0.0.1+20")
 
 # Hardware platform specific setup
 if (${ARM_CORSTONE_BSP_TARGET_PLATFORM} STREQUAL "corstone310")
-    set(ML_TARGET_SUBSYSTEM "sse-310")
+    set(ETHOS_U_NPU_ID "U55")
     set(ETHOS_U_NPU_CONFIG_ID "H256")
     set(ETHOSU_TARGET_NPU_CONFIG "ethos-u55-256")
+    set(ETHOS_U_NPU_MEMORY_MODE Shared_Sram)
     set(TFM_PLATFORM_LOCAL_PATH "arm/mps3/corstone310/fvp")
 elseif (${ARM_CORSTONE_BSP_TARGET_PLATFORM} STREQUAL "corstone300")
-    set(ML_TARGET_SUBSYSTEM "sse-300")
+    set(ETHOS_U_NPU_ID "U55")
     set(ETHOS_U_NPU_CONFIG_ID "H128")
     set(ETHOSU_TARGET_NPU_CONFIG "ethos-u55-128")
+    set(ETHOS_U_NPU_MEMORY_MODE Shared_Sram)
     set(TFM_PLATFORM_LOCAL_PATH "arm/mps3/corstone300/fvp")
 else()
     message(FATAL_ERROR "Invalid ARM_CORSTONE_BSP_TARGET_PLATFORM (${ARM_CORSTONE_BSP_TARGET_PLATFORM}) set. Supported are corstone300/corstone310")
 endif()
 
+if (${ML_INFERENCE_ENGINE} STREQUAL "ETHOS")
+    set(ETHOS_U_NPU_ENABLED ON)
+    set(ETHOS_U_NPU_TIMING_ADAPTER_ENABLED OFF)
+else()
+    set(ETHOS_U_NPU_ENABLED OFF)
+endif()
+set(ML_USE_CASE "asr")
+set(ML_MODEL "GenerateASRModel")
 set(TFM_FLASH_S_PARTITION_SIZE "0x40000")
 set(TFM_FLASH_NS_PARTITION_SIZE "0x340000")
-
-# Machine Learning setup
-set(ML_CMAKE_ARGS
-    -DTARGET_SUBSYSTEM=${ML_TARGET_SUBSYSTEM}
-    -DETHOS_U_NPU_CONFIG_ID=${ETHOS_U_NPU_CONFIG_ID}
-    -DETHOSU_TARGET_NPU_CONFIG=${ETHOSU_TARGET_NPU_CONFIG}
-    -DUSE_CASE_BUILD=asr
-)
-if (${ML_INFERENCE_ENGINE} STREQUAL "ETHOS")
-    list(APPEND ML_CMAKE_ARGS -DETHOS_U_NPU_ENABLED=ON)
-else()
-    list(APPEND ML_CMAKE_ARGS -DETHOS_U_NPU_ENABLED=OFF)
-endif()
-set(ML_TARGETS cmsis-dsp tensorflow_build asr)
 set(TFM_PLATFORM_UPGRADE_STRATEGY "SWAP_USING_SCRATCH")
 set(TFM_PLATFORM_CONFIRM_IMAGE ON)
 
@@ -114,13 +110,12 @@ add_subdirectory(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR} ${CMAKE_BINARY_DIR}
 list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/components/aws_iot/cmake)
 list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/components/ai/ml_embedded_evaluation_kit/integration/cmake)
 list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/components/security/trusted_firmware-m/integration/cmake)
-include(BuildMlEmbeddedEvaluationKit)
+include(SetupMlEmbeddedEvaluationKitLibraries)
 include(ConvertAudioSourceToCode)
 include(GenerateAWSUpdateDigestAndSignature)
 include(MergeTfmImages)
 include(SignTfmImage)
 
-add_subdirectory(../libraries/ml-kit ${CMAKE_BINARY_DIR}/libraries/ml-kit)
 add_subdirectory(configs ${CMAKE_BINARY_DIR}/Config)
 add_subdirectory(../helpers helpers)
 
@@ -190,9 +185,6 @@ add_dependencies(speech-recognition trusted_firmware-m-build)
 # The provision data must be built before the application because
 # it provides credentials to connect to AWS.
 add_dependencies(speech-recognition provisioning_data_bin)
-# The ML Embedded Evaluation Kit must be built before the application because
-# it provides the Machine Learning algorithm to detect speech.
-add_dependencies(speech-recognition ml_embedded_evaluation_kit-build)
 
 target_link_libraries(speech-recognition
     PRIVATE
@@ -207,12 +199,13 @@ target_link_libraries(speech-recognition
         helpers-events
         mbedtls
         mbedtls-threading-freertos
-        ml-kit-asr
         ota-for-aws-iot-embedded-sdk
         provisioning-lib
         speexdsp
         tfm-ns-interface
         toolchain-override
+        asr_api
+        asr_model
 )
 
 include(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/cmake/SetLinkerOptions.cmake)

@@ -1,0 +1,25 @@
+From d799ead836ea893cbc6eb8abe98dccfd6aac2e4a Mon Sep 17 00:00:00 2001
+From: Gabor Abonyi <gabor.abonyi@arm.com>
+Date: Tue, 16 Jan 2024 13:40:22 +0100
+Subject: [PATCH] Add stdint.h to kiss_fft_common.h wrapper
+
+Signed-off-by: Gabor Abonyi <gabor.abonyi@arm.com>
+---
+ signal/src/kiss_fft_wrappers/kiss_fft_common.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/signal/src/kiss_fft_wrappers/kiss_fft_common.h b/signal/src/kiss_fft_wrappers/kiss_fft_common.h
+index 75f3dcda..8dcaaffa 100644
+--- a/signal/src/kiss_fft_wrappers/kiss_fft_common.h
++++ b/signal/src/kiss_fft_wrappers/kiss_fft_common.h
+@@ -34,6 +34,7 @@ limitations under the License.
+ 
+ #include <limits.h>
+ #include <math.h>
++#include <stdint.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+-- 
+2.40.1
+

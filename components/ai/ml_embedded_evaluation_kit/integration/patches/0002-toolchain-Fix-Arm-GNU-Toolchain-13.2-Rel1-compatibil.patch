@@ -1,7 +1,7 @@
-From 28c8e0755b91ae4a8628bfcc1b1ca39b4c494bc5 Mon Sep 17 00:00:00 2001
+From 60556c32a8957dd52b5dc7b85a8cef6550f5ac28 Mon Sep 17 00:00:00 2001
 From: Hugues Kamba-Mpiana <hugues.kambampiana@arm.com>
 Date: Tue, 19 Dec 2023 13:17:15 +0000
-Subject: [PATCH] toolchain: Fix Arm GNU Toolchain 13.2 Rel1 compatibility
+Subject: [PATCH 2/4] toolchain: Fix Arm GNU Toolchain 13.2 Rel1 compatibility
 
 Arm GNU Toolchain 13.2 Rel1 no longer includes <cstdint> transitively.
 Include `cstdint` explicitely where needed.
@@ -65,5 +65,5 @@ index 279acf0..eb28a8f 100644
  namespace app {
  
 -- 
-2.34.1
+2.40.1
 
