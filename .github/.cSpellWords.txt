@@ -129,6 +129,9 @@ RSAES
 RSASSA
 SBCON
 SECP
+sntp
+Sntp
+SNTP
 speex
 Speex
 SPEEX

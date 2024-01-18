@@ -61,3 +61,6 @@
 [submodule "speexdsp"]
 	path = components/ai/speexdsp/library
 	url = https://gitlab.xiph.org/xiph/speexdsp.git
+[submodule "components/aws_iot/coresntp/library"]
+	path = components/aws_iot/coresntp/library
+	url = https://github.com/FreeRTOS/coreSNTP.git
