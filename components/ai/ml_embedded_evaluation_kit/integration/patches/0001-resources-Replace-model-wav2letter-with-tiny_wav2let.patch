@@ -63,15 +63,6 @@ index b442432..a0d6149 100755
              },
              {
                  "sub_folder": "asr",
-@@ -235,7 +235,7 @@ valid_npu_config_names = [
- ]
- 
- # Default NPU configurations (these are always run when the models are optimised)
--default_npu_config_names = [valid_npu_config_names[2], valid_npu_config_names[4]]
-+default_npu_config_names = [valid_npu_config_names[2], valid_npu_config_names[3], valid_npu_config_names[4]]
- 
- # NPU config named tuple
- NPUConfig = namedtuple(
 diff --git a/source/use_case/asr/usecase.cmake b/source/use_case/asr/usecase.cmake
 index fc3f2b5..3ce2c0a 100644
 --- a/source/use_case/asr/usecase.cmake
