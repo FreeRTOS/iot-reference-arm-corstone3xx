@@ -38,6 +38,11 @@
 #include <stdio.h>
 #include <string.h>
 
+/**
+ *  @brief Declaring MBEDTLS_ALLOW_PRIVATE_ACCESS allows access to mbedtls "private" fields.
+ */
+#define MBEDTLS_ALLOW_PRIVATE_ACCESS
+
 /* FreeRTOS includes. */
 #include "FreeRTOS.h"
 
@@ -59,6 +64,8 @@
 /* mbedTLS includes. */
 #include "mbedtls/pk.h"
 #include "mbedtls/oid.h"
+#include "mbedtls/entropy.h"
+#include "mbedtls/ctr_drbg.h"
 
 /* Default FreeRTOS API for console logging. */
 #define DEV_MODE_KEY_PROVISIONING_PRINT( X )    printf
@@ -137,7 +144,7 @@ static CK_RV prvProvisionPrivateECKey( CK_SESSION_HANDLE xSession,
     CK_BBOOL xTrue = CK_TRUE;
     CK_KEY_TYPE xPrivateKeyType = CKK_EC;
     CK_OBJECT_CLASS xPrivateKeyClass = CKO_PRIVATE_KEY;
-    mbedtls_ecp_keypair * pxKeyPair = ( mbedtls_ecp_keypair * ) pxMbedPkContext->pk_ctx;
+    const mbedtls_ecp_keypair * pxKeyPair = mbedtls_pk_ec( *pxMbedPkContext );
 
     xResult = C_GetFunctionList( &pxFunctionList );
 
@@ -221,7 +228,7 @@ static CK_RV prvProvisionPrivateRSAKey( CK_SESSION_HANDLE xSession,
     CK_RV xResult = CKR_OK;
     CK_FUNCTION_LIST_PTR pxFunctionList = NULL;
     CK_KEY_TYPE xPrivateKeyType = CKK_RSA;
-    mbedtls_rsa_context * xRsaContext = pxMbedPkContext->pk_ctx;
+    const mbedtls_rsa_context * xRsaContext = mbedtls_pk_rsa( *pxMbedPkContext );
     CK_OBJECT_CLASS xPrivateKeyClass = CKO_PRIVATE_KEY;
     RsaParams_t * pxRsaParams = NULL;
     CK_BBOOL xTrue = CK_TRUE;
@@ -321,9 +328,22 @@ CK_RV xProvisionPrivateKey( CK_SESSION_HANDLE xSession,
     mbedtls_pk_type_t xMbedKeyType;
     int lMbedResult = 0;
     mbedtls_pk_context xMbedPkContext = { 0 };
+    mbedtls_entropy_context entropyCtx;
+    mbedtls_ctr_drbg_context drbgCtx;
+
+    mbedtls_entropy_init( &entropyCtx );
+    mbedtls_ctr_drbg_init( &drbgCtx );
+    lMbedResult = mbedtls_ctr_drbg_seed( &drbgCtx, mbedtls_entropy_func, &entropyCtx, NULL, 0 );
 
     mbedtls_pk_init( &xMbedPkContext );
-    lMbedResult = mbedtls_pk_parse_key( &xMbedPkContext, pucPrivateKey, xPrivateKeyLength, NULL, 0 );
+
+    if( lMbedResult == 0 )
+    {
+        lMbedResult = mbedtls_pk_parse_key( &xMbedPkContext, pucPrivateKey, xPrivateKeyLength, NULL, 0, mbedtls_ctr_drbg_random, &drbgCtx );
+    }
+
+    mbedtls_ctr_drbg_free( &drbgCtx );
+    mbedtls_entropy_free( &entropyCtx );
 
     if( lMbedResult != 0 )
     {
@@ -381,10 +401,22 @@ CK_RV xProvisionPublicKey( CK_SESSION_HANDLE xSession,
 
     xResult = C_GetFunctionList( &pxFunctionList );
 
+    mbedtls_entropy_context entropyCtx;
+    mbedtls_ctr_drbg_context drbgCtx;
+    mbedtls_entropy_init( &entropyCtx );
+    mbedtls_ctr_drbg_init( &drbgCtx );
+    lMbedResult = mbedtls_ctr_drbg_seed( &drbgCtx, mbedtls_entropy_func, &entropyCtx, NULL, 0 );
+
     mbedtls_pk_init( &xMbedPkContext );
 
-    /* Try parsing the private key using mbedtls_pk_parse_key. */
-    lMbedResult = mbedtls_pk_parse_key( &xMbedPkContext, pucKey, xKeyLength, NULL, 0 );
+    if( lMbedResult == 0 )
+    {
+        /* Try parsing the private key using mbedtls_pk_parse_key. */
+        lMbedResult = mbedtls_pk_parse_key( &xMbedPkContext, pucKey, xKeyLength, NULL, 0, mbedtls_ctr_drbg_random, &drbgCtx );
+    }
+
+    mbedtls_ctr_drbg_free( &drbgCtx );
+    mbedtls_entropy_free( &entropyCtx );
 
     /* If mbedtls_pk_parse_key didn't work, maybe the private key is not included in the input passed in.
      * Try to parse just the public key. */
@@ -404,7 +436,7 @@ CK_RV xProvisionPublicKey( CK_SESSION_HANDLE xSession,
         CK_BYTE xPublicExponent[] = { 0x01, 0x00, 0x01 };
         CK_BYTE xModulus[ MODULUS_LENGTH + 1 ] = { 0 };
 
-        ( void ) mbedtls_rsa_export_raw( ( mbedtls_rsa_context * ) xMbedPkContext.pk_ctx,
+        ( void ) mbedtls_rsa_export_raw( mbedtls_pk_rsa( xMbedPkContext ),
                                          ( unsigned char * ) &xModulus, MODULUS_LENGTH + 1,
                                          NULL, 0,
                                          NULL, 0,
@@ -441,7 +473,7 @@ CK_RV xProvisionPublicKey( CK_SESSION_HANDLE xSession,
         size_t xLength;
         CK_BYTE xEcPoint[ 256 ] = { 0 };
 
-        mbedtls_ecdsa_context * pxEcdsaContext = ( mbedtls_ecdsa_context * ) xMbedPkContext.pk_ctx;
+        const mbedtls_ecdsa_context * pxEcdsaContext = mbedtls_pk_ec( xMbedPkContext );
 
         /* DER encoded EC point. Leave 2 bytes for the tag and length. */
         ( void ) mbedtls_ecp_point_write_binary( &pxEcdsaContext->grp,

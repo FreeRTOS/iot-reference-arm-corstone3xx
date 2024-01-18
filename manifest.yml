@@ -26,7 +26,7 @@ dependencies:
       path: "components/security/trusted_firmware-m/library"
   - name: "mbedtls"
     license: "Apache-2.0"
-    version: "v2.28.3"
+    version: "v3.5.2"
     repository:
       type: "git"
       url: "https://github.com/Mbed-TLS/mbedtls.git"

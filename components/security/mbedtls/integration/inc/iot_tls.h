@@ -1,6 +1,8 @@
 /*
  * FreeRTOS TLS V1.3.1
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright 2024 Arm Limited and/or its affiliates
+ * <open-source-office@arm.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -26,11 +28,22 @@
 #ifndef IOT_TLS_H
 #define IOT_TLS_H
 
+/**
+ *  @brief Declaring MBEDTLS_ALLOW_PRIVATE_ACCESS allows access to mbedtls "private" fields.
+ */
+#define MBEDTLS_ALLOW_PRIVATE_ACCESS
+
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/entropy.h"
 #include "mbedtls/sha256.h"
 #include "mbedtls/pk.h"
-#include "mbedtls/pk_internal.h"
+
+/**
+ *  @brief Custom pk_info struct is not supported by mbedtls v3,
+ *         but the current solution should define one. With this
+ *         private include we can access to mbedtls_pk_info_t.
+ */
+#include "../library/pk_wrap.h"
 #include "mbedtls/debug.h"
 #include "core_pkcs11.h"
 

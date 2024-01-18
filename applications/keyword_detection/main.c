@@ -162,6 +162,11 @@ int main( void )
 
     ( void ) mbedtls_platform_set_calloc_free( mbedtls_platform_calloc, mbedtls_platform_free );
 
+    mbedtls_threading_set_alt( mbedtls_platform_mutex_init,
+                               mbedtls_platform_mutex_free,
+                               mbedtls_platform_mutex_lock,
+                               mbedtls_platform_mutex_unlock );
+
     UBaseType_t xRetVal = vDevModeKeyProvisioning();
 
     if( xRetVal != CKR_OK )
@@ -194,11 +199,6 @@ int main( void )
         LogError( ( "Failed to create xMlMqttQueue\r\n" ) );
         return EXIT_FAILURE;
     }
-
-    mbedtls_threading_set_alt( mbedtls_platform_mutex_init,
-                               mbedtls_platform_mutex_free,
-                               mbedtls_platform_mutex_lock,
-                               mbedtls_platform_mutex_unlock );
 
     if( prvAreAwsCredentialsValid() == true )
     {

@@ -3271,6 +3271,4 @@ void mbedtls_platform_free( void * ptr );
 
 /*#define MBEDTLS_PSA_CRYPTO_C */
 
-#include "mbedtls/check_config.h"
-
 /*#undef MBEDTLS_PSA_CRYPTO_C */
