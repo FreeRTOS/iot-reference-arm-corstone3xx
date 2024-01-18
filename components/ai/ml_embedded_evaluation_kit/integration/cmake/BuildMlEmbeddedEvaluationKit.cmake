@@ -37,10 +37,13 @@ ExternalProject_Add(
         ${CMAKE_COMMAND} --build <BINARY_DIR> --target ${ML_TARGETS}
 )
 
+set(ML_RESOURCES_SET_UP_ARGS
+    "--additional-ethos-u-config-name=${ETHOSU_TARGET_NPU_CONFIG}"
+)
 ExternalProject_Add_Step(ml_embedded_evaluation_kit-build
     download_model
     COMMAND
-        python3 ${ml_embedded_evaluation_kit_SOURCE_DIR}/set_up_default_resources.py
+        python3 ${ml_embedded_evaluation_kit_SOURCE_DIR}/set_up_default_resources.py ${ML_RESOURCES_SET_UP_ARGS}
     DEPENDERS
         configure
     USES_TERMINAL ON
