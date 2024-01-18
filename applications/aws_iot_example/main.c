@@ -102,29 +102,6 @@ void vAssertCalled( const char * pcFile,
     taskEXIT_CRITICAL();
 }
 
-/**
- * TODO: This function is only used in the PKCS#11 test case. In the PKCS#11 test,
- * it calls the mbedtls steps to generate the random number, so this function
- * is needed. But in the PKCS#11 library, we call the C_GenerateRandom to
- * generate a random number and do not need to call this function.
- */
-int mbedtls_hardware_poll( void * data,
-                           unsigned char * output,
-                           size_t len,
-                           size_t * olen )
-{
-    ( void ) ( data );
-    ( void ) ( len );
-
-    static uint32_t random_number = 0;
-
-    random_number += 8;
-    memcpy( output, &random_number, sizeof( uint32_t ) );
-    *olen = sizeof( uint32_t );
-
-    return 0;
-}
-
 BaseType_t xApplicationGetRandomNumber( uint32_t * pulNumber )
 {
     psa_status_t xPsaStatus = PSA_ERROR_PROGRAMMER_ERROR;
@@ -205,6 +182,11 @@ int main()
     /* Configure Mbed TLS memory APIs to use FreeRTOS heap APIs */
     mbedtls_platform_set_calloc_free( mbedtls_platform_calloc, mbedtls_platform_free );
 
+    mbedtls_threading_set_alt( mbedtls_platform_mutex_init,
+                               mbedtls_platform_mutex_free,
+                               mbedtls_platform_mutex_lock,
+                               mbedtls_platform_mutex_unlock );
+
     xRetVal = vDevModeKeyProvisioning();
 
     if( xRetVal != CKR_OK )
@@ -230,11 +212,6 @@ int main()
 
     if( status == 0 )
     {
-        mbedtls_threading_set_alt( mbedtls_platform_mutex_init,
-                                   mbedtls_platform_mutex_free,
-                                   mbedtls_platform_mutex_lock,
-                                   mbedtls_platform_mutex_unlock );
-
         #ifdef INTEGRATION_TESTS
             xTaskCreate( qual_task,
                          "qual",

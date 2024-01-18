@@ -1,0 +1,107 @@
+From a0345f268535e2150a4a347f6723081a6630ed0b Mon Sep 17 00:00:00 2001
+From: Dávid Házi <david.hazi@arm.com>
+Date: Thu, 18 Jan 2024 16:24:20 +0100
+Subject: [PATCH] build: Update mbedtls to v3.5.2
+
+* Add #define MBEDTLS_ALLOW_PRIVATE_ACCESS to every file that
+  access private struct members.
+* Remove mbedtls/pk_internal.h header file inclusion,
+  because it no longer exists in the latest mbedtls version.
+* Direct access to pk_info structs has been removed,
+  mbedtls_pk_info_from_type function should be used.
+* mbedtls_rsa_init function prototype has been changed,
+  newer prototype should be used.
+
+Signed-off-by: Dávid Házi <david.hazi@arm.com>
+---
+ iot_pkcs11_psa.c                   | 11 ++++++-----
+ iot_pkcs11_psa_input_format.h      |  1 -
+ iot_pkcs11_psa_object_management.c |  3 +++
+ 3 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/iot_pkcs11_psa.c b/iot_pkcs11_psa.c
+index 54a0669..abe2e75 100644
+--- a/iot_pkcs11_psa.c
++++ b/iot_pkcs11_psa.c
+@@ -38,6 +38,8 @@
+ /* FreeRTOS includes. */
+ #include "FreeRTOS.h"
+
++#define MBEDTLS_ALLOW_PRIVATE_ACCESS
++
+ /* PKCS#11 includes. */
+ #include "core_pkcs11_config.h"
+ #include "core_pkcs11.h"
+@@ -46,7 +48,6 @@
+
+ /* mbedTLS includes. */
+ #include "mbedtls/pk.h"
+-#include "mbedtls/pk_internal.h"
+
+ #define PKCS11_PRINT( X )            vLoggingPrintf X
+ #define PKCS11_WARNING_PRINT( X )    /* vLoggingPrintf  X */
+@@ -646,7 +647,7 @@ CK_RV prvCreateRsaPrivateKey( mbedtls_pk_context * pxMbedContext,
+     *ppxLabel = NULL;
+     *ppxClass = NULL;
+     pxRsaContext = pxMbedContext->pk_ctx;
+-    mbedtls_rsa_init( pxRsaContext, MBEDTLS_RSA_PKCS_V15, 0 /*ignored.*/ );
++    mbedtls_rsa_init( pxRsaContext );
+
+     /* Parse template and collect the relevant parts. */
+     for( ulIndex = 0; ulIndex < ulCount; ulIndex++ )
+@@ -819,7 +820,7 @@ CK_RV prvCreatePrivateKey( CK_ATTRIBUTE_PTR pxTemplate,
+         if( pxRsaCtx != NULL )
+         {
+             xMbedContext.pk_ctx = pxRsaCtx;
+-            xMbedContext.pk_info = &mbedtls_rsa_info;
++            xMbedContext.pk_info = mbedtls_pk_info_from_type(MBEDTLS_PK_RSA);
+             xResult = prvCreateRsaPrivateKey( &xMbedContext,
+                                               &pxLabel,
+                                               &pxClass,
+@@ -851,7 +852,7 @@ CK_RV prvCreatePrivateKey( CK_ATTRIBUTE_PTR pxTemplate,
+             if( pxKeyPair != NULL )
+             {
+                 /* Initialize the info. */
+-                xMbedContext.pk_info = &mbedtls_eckey_info;
++                xMbedContext.pk_info = mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY);
+
+                 /* Initialize the context. */
+                 xMbedContext.pk_ctx = pxKeyPair;
+@@ -1082,7 +1083,7 @@ CK_RV prvCreatePublicKey( CK_ATTRIBUTE_PTR pxTemplate,
+             if( pxKeyPair != NULL )
+             {
+                 /* Initialize the info. */
+-                xMbedContext.pk_info = &mbedtls_eckey_info;
++                xMbedContext.pk_info = mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY);;
+
+                 /* Initialize the context. */
+                 xMbedContext.pk_ctx = pxKeyPair;
+diff --git a/iot_pkcs11_psa_input_format.h b/iot_pkcs11_psa_input_format.h
+index 3bf18b3..b8cdfda 100644
+--- a/iot_pkcs11_psa_input_format.h
++++ b/iot_pkcs11_psa_input_format.h
+@@ -27,7 +27,6 @@
+ /* mbedTLS includes. */
+ #include "mbedtls/pk.h"
+ #include "mbedtls/asn1.h"
+-#include "mbedtls/pk_internal.h"
+ #include "mbedtls/oid.h"
+
+ #define pkcs11DER_ENCODED_OID_P256_LEGNTH    19
+diff --git a/iot_pkcs11_psa_object_management.c b/iot_pkcs11_psa_object_management.c
+index 6e6a969..ace6dc6 100644
+--- a/iot_pkcs11_psa_object_management.c
++++ b/iot_pkcs11_psa_object_management.c
+@@ -32,6 +32,9 @@
+  */
+
+ #include <string.h>
++
++#define MBEDTLS_ALLOW_PRIVATE_ACCESS
++
+ #include "iot_pkcs11_psa_object_management.h"
+ #include "iot_pkcs11_psa_input_format.h"
+
+--
+2.40.1
+

@@ -1,6 +1,8 @@
 /*
  * FreeRTOS TLS V1.3.1
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright 2024 Arm Limited and/or its affiliates
+ * <open-source-office@arm.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -82,6 +84,27 @@ static const char * pNoLowLevelMbedTlsCodeStr = "<No-Low-Level-Code>";
 #define mbedtlsLowLevelCodeOrDefault( mbedTlsCode )    pNoLowLevelMbedTlsCodeStr
 
 /*-----------------------------------------------------------*/
+
+/**
+ * \brief           Entropy poll callback for a hardware source
+ */
+
+int mbedtls_hardware_poll( void * data,
+                           unsigned char * output,
+                           size_t len,
+                           size_t * olen )
+{
+    ( void ) ( data );
+    ( void ) ( len );
+
+    static uint32_t random_number = 0;
+
+    random_number += 8;
+    memcpy( output, &random_number, sizeof( uint32_t ) );
+    *olen = sizeof( uint32_t );
+
+    return 0;
+}
 
 /**
  * @brief TLS internal context rundown helper routine.
@@ -173,19 +196,21 @@ static int prvCheckCertificate( void * pvContext,
  * @param[in] pvContext Crypto context.
  * @param[in] xMdAlg Unused.
  * @param[in] pucHash Length in bytes of hash to be signed.
- * @param[in] uiHashLen Byte array of hash to be signed.
+ * @param[in] xHashLen Byte array of hash to be signed.
  * @param[out] pucSig RSA signature bytes.
+ * @param[out] pxSigSize RSA signature size in bytes.
  * @param[in] pxSigLen Length in bytes of signature buffer.
  * @param[in] piRng Unused.
  * @param[in] pvRng Unused.
  *
  * @return Zero on success.
  */
-static int prvPrivateKeySigningCallback( void * pvContext,
+static int prvPrivateKeySigningCallback( mbedtls_pk_context * pvContext,
                                          mbedtls_md_type_t xMdAlg,
                                          const unsigned char * pucHash,
                                          size_t xHashLen,
                                          unsigned char * pucSig,
+                                         size_t pxSigSize,
                                          size_t * pxSigLen,
                                          int ( * piRng )( void *,
                                                           unsigned char *,
@@ -194,7 +219,7 @@ static int prvPrivateKeySigningCallback( void * pvContext,
 {
     CK_RV xResult = CKR_OK;
     int lFinalResult = 0;
-    TLSContext_t * pxTLSContext = ( TLSContext_t * ) pvContext;
+    TLSContext_t * pxTLSContext = ( TLSContext_t * ) pvContext->pk_ctx;
     CK_MECHANISM xMech = { 0 };
     CK_BYTE xToBeSigned[ 256 ];
     CK_ULONG xToBeSignedLen = sizeof( xToBeSigned );
@@ -203,6 +228,7 @@ static int prvPrivateKeySigningCallback( void * pvContext,
     ( void ) ( piRng );
     ( void ) ( pvRng );
     ( void ) ( xMdAlg );
+    ( void ) ( pxSigSize );
 
     /* Sanity check buffer length. */
     if( xHashLen > sizeof( xToBeSigned ) )
