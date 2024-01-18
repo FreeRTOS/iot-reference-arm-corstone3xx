@@ -61,6 +61,7 @@ components/
 │   ├── coremqtt/
 │   ├── coremqtt_agent/
 │   ├── corepkcs11/
+│   ├── coresntp/
 │   ├── ota_for_aws_iot_embedded_sdk/
 │   └── tinycbor/
 ├── connectivity/

@@ -87,6 +87,13 @@ dependencies:
       type: "git"
       url: "https://github.com/FreeRTOS/corePKCS11.git"
       path: "components/aws_iot/corepkcs11/library"
+  - name: "coreSNTP"
+    license: "MIT"
+    version: "v1.2.0"
+    repository:
+      type: "git"
+      url: "https://github.com/FreeRTOS/coreSNTP.git"
+      path: "components/aws_iot/coresntp/library"
   - name: "backoffAlgorithm"
     license: "MIT"
     version: "v1.3.0"
