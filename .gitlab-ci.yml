@@ -14,7 +14,7 @@ variables:
   OPEN_IOT_SDK_DOCKER_VERSION: v2
   KUBERNETES_CPU_REQUEST: 1
   KUBERNETES_MEMORY_REQUEST: 1Gi
-  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_SUBMODULE_STRATEGY: none
   RETRY_LIMIT: 100
 
 # Those fragments contain base variables required by pipelines for applications.
@@ -116,6 +116,8 @@ build-applications:
     paths:
       - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
     expire_in: 1 week
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
 
 test-applications-output:
   extends: .test_job
@@ -256,6 +258,8 @@ integration-tests:
       -
         << : *pipeline_config_applications_ethos
         APP: [aws-iot-example]
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
 
 # The clean up only happens once daily when the `Daily OTA cleanup`
 # scheduled pipeline sets the `SCHEDULED_JOB_TO_RUN` variable to `cleanup`.

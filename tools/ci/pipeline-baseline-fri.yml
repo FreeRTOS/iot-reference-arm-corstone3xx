@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 variables:
+  GIT_SUBMODULE_STRATEGY: none
   RETRY_LIMIT: 100
 
 # Normally, workflow rules are enabled for all the below and "main" branch
@@ -25,10 +26,6 @@ license:
     - .base-job-rules
   tags:
     - iotmsw-amd64
-  variables:
-    # we don't want to run scancode in submodules
-    GIT_SUBMODULE_STRATEGY: none
-
   script:
     - scancode -l --json-pp scancode_report.json $PWD/..
     - jsonschema -i scancode_report.json $PWD/tools/ci/license/license.schema
