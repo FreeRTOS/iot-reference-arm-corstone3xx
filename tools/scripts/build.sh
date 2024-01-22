@@ -82,8 +82,8 @@ Options:
     --toolchain                 Compiler (GNU or ARMCLANG)
     -q, --integration-tests     Build FreeRTOS integration tests
     --configure-only Create build tree but do not build
-    --certificate_path          The full path for the AWS device certificate
-    --private_key_path          The full path for the AWS device private key
+    --certificate_path          Path to the AWS device certificate
+    --private_key_path          Path to the AWS device private key
 Examples:
     blinky, aws-iot-example, keyword-detection, speech-recognition
 EOF
@@ -132,11 +132,11 @@ do
       shift 2
       ;;
     --certificate_path )
-      CERTIFICATE_PATH=$2
+      CERTIFICATE_PATH=$(realpath "$2")
       shift 2
       ;;
     --private_key_path )
-      PRIVATE_KEY_PATH=$2
+      PRIVATE_KEY_PATH=$(realpath "$2")
       shift 2
       ;;
     -q | --integration-tests )
