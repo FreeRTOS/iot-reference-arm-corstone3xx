@@ -1,7 +1,7 @@
-From ba95da37dcc0b41a14e7c8bc1ea707e0b1d99a79 Mon Sep 17 00:00:00 2001
+From a83eaf74961de78dbe50ca674fdbd36ad9a0e47e Mon Sep 17 00:00:00 2001
 From: Gabor Abonyi <gabor.abonyi@arm.com>
 Date: Tue, 16 Jan 2024 14:48:44 +0100
-Subject: [PATCH 2/2] Use CMSIS_device_header instead of RTE_Components.h
+Subject: [PATCH 2/3] Use CMSIS_device_header instead of RTE_Components.h
 
 Signed-off-by: Gabor Abonyi <gabor.abonyi@arm.com>
 ---

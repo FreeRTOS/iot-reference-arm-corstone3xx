@@ -59,11 +59,7 @@ function(assert_defined var_name)
     endif()
 endfunction()
 
-# Preserve the content of `ETHOS_U_NPU_ID` before including
-# the `tensorflow.cmake` CMake module which overrides it.
-set(TEMP_ETHOS_U_NPU_ID ${ETHOS_U_NPU_ID})
 include(${CMAKE_SCRIPTS_DIR}/tensorflow.cmake)
-set(ETHOS_U_NPU_ID ${TEMP_ETHOS_U_NPU_ID})
 
 # Manually add libs
 add_subdirectory(${ml_embedded_evaluation_kit_SOURCE_DIR}/source/log ${CMAKE_BINARY_DIR}/log)
