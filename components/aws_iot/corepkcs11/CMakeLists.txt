@@ -8,11 +8,10 @@ set(corepkcs11_SOURCE_DIR
     "Path to corePKCS11 source code"
 )
 
-execute_process(COMMAND git am --abort
-    COMMAND git am ${CMAKE_CURRENT_SOURCE_DIR}/integration/patches/0001-Do-not-define-__PASTE-macro-for-Arm-compiler.patch
-    WORKING_DIRECTORY ${corepkcs11_SOURCE_DIR}
-    OUTPUT_QUIET
-    ERROR_QUIET
-)
+include(ApplyPatches)
+
+set(PATCH_FILES_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/integration/patches")
+set(PATCH_FILES "${PATCH_FILES_DIRECTORY}/0001-Do-not-define-__PASTE-macro-for-Arm-compiler.patch")
+iot_reference_arm_corstone3xx_apply_patches("${corepkcs11_SOURCE_DIR}" "${PATCH_FILES}")
 
 add_subdirectory(integration)
