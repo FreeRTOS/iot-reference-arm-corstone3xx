@@ -8,11 +8,10 @@ set(iot_vsocket_SOURCE_DIR
     "Path to Arm Virtual Hardware - IoT Virtual Socket source code"
 )
 
-execute_process(COMMAND git am --abort
-    COMMAND git am ${CMAKE_CURRENT_LIST_DIR}/integration/patches/0001-Replace-CMSIS-RTX-APIs-with-FreeRTOS-APIs.patch
-    WORKING_DIRECTORY ${iot_vsocket_SOURCE_DIR}
-    OUTPUT_QUIET
-    ERROR_QUIET
-)
+include(ApplyPatches)
+
+set(PATCH_FILES_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/integration/patches")
+set(PATCH_FILES "${PATCH_FILES_DIRECTORY}/0001-Replace-CMSIS-RTX-APIs-with-FreeRTOS-APIs.patch")
+iot_reference_arm_corstone3xx_apply_patches("${iot_vsocket_SOURCE_DIR}" "${PATCH_FILES}")
 
 add_subdirectory(integration)

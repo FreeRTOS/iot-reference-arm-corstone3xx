@@ -1,0 +1,1 @@
+patches: Use robust patches function to fix corstone300's hardfault.
