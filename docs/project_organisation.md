@@ -220,12 +220,6 @@ applications/aws_iot_example/
 │   │   └── threading_alt.h
 │   └── tfm_config
 │       └── project_config.h
-├── freertos_integration_tests
-│   ├── dev_mode_key_provisioning.h
-│   ├── integration_tests_platform_function.c
-│   ├── test_execution_config.h
-│   ├── test_param_config.h
-│   └── unistd.h
 ├── main.c
 └── tests
     ├── fail_ota_output.log

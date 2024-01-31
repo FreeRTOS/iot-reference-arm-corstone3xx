@@ -1,4 +1,4 @@
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -28,7 +28,7 @@ target_link_libraries(provisioning_data PRIVATE
 
 ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
 
-if(INTEGRATION_TESTS EQUAL 1)
+if(FREERTOS_LIBRARIES_INTEGRATION_TESTS EQUAL 1)
     set(
         CODE_SIGNING_PUBLIC_KEY_PEM_PATH
         ${freertos_libraries_integration_tests_SOURCE_DIR}/src/ota/test_files/tfm-rsa-sha256-signer.crt.pem

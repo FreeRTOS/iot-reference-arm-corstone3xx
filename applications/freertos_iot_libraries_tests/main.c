@@ -9,9 +9,9 @@
 
 #include "app_config.h"
 #include "aws_clientcredential.h"
+#include "aws_mbedtls_config.h"
 #include "dev_mode_key_provisioning.h"
-
-#include "mqtt_agent_task.h"
+#include "psa/crypto.h"
 
 #include "bsp_serial.h"
 #include "tfm_ns_interface.h"
@@ -22,7 +22,6 @@
 
 #include "mbedtls/threading.h"
 #include "mbedtls/platform.h"
-#include "psa/crypto.h"
 #include "threading_alt.h"
 
 #include "events.h"
@@ -38,12 +37,17 @@
 
 psa_key_handle_t xOTACodeVerifyKeyHandle = 0;
 
-extern void vStartOtaTask( void );
-extern int32_t network_startup( void );
-extern BaseType_t xStartPubSubTasks( uint32_t ulNumPubsubTasks,
-                                     configSTACK_DEPTH_TYPE uxStackSize,
-                                     UBaseType_t uxPriority );
+extern void RunQualificationTest( void );
 
+static void prvQualificationTask( void * arg )
+{
+    ( void ) arg;
+    RunQualificationTest();
+    LogInfo( ( "RunQualificationTest returned\n" ) );
+    vTaskDelete( NULL );
+}
+
+extern int32_t network_startup( void );
 extern uint32_t tfm_ns_interface_init( void );
 
 static bool xAreAwsCredentialsValid( void )
@@ -57,16 +61,6 @@ static bool xAreAwsCredentialsValid( void )
     }
 
     return true;
-}
-
-void vOtaActiveHook( void )
-{
-    /* This function can be used in case an action is required when the OTA is active */
-}
-
-void vOtaNotActiveHook( void )
-{
-    /* This function can be used in case an action is required when the OTA is not active */
 }
 
 void vAssertCalled( const char * pcFile,
@@ -94,14 +88,7 @@ BaseType_t xApplicationGetRandomNumber( uint32_t * pulNumber )
 
     xPsaStatus = psa_generate_random( ( uint8_t * ) ( pulNumber ), sizeof( uint32_t ) );
 
-    if( xPsaStatus == PSA_SUCCESS )
-    {
-        return pdTRUE;
-    }
-    else
-    {
-        return pdFALSE;
-    }
+    return ( BaseType_t ) ( xPsaStatus == PSA_SUCCESS );
 }
 
 uint32_t ulApplicationGetNextSequenceNumber( uint32_t ulSourceAddress,
@@ -198,16 +185,12 @@ int main( void )
 
     if( status == 0 )
     {
-        /* Start MQTT agent task */
-        vStartMqttAgentTask();
-
-        /* Start OTA task*/
-        vStartOtaTask();
-
-        /*Start demo task once agent task is started. */
-        ( void ) xStartPubSubTasks( appCONFIG_MQTT_NUM_PUBSUB_TASKS,
-                                    appCONFIG_MQTT_PUBSUB_TASK_STACK_SIZE,
-                                    appCONFIG_MQTT_PUBSUB_TASK_PRIORITY );
+        xTaskCreate( prvQualificationTask,
+                     "qual",
+                     configMINIMAL_STACK_SIZE,
+                     NULL,
+                     tskIDLE_PRIORITY + 1,
+                     NULL );
 
         vTaskStartScheduler();
 
