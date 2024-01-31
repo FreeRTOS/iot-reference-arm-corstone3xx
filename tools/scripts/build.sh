@@ -19,7 +19,6 @@ AUDIO_SOURCE="ROM"
 TOOLCHAIN="ARMCLANG"
 TOOLCHAIN_FILE=""
 BUILD=1
-INTEGRATION_TESTS=0
 CERTIFICATE_PATH=""
 PRIVATE_KEY_PATH=""
 
@@ -55,14 +54,8 @@ function build_with_cmake {
         -DML_INFERENCE_ENGINE=$ML_INFERENCE_ENGINE \
         -DAUDIO_SOURCE=$AUDIO_SOURCE
 
-
-        if [[ $BUILD -ne 0 && $INTEGRATION_TESTS -eq 0 ]]; then
-            echo "Building $EXAMPLE" >&2
-            cmake --build $BUILD_PATH --target "$EXAMPLE"
-        elif [[ $BUILD -ne 0 && $INTEGRATION_TESTS -eq 1 ]]; then
-            echo "Building $EXAMPLE-tests" >&2
-            cmake --build $BUILD_PATH --target "$EXAMPLE-tests"
-        fi
+        echo "Building $EXAMPLE" >&2
+        cmake --build $BUILD_PATH --target "$EXAMPLE"
     )
 }
 
@@ -80,12 +73,11 @@ Options:
     -i,--inference              ML Inference engine selection (ETHOS | SOFTWARE)
     -s,--audio                  Audio source (ROM | VSI)
     --toolchain                 Compiler (GNU or ARMCLANG)
-    -q, --integration-tests     Build FreeRTOS integration tests
     --configure-only Create build tree but do not build
     --certificate_path          The full path for the AWS device certificate
     --private_key_path          The full path for the AWS device private key
 Examples:
-    blinky, aws-iot-example, keyword-detection, speech-recognition
+    blinky, aws-iot-example, freertos-iot-libraries-tests, keyword-detection, speech-recognition
 EOF
 }
 
@@ -94,8 +86,8 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-SHORT=t:,i:,s:,c,h,q,p:
-LONG=target:,inference:,toolchain:,audio:,clean,help,configure-only,certificate_path:,private_key_path:,integration-tests:,path:
+SHORT=t:,i:,s:,c,h,p:
+LONG=target:,inference:,toolchain:,audio:,clean,help,configure-only,certificate_path:,private_key_path:,path:
 OPTS=$(getopt -n build --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -139,10 +131,6 @@ do
       PRIVATE_KEY_PATH=$2
       shift 2
       ;;
-    -q | --integration-tests )
-      INTEGRATION_TESTS=1
-      shift
-      ;;
     --configure-only )
       BUILD=0
       shift
@@ -168,6 +156,10 @@ case "$1" in
         EXAMPLE="$1"
         PATH_TO_SOURCE="$ROOT/applications/aws_iot_example"
         ;;
+    freertos-iot-libraries-tests)
+        EXAMPLE="$1"
+        PATH_TO_SOURCE="$ROOT/applications/freertos_iot_libraries_tests"
+        ;;
     keyword-detection)
         EXAMPLE="$1"
         PATH_TO_SOURCE="$ROOT/applications/keyword_detection"
@@ -177,7 +169,7 @@ case "$1" in
         PATH_TO_SOURCE="$ROOT/applications/speech_recognition"
         ;;
     *)
-        echo "Missing example <blinky,aws-iot-example,keyword-detection,speech-recognition>"
+        echo "Missing example <blinky,aws-iot-example,freertos-iot-libraries-tests,keyword-detection,speech-recognition>"
         show_usage
         exit 2
         ;;

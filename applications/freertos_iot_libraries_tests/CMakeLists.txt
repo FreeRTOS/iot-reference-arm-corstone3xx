@@ -51,7 +51,7 @@ set(TFM_CMAKE_ARGS
     -DPLATFORM_DEFAULT_PROVISIONING=OFF
     -DPLATFORM_DEFAULT_UART_STDOUT=ON
     -DPLATFORM_HAS_FIRMWARE_UPDATE_SUPPORT=ON
-    -DPROJECT_CONFIG_HEADER_FILE=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/aws_iot_example/configs/tfm_config/project_config.h
+    -DPROJECT_CONFIG_HEADER_FILE=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/freertos_iot_libraries_tests/configs/tfm_config/project_config.h
     -DTFM_DUMMY_PROVISIONING=OFF
     -DTFM_EXCEPTION_INFO_DUMP=ON
     -DTFM_PARTITION_CRYPTO=ON
@@ -66,16 +66,11 @@ set(TFM_CMAKE_ARGS
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project(aws-iot-example-project LANGUAGES C)
+project(freertos-iot-libraries-tests LANGUAGES C)
 
 set(CMAKE_EXECUTABLE_SUFFIX ".axf")
-
-# Set global optimization level to reduce code size while keeping the debug experience.
-if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
-    add_compile_options(-Og)
-elseif(${CMAKE_C_COMPILER_ID} STREQUAL "ARMClang")
-    add_compile_options(-O1)
-endif()
+# This variable is checked to apply configurations specific to FreeRTOS Libraries Integrations Tests
+set(FREERTOS_LIBRARIES_INTEGRATION_TESTS 1)
 
 add_subdirectory(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR} ${CMAKE_BINARY_DIR}/iot_reference_arm_corstone3xx)
 
@@ -90,24 +85,46 @@ include(SignTfmImage)
 add_subdirectory(configs)
 add_subdirectory(../helpers ${CMAKE_BINARY_DIR}/helpers)
 
-# Add main application executable
-add_executable(aws-iot-example
-    ../helpers/mqtt/src/mqtt_demo_pub_sub.c
-    main.c
+
+# Configure FreeRTOS Libraries Integration Tests component
+add_dependencies(freertos-libraries-integration-tests-config provisioning_data_bin)
+target_sources(freertos-libraries-integration-tests-config
+    INTERFACE
+        integration_tests_platform_function.c
 )
-target_include_directories(aws-iot-example
-    PUBLIC
+target_include_directories(freertos-libraries-integration-tests-config
+    INTERFACE
+        ${CMAKE_CURRENT_LIST_DIR}
+        provisioning
+        ${CMAKE_BINARY_DIR}/provisioning
+        ${CMAKE_BINARY_DIR}/provisioning_data
+        ${CMAKE_BINARY_DIR}/helpers/provisioning
         ../helpers/provisioning
+)
+target_link_libraries(freertos-libraries-integration-tests-config
+    INTERFACE
+        connectivity-stack
+        coremqtt
+        helpers-logging
+        freertos-libraries-integration-tests-mqtt
+        freertos-libraries-integration-tests-ota-pal
+        freertos-libraries-integration-tests-qualification
+        freertos-libraries-integration-tests-transport
+        unity
+)
+
+add_executable(${CMAKE_PROJECT_NAME}
+    main.c
 )
 
 # Trusted Firmware-M must be built before the application, because
 # the application depends on the NS interface and the BL2 signing scripts,
 # both of which are generated as parts of the Trusted Firmware-M build process.
-add_dependencies(aws-iot-example trusted_firmware-m-build)
+add_dependencies(${CMAKE_PROJECT_NAME} trusted_firmware-m-build)
 # The provision data must be built before the application because
 # it provides credentials to connect to AWS
-add_dependencies(aws-iot-example provisioning_data_bin)
-target_link_libraries(aws-iot-example
+add_dependencies(${CMAKE_PROJECT_NAME} provisioning_data_bin)
+target_link_libraries(${CMAKE_PROJECT_NAME}
     PRIVATE
         backoff-algorithm
         connectivity-stack
@@ -115,24 +132,23 @@ target_link_libraries(aws-iot-example
         coremqtt-agent
         corepkcs11
         freertos_kernel
+        freertos-libraries-integration-tests-config
         freertos-ota-pal-psa
         fri-bsp
         helpers-events
-        mbedtls
-        mbedtls-threading-freertos
         ota-for-aws-iot-embedded-sdk
         provisioning-lib
+        mbedtls
+        mbedtls-threading-freertos
         tfm-ns-interface
-        toolchain-override
 )
 
-set_linker_script(aws-iot-example)
+set_linker_script(${CMAKE_PROJECT_NAME})
 
 # The non-secure application image should be padded while being signed
-# Hence, passing "TRUE" as the input parameter to the pad option of sign function.
 iot_reference_arm_corstone3xx_tf_m_sign_image(
-    aws-iot-example
-    aws-iot-example_signed
+    ${CMAKE_PROJECT_NAME}
+    ${CMAKE_PROJECT_NAME}_signed
     ${MCUBOOT_IMAGE_VERSION_NS}
     TRUE
 )
@@ -140,10 +156,9 @@ iot_reference_arm_corstone3xx_tf_m_sign_image(
 # The update image is not padded to fill the whole slot (no --pad), because
 # 1) the image to download is smaller without padding
 # 2) the trailer that keeps track of boot and update statuses should not be overwritten
-# Hence, passing "FALSE" as the input parameter for the pad option to the sign function.
 iot_reference_arm_corstone3xx_tf_m_sign_image(
-    aws-iot-example
-    aws-iot-example-update_signed
+    ${CMAKE_PROJECT_NAME}
+    ${CMAKE_PROJECT_NAME}-update_signed
     ${MCUBOOT_IMAGE_VERSION_NS_UPDATE}
     FALSE
 )
@@ -153,7 +168,7 @@ iot_reference_arm_corstone3xx_tf_m_sign_image(
 # be easily programmatically extracted as they are defined in the linker
 # scripts.
 iot_reference_arm_corstone3xx_tf_m_merge_images(
-    aws-iot-example
+    ${CMAKE_PROJECT_NAME}
     ${BL2_IMAGE_LOAD_ADDRESS}
     ${S_IMAGE_LOAD_ADDRESS}
     ${NS_IMAGE_LOAD_ADDRESS}
@@ -164,8 +179,8 @@ iot_reference_arm_corstone3xx_tf_m_merge_images(
 
 # Generate the AWS OTA update digest and signature
 iot_reference_arm_corstone3xx_generate_aws_update_digest_and_signature(
-    aws-iot-example
-    aws-iot-example-update_signed
+    ${CMAKE_PROJECT_NAME}
+    ${CMAKE_PROJECT_NAME}-update_signed
     update-digest
     update-signature
 )
