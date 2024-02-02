@@ -18,16 +18,15 @@ variables:
   RETRY_LIMIT: 100
 
 # Those fragments contain base variables required by pipelines for applications.
-# They can be used to set matrix parameters and extended using << : .anchor syntax
-.pipeline_config_applications_ethos: &pipeline_config_applications_ethos
+# They can be used to set matrix parameters and extended using << : .anchor syntax
+.pipeline_config_non_ml_applications: &pipeline_config_non_ml_applications
   TARGET: [corstone310, corstone300]
   TOOLCHAIN: [ARMCLANG, GNU]
   INFERENCE: [ETHOS]
-  AUDIO: [ROM, VSI]
-.pipeline_config_applications_sw: &pipeline_config_applications_sw
+  AUDIO: [ROM]
+.pipeline_config_ml_applications: &pipeline_config_ml_applications
   TARGET: [corstone310, corstone300]
   TOOLCHAIN: [ARMCLANG, GNU]
-  INFERENCE: [SOFTWARE]
   AUDIO: [ROM, VSI]
 
 stages:
@@ -61,8 +60,8 @@ workflow:
       fi
   parallel:
     matrix:
-      - *pipeline_config_applications_ethos
-      - *pipeline_config_applications_sw
+      - *pipeline_config_non_ml_applications
+      - *pipeline_config_ml_applications
   variables:
     PYTHONUNBUFFERED: 1
 
@@ -106,11 +105,16 @@ build-applications:
   parallel:
     matrix:
        -
-         << : *pipeline_config_applications_ethos
-         APP: [blinky, aws-iot-example, keyword-detection, speech-recognition]
+         << : *pipeline_config_non_ml_applications
+         APP: [blinky, aws-iot-example]
        -
-         << : *pipeline_config_applications_sw
+         << : *pipeline_config_ml_applications
          APP: [keyword-detection]
+         INFERENCE: [ETHOS, SOFTWARE]
+       -
+         << : *pipeline_config_ml_applications
+         APP: [speech-recognition]
+         INFERENCE: [ETHOS]
 
   artifacts:
     paths:
@@ -159,11 +163,16 @@ test-applications-output:
   parallel:
     matrix:
        -
-         << : *pipeline_config_applications_ethos
-         APP: [blinky, keyword-detection, speech-recognition]
+         << : *pipeline_config_non_ml_applications
+         APP: [blinky]
        -
-         << : *pipeline_config_applications_sw
+         << : *pipeline_config_ml_applications
          APP: [keyword-detection]
+         INFERENCE: [ETHOS, SOFTWARE]
+       -
+         << : *pipeline_config_ml_applications
+         APP: [speech-recognition]
+         INFERENCE: [ETHOS]
 
   artifacts:
     paths:
@@ -222,12 +231,17 @@ test-ota:
       fi
   parallel:
     matrix:
-      -
-        << : *pipeline_config_applications_ethos
-        APP: [aws-iot-example, keyword-detection, speech-recognition]
-      -
-        << : *pipeline_config_applications_sw
-        APP: [keyword-detection]
+       -
+         << : *pipeline_config_non_ml_applications
+         APP: [aws-iot-example]
+       -
+         << : *pipeline_config_ml_applications
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS, SOFTWARE]
+       -
+         << : *pipeline_config_ml_applications
+         APP: [speech-recognition]
+         INFERENCE: [ETHOS]
 
 integration-tests:
   stage: test
@@ -256,7 +270,7 @@ integration-tests:
   parallel:
     matrix:
       -
-        << : *pipeline_config_applications_ethos
+        << : *pipeline_config_non_ml_applications
         APP: [aws-iot-example]
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
