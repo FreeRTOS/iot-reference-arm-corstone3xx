@@ -130,18 +130,6 @@ test-applications-output:
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - |
       if [[ $AUDIO == "VSI" ]]; then
-        apt-get -y update
-        apt-get -y install make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev liblzma-dev tk-dev
-        mkdir /tmp/python_vsi_setup
-        pushd /tmp/python_vsi_setup
-        wget https://www.python.org/ftp/python/3.9.18/Python-3.9.18.tgz
-        tar xzf Python-3.9.18.tgz
-        cd Python-3.9.18
-        ./configure --prefix=/opt/python/3.9.18/ --enable-optimizations
-        make -j "$(nproc)"
-        make altinstall
-        popd
-        rm -rf /tmp/python_vsi_setup
         pytest -s tools/tests/test_application_output.py \
         --audio-file-path "applications/${APP_UNDERSCORED}/resources/test.wav" \
         --build-artefacts-path "build" \
@@ -195,18 +183,6 @@ test-ota:
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - |
       if [[ $AUDIO == "VSI" ]]; then
-        apt-get -y update
-        apt-get -y install make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev liblzma-dev tk-dev
-        mkdir /tmp/python_vsi_setup
-        pushd /tmp/python_vsi_setup
-        wget https://www.python.org/ftp/python/3.9.18/Python-3.9.18.tgz
-        tar xzf Python-3.9.18.tgz
-        cd Python-3.9.18
-        ./configure --prefix=/opt/python/3.9.18/ --enable-optimizations
-        make -j "$(nproc)"
-        make altinstall
-        popd
-        rm -rf /tmp/python_vsi_setup
         pytest -s tools/tests/test_ota.py \
         --audio-file-path "applications/${APP_UNDERSCORED}/resources/test.wav" \
         --build-artefacts-path "build" \
