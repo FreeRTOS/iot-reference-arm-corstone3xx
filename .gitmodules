@@ -67,3 +67,6 @@
 [submodule "isp_mali-c55"]
 	path = bsp/isp_mali-c55/library
 	url = https://git.gitlab.arm.com/iot/m-class/drivers/isp_mali-c55.git
+[submodule "components/graphics/arm-2d/library"]
+	path = components/graphics/arm-2d/library
+	url = https://github.com/ARM-software/Arm-2D.git

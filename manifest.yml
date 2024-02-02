@@ -164,3 +164,10 @@ dependencies:
       type: "git"
       url: "https://git.gitlab.arm.com/iot/m-class/drivers/isp_mali-c55.git"
       path: "bsp/isp_mali-c55/library"
+  - name: "arm-2d"
+    license: "Apache-2.0"
+    version: "v1.1.5"
+    repository:
+      type: "git"
+      url: "https://github.com/ARM-software/Arm-2D.git"
+      path: "components/graphics/arm-2d/library"
