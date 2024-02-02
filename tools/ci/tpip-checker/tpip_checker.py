@@ -80,7 +80,7 @@ def check_file_changes(change, path_base, server_url):
 
     """
     file = change["new_path"]
-    file_path = Path(path_base).parent / file
+    file_path = Path(path_base) / file
     file_url = urljoin(server_url, str(file_path))
 
     logging.info(f"\nFile: {file_url}\nDiffs:\n{change['diff']}")
