@@ -123,67 +123,37 @@ build-applications:
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
 
-test-applications-output:
+test-blinky-output:
   extends: .test_job
   script:
     - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
-    - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - |
-      if [[ $AUDIO == "VSI" ]]; then
-        pytest -s tools/tests/test_application_output.py \
-        --audio-file-path "applications/${APP_UNDERSCORED}/resources/test.wav" \
+        pytest -s tools/tests/test_blinky_output.py \
         --build-artefacts-path "build" \
         --fvp $FVP_BIN \
         --merged-elf-name "${APP}_merged.elf" \
         --timeout-seconds 900 \
-        --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
-        --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log" \
-        --pythonhome-path "/opt/python/3.9.18"
-      else
-        pytest -s tools/tests/test_application_output.py \
-        --build-artefacts-path "build" \
-        --fvp $FVP_BIN \
-        --merged-elf-name "${APP}_merged.elf" \
-        --timeout-seconds 900 \
-        --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
-        --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
-      fi
+        --pass-output-file "applications/${APP}/tests/pass_output.log" \
+        --fail-output-file "applications/${APP}/tests/fail_output.log"
   parallel:
     matrix:
        -
          << : *pipeline_config_non_ml_applications
          APP: [blinky]
-       -
-         << : *pipeline_config_ml_applications
-         APP: [keyword-detection]
-         INFERENCE: [ETHOS, SOFTWARE]
-       -
-         << : *pipeline_config_ml_applications
-         APP: [speech-recognition]
-         INFERENCE: [ETHOS]
 
-  artifacts:
-    paths:
-      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
-      - ${TARGET}_aws-iot-example_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
-    expire_in: 1 week
-
-# The test-ota job should wait for build-applications job to finish as
-# test-ota job uses the output build artifacts from build-applications job.
-# The test-ota job should also wait for test-applications-output job to finish
-# to prevent conflicts when doing both jobs at the same time as they both
-# use the same credentials for the same target platform and application.
-test-ota:
+# The test-applications job should wait for build-applications job to finish as
+# test-applications job uses the output build artifacts from build-applications job.
+test-applications:
   extends: .test_job
   needs:
-    - job: test-applications-output
+    - job: build-applications
       artifacts: true
   script:
     - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - |
       if [[ $AUDIO == "VSI" ]]; then
-        pytest -s tools/tests/test_ota.py \
+        pytest -s tools/tests/test_applications.py \
         --audio-file-path "applications/${APP_UNDERSCORED}/resources/test.wav" \
         --build-artefacts-path "build" \
         --fvp $FVP_BIN \
@@ -191,19 +161,19 @@ test-ota:
         --merged-elf-name "${APP}_merged.elf" \
         --signed-update-bin-name "${APP}-update_signed.bin" \
         --timeout-seconds 1800 \
-        --pass-ota-output-file "applications/${APP_UNDERSCORED}/tests/pass_ota_output.log" \
-        --fail-ota-output-file "applications/${APP_UNDERSCORED}/tests/fail_ota_output.log" \
+        --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
+        --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log" \
         --pythonhome-path "/opt/python/3.9.18"
       else
-        pytest -s tools/tests/test_ota.py \
+        pytest -s tools/tests/test_applications.py \
         --build-artefacts-path "build" \
         --fvp $FVP_BIN \
         --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
         --merged-elf-name "${APP}_merged.elf" \
         --signed-update-bin-name "${APP}-update_signed.bin" \
         --timeout-seconds 1800 \
-        --pass-ota-output-file "applications/${APP_UNDERSCORED}/tests/pass_ota_output.log" \
-        --fail-ota-output-file "applications/${APP_UNDERSCORED}/tests/fail_ota_output.log"
+        --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
+        --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
       fi
   parallel:
     matrix:

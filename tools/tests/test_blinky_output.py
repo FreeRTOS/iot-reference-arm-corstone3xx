@@ -1,4 +1,4 @@
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -6,15 +6,15 @@ import subprocess
 from timeit import default_timer as timer
 
 
-def test_application_output(
+def test_blinky_output(
     fvp_process: subprocess.Popen,
     pass_output_file: str,
     fail_output_file: str,
     timeout_seconds: int,
 ) -> None:
     """
-    Compare the actual output on the FVP with the expectations in
-    pass and fail output files.
+    Compare the actual output of running blinky application on
+    the FVP with the expectations in pass and fail output files.
 
     fvp_process (subprocess.Popen): FVP execution process
     pass_output_file (str): Path to the file containing the output when application

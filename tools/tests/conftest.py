@@ -31,8 +31,6 @@ def pytest_addoption(parser):
     parser.addoption("--timeout-seconds", type=int, action="store", default=1800)
     parser.addoption("--pass-output-file", action="store", default="")
     parser.addoption("--fail-output-file", action="store", default="")
-    parser.addoption("--pass-ota-output-file", action="store", default="")
-    parser.addoption("--fail-ota-output-file", action="store", default="")
     parser.addoption(
         "--pythonhome-path",
         type=str,
@@ -109,16 +107,6 @@ def pass_output_file(pytestconfig):
 @pytest.fixture
 def fail_output_file(pytestconfig):
     yield get_absolute_path(pytestconfig.getoption("--fail-output-file"))
-
-
-@pytest.fixture
-def pass_ota_output_file(pytestconfig):
-    yield get_absolute_path(pytestconfig.getoption("--pass-ota-output-file"))
-
-
-@pytest.fixture
-def fail_ota_output_file(pytestconfig):
-    yield get_absolute_path(pytestconfig.getoption("--fail-ota-output-file"))
 
 
 @pytest.fixture
