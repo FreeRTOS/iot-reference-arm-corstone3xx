@@ -1,4 +1,4 @@
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -27,30 +27,30 @@ def setup_resources(build_artefacts_path, credentials_path, signed_update_bin_na
         cleanup_aws_resources(flags)
 
 
-def test_ota(
+def test_applications(
     setup_resources,
     fvp_process: subprocess.Popen,
-    pass_ota_output_file: str,
-    fail_ota_output_file: str,
+    pass_output_file: str,
+    fail_output_file: str,
     timeout_seconds: int,
 ) -> None:
     """
     Compare the actual output on the FVP with the expectations in
-    pass and fail output files for the OTA update test.
+    pass and fail output files for the applications.
 
     setup_resources: Input coming out as a result of executing of setup_resources
                   function defined above.
     fvp_process (subprocess.Popen): FVP execution process
-    pass_ota_output_file (str): Path to the file containing the output when application
+    pass_output_file (str): Path to the file containing the output when application
                             runs without errors.
-    fail_ota_output_file (str): Path to the file containing the output when application
+    fail_output_file (str): Path to the file containing the output when application
                             runs with errors.
     timeout_seconds (int): Timeout in seconds to wait before terminating the test.
     """
-    with open(pass_ota_output_file, "r") as file:
+    with open(pass_output_file, "r") as file:
         pass_output = file.readlines()
         pass_output = [line.replace("\n", "") for line in pass_output]
-    with open(fail_ota_output_file, "r") as file:
+    with open(fail_output_file, "r") as file:
         fail_output = file.readlines()
         fail_output = [line.replace("\n", "") for line in fail_output]
 
