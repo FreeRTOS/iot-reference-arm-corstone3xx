@@ -4,6 +4,7 @@
 
 add_subdirectory(device_advisor)
 add_subdirectory(events)
+add_subdirectory(hdlcd)
 add_subdirectory(logging)
 add_subdirectory(provisioning)
 add_subdirectory(sntp)
