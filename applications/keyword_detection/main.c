@@ -1,4 +1,4 @@
-/* Copyright 2023 Arm Limited and/or its affiliates
+/* Copyright 2023-2024 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  * SPDX-License-Identifier: MIT
  */
@@ -12,6 +12,7 @@
 
 #include "app_config.h"
 #include "aws_clientcredential.h"
+#include "aws_device_advisor_task.h"
 #include "blink_task.h"
 #include "dev_mode_key_provisioning.h"
 #include "events.h"
@@ -87,7 +88,9 @@ void vOtaActiveHook( void )
 
 void vOtaNotActiveHook( void )
 {
-    vMlTaskInferenceStart();
+    #if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 0 )
+        vMlTaskInferenceStart();
+    #endif
 }
 
 void vAssertCalled( const char * pcFile,
@@ -207,24 +210,30 @@ int main( void )
             return EXIT_FAILURE;
         }
 
-        vStartMlMqttTask();
-
         vStartMqttAgentTask();
 
         vStartOtaTask();
+
+        #if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
+            vStartDeviceAdvisorTask();
+        #else
+            vStartMlMqttTask();
+        #endif
     }
     else
     {
         vMlTaskInferenceStart();
     }
 
-    vStartBlinkTask();
+    #if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 0 )
+        vStartBlinkTask();
 
-    #ifdef AUDIO_VSI
-        prvStartVsiCallbackTask();
+        #ifdef AUDIO_VSI
+            prvStartVsiCallbackTask();
+        #endif
+
+        vStartMlTask();
     #endif
-
-    vStartMlTask();
 
     vTaskStartScheduler();
 
