@@ -2,8 +2,7 @@
 
 ## Setting up the platforms
 
-This reference integration supports both [Arm ecosystem FVPs](https://developer.arm.com/downloads/-/arm-ecosystem-fvps)
-and Arm Virtual Hardware using [Amazon Machine Images](#setting-up-arm-virtual-hardware-using-amazon-machine-images).
+This reference integration supports [Arm ecosystem FVPs](https://developer.arm.com/downloads/-/arm-ecosystem-fvps).
 
 The Corstone-300 ecosystem FVP is aligned with the Arm MPS3 development
 platform. It is based on the Cortex-M55 processor and offers a choice of the
@@ -26,22 +25,6 @@ more information.
     echo PATH=\"<FVP installation path>/FVP_Corstone_SSE-300/models/Linux64_GCC-9.3:\$PATH\" >> ~/.bashrc
     source ~/.bashrc
     ```
-
-### Setting up Arm Virtual Hardware using Amazon Machine Images
-
-Follow the instructions described in [Launch Arm Virtual Hardware Instance](setting_up_arm_virtual_hardware.md)
-to setup your development environment.
-
-If you have successfully followed the instructions, then you should have a
-console (either AWS-Web-Console or Local-Console) to an Arm Virtual Hardware
-Instance. From now on, any command-line commands described in this document
-must be run on the console connected to the Arm Virtual Hardware Instance.
-
-**Note**
-
-The run example script `tools/scripts/run.sh` assumes ecosystem FVP by default.
-If you are using Arm virtual hardware using Amazon machine images then an
-additional argument `--fvp_type vht` must be passed to the run example script.
 
 ## Setting up development environment
 

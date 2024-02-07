@@ -10,11 +10,13 @@ if you don’t already have one.
 The instructions below will allow the application to send messages to the cloud
 via MQTT as well as enable an over-the-air update.
 
-  > Note: Due to AWS restrictions, you must ensure that when logging into the
-    [AWS IoT console](https://console.aws.amazon.com/iotv2/) you are using
-    the same **Region** as where you created your AMI instance.  This
-    restriction is documented within the [MQTT Topic](https://docs.aws.amazon.com/iot/latest/developerguide/topics.html)
-    page in the AWS documentation.
+> Note:
+  Due to AWS rules, you must ensure that when logging into the
+  [AWS IoT console](https://console.aws.amazon.com/iotv2/) you are using
+  the same **Region** as where you created your IoT thing.  This
+  rule is documented within the [MQTT Topic](https://docs.aws.amazon.com/iot/latest/developerguide/topics.html)
+  page in the AWS documentation.
+
 
 ## Creating an IoT thing for your device
 

@@ -26,9 +26,8 @@ Run the command below to perform a clean build:
 ./tools/scripts/build.sh blinky -c
 ```
 
-This will build the example with the Arm Compiler (armclang) by default, which is
-included in the [Arm Virtual Hardware instance](./setting_up_arm_virtual_hardware.md)
-on AWS. If you would like to build it with the Arm GNU Toolchain (arm-none-eabi-gcc)
+This will build the example with the Arm Compiler (armclang) by default. If you
+would like to build it with the Arm GNU Toolchain (arm-none-eabi-gcc)
 [installed by yourself](./development_environment.md), append the extra option
 `--toolchain GNU` to the build command above.
 
