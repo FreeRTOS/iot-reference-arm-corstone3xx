@@ -66,7 +66,7 @@ set(TFM_CMAKE_ARGS
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project(aws-iot-example-project LANGUAGES C)
+project(aws-iot-example LANGUAGES C)
 
 set(CMAKE_EXECUTABLE_SUFFIX ".axf")
 
