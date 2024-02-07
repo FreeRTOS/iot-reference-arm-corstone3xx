@@ -91,11 +91,11 @@ add_subdirectory(configs)
 add_subdirectory(../helpers ${CMAKE_BINARY_DIR}/helpers)
 
 # Add main application executable
-add_executable(aws-iot-example
+add_executable(${CMAKE_PROJECT_NAME}
     ../helpers/mqtt/src/mqtt_demo_pub_sub.c
     main.c
 )
-target_include_directories(aws-iot-example
+target_include_directories(${CMAKE_PROJECT_NAME}
     PUBLIC
         ../helpers/provisioning
 )
@@ -103,11 +103,11 @@ target_include_directories(aws-iot-example
 # Trusted Firmware-M must be built before the application, because
 # the application depends on the NS interface and the BL2 signing scripts,
 # both of which are generated as parts of the Trusted Firmware-M build process.
-add_dependencies(aws-iot-example trusted_firmware-m-build)
+add_dependencies(${CMAKE_PROJECT_NAME} trusted_firmware-m-build)
 # The provision data must be built before the application because
 # it provides credentials to connect to AWS
-add_dependencies(aws-iot-example provisioning_data_bin)
-target_link_libraries(aws-iot-example
+add_dependencies(${CMAKE_PROJECT_NAME} provisioning_data_bin)
+target_link_libraries(${CMAKE_PROJECT_NAME}
     PRIVATE
         backoff-algorithm
         connectivity-stack
@@ -126,13 +126,13 @@ target_link_libraries(aws-iot-example
         toolchain-override
 )
 
-set_linker_script(aws-iot-example)
+set_linker_script(${CMAKE_PROJECT_NAME})
 
 # The non-secure application image should be padded while being signed
 # Hence, passing "TRUE" as the input parameter to the pad option of sign function.
 iot_reference_arm_corstone3xx_tf_m_sign_image(
-    aws-iot-example
-    aws-iot-example_signed
+    ${CMAKE_PROJECT_NAME}
+    ${CMAKE_PROJECT_NAME}_signed
     ${MCUBOOT_IMAGE_VERSION_NS}
     TRUE
 )
@@ -142,8 +142,8 @@ iot_reference_arm_corstone3xx_tf_m_sign_image(
 # 2) the trailer that keeps track of boot and update statuses should not be overwritten
 # Hence, passing "FALSE" as the input parameter for the pad option to the sign function.
 iot_reference_arm_corstone3xx_tf_m_sign_image(
-    aws-iot-example
-    aws-iot-example-update_signed
+    ${CMAKE_PROJECT_NAME}
+    ${CMAKE_PROJECT_NAME}-update_signed
     ${MCUBOOT_IMAGE_VERSION_NS_UPDATE}
     FALSE
 )
@@ -153,7 +153,7 @@ iot_reference_arm_corstone3xx_tf_m_sign_image(
 # be easily programmatically extracted as they are defined in the linker
 # scripts.
 iot_reference_arm_corstone3xx_tf_m_merge_images(
-    aws-iot-example
+    ${CMAKE_PROJECT_NAME}
     ${BL2_IMAGE_LOAD_ADDRESS}
     ${S_IMAGE_LOAD_ADDRESS}
     ${NS_IMAGE_LOAD_ADDRESS}
@@ -164,8 +164,8 @@ iot_reference_arm_corstone3xx_tf_m_merge_images(
 
 # Generate the AWS OTA update digest and signature
 iot_reference_arm_corstone3xx_generate_aws_update_digest_and_signature(
-    aws-iot-example
-    aws-iot-example-update_signed
+    ${CMAKE_PROJECT_NAME}
+    ${CMAKE_PROJECT_NAME}-update_signed
     update-digest
     update-signature
 )
