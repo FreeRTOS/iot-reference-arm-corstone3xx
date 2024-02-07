@@ -246,6 +246,7 @@ target_link_libraries(keyword-detection
         freertos_kernel
         freertos-ota-pal-psa
         fri-bsp
+        helpers-device-advisor
         helpers-events
         kws_api
         kws_model

@@ -59,34 +59,20 @@ user defines called out below.
 
 Save and close the file.
 
-
-Next insert the keys that are in the certificates you have downloaded when you
-created the thing. Edit the file
-`configs/aws_configs/aws_clientcredential_keys.h` replacing the existing keys
-with yours.
-
-`keyCLIENT_CERTIFICATE_PEM`
-
-* Replace with contents from
-  `<your-thing-certificate-unique-string>-certificate.pem.crt`.
-
-`keyCLIENT_PRIVATE_KEY_PEM`
-
-* Replace with contents from
-  `<your-thing-certificate-unique-string>-private.pem.key`.
-
 ## Building the application
 
 To build the application, run the following command:
 
 ```bash
-./tools/scripts/build.sh ${APPLICATION_NAME}
+./tools/scripts/build.sh ${APPLICATION_NAME} --certificate_path <certificate pem's path> --private_key_path <private key pem's path> --target <corstone300/corstone310>
 ```
+
+* The `certificate pem's path` and `private key pem's path` should be the downloaded key's and certificate's paths during the Thing creation.
 
 Or, run the command below to perform a clean build:
 
 ```bash
-./tools/scripts/build.sh ${APPLICATION_NAME} -c
+./tools/scripts/build.sh ${APPLICATION_NAME} --certificate_path <certificate pem's path> --private_key_path <private key pem's path> --target <corstone300/corstone310> -c
 ```
 
 ## Running the application
@@ -108,3 +94,6 @@ IoT Core Qualification report by following the instructions in the [page](https:
 
 [creating-an-iot-thing-for-your-device]: ./setting_up_aws_connectivity.md#creating-an-iot-thing-for-your-device
 [creating-a-policy-and-attach-it-to-your-certificate]: ./setting_up_aws_connectivity.md#creating-a-policy-and-attach-it-to-your-certificate
+
+## Note
+AWS IoT Core Device Advisor Tests are supported on `keyword-detection` application only.
