@@ -16,7 +16,7 @@ set(tfm_ns_interface_generated
     <BINARY_DIR>/api_ns/interface/src/tfm_platform_api.c
     <BINARY_DIR>/api_ns/interface/src/os_wrapper/tfm_ns_interface_rtos.c
 )
-if(TFM_CMAKE_ARGS MATCHES "TFM_PARTITION_FIRMWARE_UPDATE=ON")
+if(ARM_CORSTONE_BSP_TARGET_PLATFORM_TFM_CMAKE_ARGS MATCHES "TFM_PARTITION_FIRMWARE_UPDATE=ON")
     list(APPEND tfm_ns_interface_generated <BINARY_DIR>/api_ns/interface/src/tfm_fwu_api.c)
 endif()
 
@@ -49,7 +49,7 @@ ExternalProject_Add(
 
     CMAKE_ARGS
         -D TFM_TOOLCHAIN_FILE=<SOURCE_DIR>/${tfm_toolchain_file}
-        ${TFM_CMAKE_ARGS}
+        ${ARM_CORSTONE_BSP_TARGET_PLATFORM_TFM_CMAKE_ARGS}
 
     PATCH_COMMAND
         ${TFM_PATCH_COMMAND}
