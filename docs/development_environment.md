@@ -64,12 +64,8 @@ git submodule update --init --recursive
 
   * Arm Compiler for Embedded
 
-    The [Arm Virtual Hardware instance](./setting_up_arm_virtual_hardware.md)
-    comes with the Arm Compiler for Embedded in its environment which is ready
-    for use.
-
-    If you would like to set up your *local* development environment to use the
-    Arm Compiler for Embedded, you can download it from its [official page](https://developer.arm.com/Tools%20and%20Software/Arm%20Compiler%20for%20Embedded).
+    To set up your development environment to use the Arm Compiler for
+    Embedded, you can download it from its [official page](https://developer.arm.com/Tools%20and%20Software/Arm%20Compiler%20for%20Embedded).
     Login is required for the download, and you will need a license in order to
     run the toolchain once installed.
 

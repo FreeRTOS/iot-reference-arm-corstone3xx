@@ -37,9 +37,8 @@ Or, run the command below to perform a clean build:
 ./tools/scripts/build.sh speech-recognition --certificate_path <certificate pem's path> --private_key_path <private key pem's path> --target <corstone300/corstone310> --inference <ETHOS/SOFTWARE> --audio <ROM/VSI> -c
 ```
 
-This will build the example with the Arm Compiler (armclang) by default, which is
-included in the [Arm Virtual Hardware instance](./setting_up_arm_virtual_hardware.md)
-on AWS. If you would like to build it with the Arm GNU Toolchain (arm-none-eabi-gcc)
+This will build the example with the Arm Compiler (armclang) by default. If you
+would like to build it with the Arm GNU Toolchain (arm-none-eabi-gcc)
 [installed by yourself](./development_environment.md), append the extra option
 `--toolchain GNU` to the build command above.
 
