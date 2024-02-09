@@ -93,7 +93,7 @@ Options:
     --certificate_path          Path to the AWS device certificate
     --private_key_path          Path to the AWS device private key
 Examples:
-    blinky, aws-iot-example, freertos-iot-libraries-tests, keyword-detection, speech-recognition
+    blinky, freertos-iot-libraries-tests, keyword-detection, speech-recognition
 EOF
 }
 
@@ -176,10 +176,6 @@ case "$1" in
         EXAMPLE="$1"
         PATH_TO_SOURCE="$ROOT/applications/blinky"
         ;;
-    aws-iot-example)
-        EXAMPLE="$1"
-        PATH_TO_SOURCE="$ROOT/applications/aws_iot_example"
-        ;;
     freertos-iot-libraries-tests)
         EXAMPLE="$1"
         PATH_TO_SOURCE="$ROOT/applications/freertos_iot_libraries_tests"
@@ -193,7 +189,7 @@ case "$1" in
         PATH_TO_SOURCE="$ROOT/applications/speech_recognition"
         ;;
     *)
-        echo "Missing example <blinky,aws-iot-example,freertos-iot-libraries-tests,keyword-detection,speech-recognition>"
+        echo "Missing example <blinky,freertos-iot-libraries-tests,keyword-detection,speech-recognition>"
         show_usage
         exit 2
         ;;

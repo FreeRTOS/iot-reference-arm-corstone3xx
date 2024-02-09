@@ -29,7 +29,7 @@ Options:
     -n, --npu-id  NPU ID to use (U55, U65)
 
 Examples:
-    blinky, aws-iot-example, keyword-detection, speech-recognition
+    blinky, keyword-detection, speech-recognition
 EOF
 }
 
@@ -109,10 +109,6 @@ case "$1" in
         EXAMPLE="$1"
         MERGED_IMAGE_PATH="$BUILD_PATH/blinky_merged.elf"
         ;;
-    aws-iot-example)
-        EXAMPLE="$1"
-        MERGED_IMAGE_PATH="$BUILD_PATH/aws-iot-example_merged.elf"
-        ;;
     keyword-detection)
         EXAMPLE="$1"
         MERGED_IMAGE_PATH="$BUILD_PATH/keyword-detection_merged.elf"
@@ -122,7 +118,7 @@ case "$1" in
         MERGED_IMAGE_PATH="$BUILD_PATH/speech-recognition_merged.elf"
         ;;
     *)
-        echo "Usage: $0 <blinky,aws-iot-example,keyword-detection,speech-recognition>" >&2
+        echo "Usage: $0 <blinky,keyword-detection,speech-recognition>" >&2
         exit 1
         ;;
 esac
