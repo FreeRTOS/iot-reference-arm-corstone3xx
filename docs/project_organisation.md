@@ -199,8 +199,7 @@ Anything specific to an application should live in its respective subdirectory (
 Each applications has its own configs subdirectory as it is expected that the configurations will differ from an application to another.
 
 ```sh
-applications/aws_iot_example/
-├── CMakeLists.txt
+applications/keyword_detection/
 ├── configs
 │   ├── app_config
 │   │   ├── app_config.h
@@ -220,16 +219,24 @@ applications/aws_iot_example/
 │   │   └── threading_alt.h
 │   └── tfm_config
 │       └── project_config.h
-├── main.c
+├── resources
+│   ├── test.wav
 └── tests
-    ├── fail_ota_output.log
-    └── pass_ota_output.log
+    ├── fail_output.log
+    └── pass_output.log
+├── blink_task.c
+├── blink_task.h
+├── CMakeLists.txt
+├── main.c
+├── ml_interface.cc
+├── ml_interface.h
+├── model_config.cc
 ```
-*Figure 6: Content of aws-iot-example application*
+*Figure 6: Content of keyword-detection application*
 
 Each application executable link only with the component target library it needs:
 ```cmake
-target_link_libraries(aws-iot-example
+target_link_libraries(keyword-detection
     PRIVATE
         backoff-algorithm
         connectivity-stack
@@ -240,13 +247,17 @@ target_link_libraries(aws-iot-example
         freertos-ota-pal-psa
         fri-bsp
         helpers-events
+        kws_api
+        kws_model
         mbedtls
         mbedtls-threading-freertos
         ota-for-aws-iot-embedded-sdk
+        provisioning-lib
         tfm-ns-interface
+        toolchain-override
 )
 ```
-*Figure 7: aws-iot-example application linked library alphabetically ordered*
+*Figure 7: keyword-detection application linked library alphabetically ordered*
 
 
 ### Application helper libraries
