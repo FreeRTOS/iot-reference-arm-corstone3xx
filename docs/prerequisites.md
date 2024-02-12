@@ -1,16 +1,6 @@
 # Prerequisites
 
-## Setting up the platforms
-
-This reference integration supports [Arm ecosystem FVPs](https://developer.arm.com/downloads/-/arm-ecosystem-fvps).
-
-The Corstone-310 model is a reference subsystem for a secure SSE-310 SoC
-aligned with the Arm MPS3 development platform. It is based on a Cortex®-M85
-processor and an Ethos-U55 neural network processor and the DMA-350
-Direct Memory Access controller. Follow the [link](https://developer.arm.com/downloads/-/arm-ecosystem-fvps)
-for more information.
-
-### Setting up Arm ecosystem FVPs
+## Setting up Arm ecosystem FVPs
 
 * Download the Corstone-310 FVP from [here](https://developer.arm.com/downloads/-/arm-ecosystem-fvps)
 * Run the following commands to install the Corstone-310 FVP and add FVP path
