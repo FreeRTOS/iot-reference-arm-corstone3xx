@@ -203,7 +203,7 @@ case "$ML_INFERENCE_ENGINE" in
     ETHOS | SOFTWARE )
         ;;
     *)
-        echo "Invalid inference selection <ETHOS|SOFTWARE>"
+        echo "Invalid inference selection <ETHOS | SOFTWARE>"
         show_usage
         exit 2
         ;;
@@ -249,7 +249,7 @@ case "$TARGET" in
       TARGET_PROCESSOR="cortex-m85"
       ;;
     *)
-      echo "Invalid target <corstone300|corstone310>"
+      echo "Invalid target <corstone300 | corstone310>"
       show_usage
       exit 2
       ;;
