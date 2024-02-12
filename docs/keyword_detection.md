@@ -59,11 +59,6 @@ Or, run the command below to perform a clean build:
 ./tools/scripts/build.sh keyword-detection --certificate_path <certificate pem's path> --private_key_path <private key pem's path> --target <corstone300/corstone310> --inference <ETHOS/SOFTWARE> --audio <ROM/VSI> -c
 ```
 
-This will build the example with the Arm Compiler (armclang) by default. If you
-would like to build it with the Arm GNU Toolchain (arm-none-eabi-gcc)
-[installed by yourself](./development_environment.md), append the extra option
-`--toolchain GNU` to the build command above.
-
 
 ## Provisioning the device credentials into Protected Storage
 During the build process a ```provisioning_data.bin``` is built into the ```build/applications/keyword_detection/provisioning_data``` directory.

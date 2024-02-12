@@ -19,9 +19,27 @@ porting of this integration across platforms easy.
 
 ## Supported Targets
 
-* [Corstone-300](https://developer.arm.com/Processors/Corstone-300)
-* [Corstone-310](https://developer.arm.com/Processors/Corstone-310)
+Arm Corstone-3xx targets includes an example subsystem based on the Cortex-M
+CPU and Ethos NPU, alongside a range of other components in a scalable and
+flexible reference package. This enables designers to build secure,
+AI-capable SoCs faster.
 
+* [Corstone-310](https://developer.arm.com/Processors/Corstone-310)
+  * Arm Cortex-M85 CPU and Ethos-U55 NPU
+  * Supported versions: 11.24.13 and above
+* [Corstone-300](https://developer.arm.com/Processors/Corstone-300)
+  * Arm Cortex-M55 CPU and Ethos-U55 NPU
+  * Supported versions: 11.24.13 and above
+
+## Supported Toolchains
+
+* Arm Compiler for Embedded (armclang)
+* Arm GNU Toolchain (arm-none-eabi-gcc)
+
+> Note:
+  The build script `./tools/scripts/build.sh` assumes
+  `Arm Compiler for Embedded (armclang)` by default, append the extra option
+  `--toolchain GNU` to build using Arm GNU Toolchain.
 
 ## Directory structure
 
