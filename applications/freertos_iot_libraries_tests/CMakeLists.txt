@@ -69,6 +69,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(freertos-iot-libraries-tests LANGUAGES C)
 
 set(CMAKE_EXECUTABLE_SUFFIX ".axf")
+
+# Set global optimization level to reduce code size while keeping the debug experience.
+if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+    add_compile_options(-Og)
+elseif(${CMAKE_C_COMPILER_ID} STREQUAL "ARMClang")
+    add_compile_options(-O1)
+endif()
+
 # This variable is checked to apply configurations specific to FreeRTOS Libraries Integrations Tests
 set(FREERTOS_LIBRARIES_INTEGRATION_TESTS 1)
 
