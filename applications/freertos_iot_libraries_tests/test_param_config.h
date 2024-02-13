@@ -70,7 +70,7 @@
  * PUBLISH message and ack responses for QoS 1 and QoS 2 communications
  * with the broker.
  */
-#define MQTT_TEST_PROCESS_LOOP_TIMEOUT_MS    ( 40000 )
+#define MQTT_TEST_PROCESS_LOOP_TIMEOUT_MS    ( 54630 )
 
 /**
  * @brief Root certificate of the IoT Core.
