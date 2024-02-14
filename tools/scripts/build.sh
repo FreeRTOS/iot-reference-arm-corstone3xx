@@ -15,6 +15,8 @@ BUILD_PATH="$ROOT/build"
 TARGET="corstone310"
 TARGET_PROCESSOR=""
 ML_INFERENCE_ENGINE="ETHOS"
+ETHOS_U_NPU_ID=""
+ETHOS_U_NPU_NUM_MACS=""
 AUDIO_SOURCE="ROM"
 TOOLCHAIN="ARMCLANG"
 TOOLCHAIN_FILE=""
@@ -52,6 +54,8 @@ function build_with_cmake {
         -DAWS_CLIENT_CERTIFICATE_PEM_PATH=$CERTIFICATE_PATH \
         -DIOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR=$ROOT \
         -DML_INFERENCE_ENGINE=$ML_INFERENCE_ENGINE \
+        -DETHOS_U_NPU_ID=$ETHOS_U_NPU_ID \
+        -DETHOS_U_NPU_NUM_MACS=$ETHOS_U_NPU_NUM_MACS \
         -DAUDIO_SOURCE=$AUDIO_SOURCE
 
         echo "Building $EXAMPLE" >&2
@@ -72,6 +76,8 @@ Options:
     -t,--target                 Build target (corstone300 or corstone310)
     -i,--inference              ML Inference engine selection (ETHOS | SOFTWARE)
     -s,--audio                  Audio source (ROM | VSI)
+    -n | --npu-id               Ethos NPU model identifier (U55 | U65)
+    --npu-mac                   Number of 8x8 MACs performed per cycle by the NPU (32 | 64 | 128 | 256 | 512)
     --toolchain                 Compiler (GNU or ARMCLANG)
     --configure-only Create build tree but do not build
     --certificate_path          The full path for the AWS device certificate
@@ -86,8 +92,8 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-SHORT=t:,i:,s:,c,h,p:
-LONG=target:,inference:,toolchain:,audio:,clean,help,configure-only,certificate_path:,private_key_path:,path:
+SHORT=t:,i:,s:,c,h,p:,n:
+LONG=target:,inference:,toolchain:,audio:,clean,help,configure-only,certificate_path:,private_key_path:,path:,npu-id:,npu-mac:
 OPTS=$(getopt -n build --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -113,6 +119,14 @@ do
       ;;
     -i | --inference )
       ML_INFERENCE_ENGINE=$2
+      shift 2
+      ;;
+    -n | --npu-id )
+      ETHOS_U_NPU_ID=$2
+      shift 2
+      ;;
+    --npu-mac )
+      ETHOS_U_NPU_NUM_MACS=$2
       shift 2
       ;;
     -s | --audio )
@@ -180,6 +194,26 @@ case "$ML_INFERENCE_ENGINE" in
         ;;
     *)
         echo "Invalid inference selection <ETHOS|SOFTWARE>"
+        show_usage
+        exit 2
+        ;;
+esac
+
+case "$ETHOS_U_NPU_ID" in
+    U55 | U65 | "" )
+        ;;
+    *)
+        echo "Invalid NPU type <U55 | U65>"
+        show_usage
+        exit 2
+        ;;
+esac
+
+case "$ETHOS_U_NPU_NUM_MACS" in
+    32 | 64 | 128 | 256 | 512 | "" )
+        ;;
+    *)
+        echo "Invalid NPU MAC value <32 | 64 | 128 | 256 | 512>"
         show_usage
         exit 2
         ;;
