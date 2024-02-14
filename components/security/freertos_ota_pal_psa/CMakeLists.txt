@@ -8,11 +8,12 @@ set(freertos_ota_pal_psa_SOURCE_DIR
     "Path to FreeRTOS OTA PAL based on PSA API source code"
 )
 
-execute_process(COMMAND git am --abort
-    COMMAND git am ${CMAKE_CURRENT_LIST_DIR}/integration/patches/0001-ota-abort-Fix-successful-abortion-check.patch
-    WORKING_DIRECTORY ${freertos_ota_pal_psa_SOURCE_DIR}
-    OUTPUT_QUIET
-    ERROR_QUIET
+include(ApplyPatches)
+
+set(PATCH_FILES_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/integration/patches")
+set(PATCH_FILES
+    "${PATCH_FILES_DIRECTORY}/0001-ota-abort-Fix-successful-abortion-check.patch"
 )
+iot_reference_arm_corstone3xx_apply_patches("${freertos_ota_pal_psa_SOURCE_DIR}" "${PATCH_FILES}")
 
 add_subdirectory(integration)
