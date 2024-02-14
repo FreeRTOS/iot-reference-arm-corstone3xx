@@ -1,7 +1,7 @@
-From 0b237cca38427a1b99106cce4caf6d751320727d Mon Sep 17 00:00:00 2001
+From f8afc14a716a88dfe27b9d62bbda79434f5245bb Mon Sep 17 00:00:00 2001
 From: Gabor Abonyi <gabor.abonyi@arm.com>
 Date: Mon, 29 Jan 2024 15:20:36 +0100
-Subject: [PATCH 3/3] Make ETHOSU_ARCH configurable in TensorFlow CMake
+Subject: [PATCH 3/4] Make ETHOSU_ARCH configurable in TensorFlow CMake
 
 Remove hardcoded value of u55 in tensorflow.cmake. Use ETHOS_U_NPU_ID
 as input and convert it to the format needed by TensorFlow build.
