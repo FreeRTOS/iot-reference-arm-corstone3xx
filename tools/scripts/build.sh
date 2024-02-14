@@ -44,19 +44,29 @@ function build_with_cmake {
         set -ex
 
         # Note: A bug in CMake force us to set the toolchain here
-        cmake \
-        -G Ninja --toolchain=$TOOLCHAIN_FILE \
-        -B $BUILD_PATH \
-        -S $PATH_TO_SOURCE \
-        -DCMAKE_SYSTEM_PROCESSOR=$TARGET_PROCESSOR \
-        -DARM_CORSTONE_BSP_TARGET_PLATFORM=$TARGET \
-        -DAWS_CLIENT_PRIVATE_KEY_PEM_PATH=$PRIVATE_KEY_PATH \
-        -DAWS_CLIENT_CERTIFICATE_PEM_PATH=$CERTIFICATE_PATH \
-        -DIOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR=$ROOT \
-        -DML_INFERENCE_ENGINE=$ML_INFERENCE_ENGINE \
-        -DETHOS_U_NPU_ID=$ETHOS_U_NPU_ID \
-        -DETHOS_U_NPU_NUM_MACS=$ETHOS_U_NPU_NUM_MACS \
-        -DAUDIO_SOURCE=$AUDIO_SOURCE
+        cmake_args=()
+        cmake_args+=(-G Ninja --toolchain=$TOOLCHAIN_FILE)
+        cmake_args+=(-B $BUILD_PATH)
+        cmake_args+=(-S $PATH_TO_SOURCE)
+        cmake_args+=(-DCMAKE_SYSTEM_PROCESSOR=$TARGET_PROCESSOR)
+        cmake_args+=(-DARM_CORSTONE_BSP_TARGET_PLATFORM=$TARGET)
+        cmake_args+=(-DAWS_CLIENT_PRIVATE_KEY_PEM_PATH=$PRIVATE_KEY_PATH)
+        cmake_args+=(-DAWS_CLIENT_CERTIFICATE_PEM_PATH=$CERTIFICATE_PATH)
+        cmake_args+=(-DIOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR=$ROOT)
+        cmake_args+=(-DML_INFERENCE_ENGINE=$ML_INFERENCE_ENGINE)
+        cmake_args+=(-DAUDIO_SOURCE=$AUDIO_SOURCE)
+        if [ ! -z "$ETHOS_U_NPU_ID" ]; then
+          cmake_args+=(-DETHOS_U_NPU_ID=$ETHOS_U_NPU_ID)
+        else
+          cmake_args+=(-UETHOS_U_NPU_ID)
+        fi
+        if [ ! -z "$ETHOS_U_NPU_NUM_MACS" ]; then
+          cmake_args+=(-DETHOS_U_NPU_NUM_MACS=$ETHOS_U_NPU_NUM_MACS)
+        else
+          cmake_args+=(-UETHOS_U_NPU_NUM_MACS)
+        fi
+
+        cmake "${cmake_args[@]}"
 
         echo "Building $EXAMPLE" >&2
         cmake --build $BUILD_PATH --target "$EXAMPLE"
