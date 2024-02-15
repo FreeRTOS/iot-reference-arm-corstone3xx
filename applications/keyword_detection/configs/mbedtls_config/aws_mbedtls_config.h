@@ -25,6 +25,16 @@
  *  limitations under the License.
  */
 
+#include "app_config.h"
+
+/* AWS IoT Core Device Advisor validation is not supported on ARMClang because
+ * ARMClang compiler does not support gmtime() function which is needed when
+ * MBEDTLS_HAVE_TIME macro is defined. MBEDTLS_HAVE_TIME should be defined to
+ * pass TLS Expired Server Cert test which is part of AWS IoT Core Device Advisor validation tests. */
+#if ( ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 ) && ( defined( __ARMCC_VERSION ) ) )
+    #error "AWS IoT Core Device Advisor validation is not supported on Arm Compiler For Embedded (ARMClang)"
+#endif
+
 /**
  * This is an optional version symbol that enables compatibility handling of
  * config files.
@@ -132,7 +142,9 @@
  *
  * Comment if your system does not support time functions
  */
-/*#define MBEDTLS_HAVE_TIME */
+#if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
+    #define MBEDTLS_HAVE_TIME
+#endif
 
 /**
  * \def MBEDTLS_HAVE_TIME_DATE
@@ -153,7 +165,9 @@
  * mbedtls_platform_gmtime_r() at compile-time by using the macro
  * MBEDTLS_PLATFORM_GMTIME_R_ALT.
  */
-/*#define MBEDTLS_HAVE_TIME_DATE */
+#if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
+    #define MBEDTLS_HAVE_TIME_DATE
+#endif
 
 /**
  * \def MBEDTLS_PLATFORM_MEMORY
@@ -227,7 +241,10 @@ void mbedtls_platform_free( void * ptr );
  * platform function
  */
 /*#define MBEDTLS_PLATFORM_EXIT_ALT */
-/*#define MBEDTLS_PLATFORM_TIME_ALT */
+#if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
+    #define MBEDTLS_PLATFORM_TIME_ALT
+    #define MBEDTLS_PLATFORM_MS_TIME_ALT
+#endif
 /*#define MBEDTLS_PLATFORM_FPRINTF_ALT */
 /*#define MBEDTLS_PLATFORM_PRINTF_ALT */
 /*#define MBEDTLS_PLATFORM_SNPRINTF_ALT */
