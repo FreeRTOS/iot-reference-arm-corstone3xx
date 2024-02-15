@@ -34,6 +34,10 @@
     #include "Driver_SAI.h"
 #endif
 
+#if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
+    #include "sntp_client_task.h"
+#endif
+
 /*
  * Semihosting is a mechanism that enables code running on an ARM target
  * to communicate and use the Input/Output facilities of a host computer
@@ -209,6 +213,18 @@ int main( void )
         {
             return EXIT_FAILURE;
         }
+
+        #if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
+
+            /* This function call is application specific because it depends on
+             * MBEDTLS_PLATFORM_TIME_ALT and MBEDTLS_PLATFORM_MS_TIME_ALT MbedTLS
+             * configuration macros which are application specific. In case these macros
+             * are disabled then, there is no need to call this function. Also, the application
+             * is free to choose which function would be used for MbedTLS time query. */
+            mbedtls_platform_set_time( systemGetWallClockTime );
+
+            vStartSntpClientTask();
+        #endif
 
         vStartMqttAgentTask();
 

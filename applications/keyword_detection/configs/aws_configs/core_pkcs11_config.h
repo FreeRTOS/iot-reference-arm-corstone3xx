@@ -1,7 +1,7 @@
 /*
  * Amazon FreeRTOS V1.1.4
  * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -157,4 +157,12 @@ extern void vPortFree( void * pv );
 
 /* #define pvPortMalloc             MPU_pvPortMalloc */
 /* #define vPortFree                MPU_vPortFree */
+
+/**
+ * @brief The PKCS #11 label for the object to be used for CMAC operations.
+ * It can be used by tasks during setting up the PKCS11 object for AES CMAC
+ * operations.
+ */
+#define pkcs11configLABEL_CMAC_KEY    "CMAC Key"
+
 #endif /* _AWS_PKCS11_CONFIG_H_ include guard. */

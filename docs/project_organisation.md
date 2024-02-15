@@ -244,11 +244,13 @@ target_link_libraries(keyword-detection
         coremqtt
         coremqtt-agent
         corepkcs11
+        coresntp
         freertos_kernel
         freertos-ota-pal-psa
         fri-bsp
         helpers-device-advisor
         helpers-events
+        helpers-sntp
         kws_api
         kws_model
         mbedtls
