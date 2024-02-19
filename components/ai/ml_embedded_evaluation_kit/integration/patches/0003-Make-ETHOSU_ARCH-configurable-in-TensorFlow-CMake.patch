@@ -1,0 +1,41 @@
+From f8afc14a716a88dfe27b9d62bbda79434f5245bb Mon Sep 17 00:00:00 2001
+From: Gabor Abonyi <gabor.abonyi@arm.com>
+Date: Mon, 29 Jan 2024 15:20:36 +0100
+Subject: [PATCH 3/4] Make ETHOSU_ARCH configurable in TensorFlow CMake
+
+Remove hardcoded value of u55 in tensorflow.cmake. Use ETHOS_U_NPU_ID
+as input and convert it to the format needed by TensorFlow build.
+
+Signed-off-by: Gabor Abonyi <gabor.abonyi@arm.com>
+---
+ scripts/cmake/tensorflow.cmake | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/scripts/cmake/tensorflow.cmake b/scripts/cmake/tensorflow.cmake
+index 0fa0f8c..e96eeac 100644
+--- a/scripts/cmake/tensorflow.cmake
++++ b/scripts/cmake/tensorflow.cmake
+@@ -68,9 +68,9 @@ else()
+     endif()
+ 
+     if(ETHOS_U_NPU_ENABLED)
+-        # Arm Ethos-U55 NPU is the co-processor for ML workload:
++        # Convert ETHOS_U_NPU_ID to match the format required by TensorFlow build:
+         set(TENSORFLOW_LITE_MICRO_CO_PROCESSOR  "ethos_u")
+-        set(ETHOS_U_NPU_ID "u55")  # Currently only u55 is supported by TFLite Micro.
++        string(TOLOWER "${ETHOS_U_NPU_ID}" TENSORFLOW_ETHOS_U_NPU_ID)
+     endif()
+ 
+     set(TENSORFLOW_LITE_MICRO_OPTIMIZED_KERNEL  "cmsis_nn")
+@@ -114,7 +114,7 @@ add_custom_target(tensorflow_build ALL
+         CMSIS_PATH=${CMSIS_SRC_PATH}
+         CMSIS_NN_PATH=${CMSIS_NN_SRC_PATH}
+         # Conditional arguments
+-        $<$<BOOL:${ETHOS_U_NPU_ENABLED}>:ETHOSU_ARCH=${ETHOS_U_NPU_ID}>
++        $<$<BOOL:${ETHOS_U_NPU_ENABLED}>:ETHOSU_ARCH=${TENSORFLOW_ETHOS_U_NPU_ID}>
+         $<$<BOOL:${ETHOS_U_NPU_ENABLED}>:ETHOSU_DRIVER_PATH=${ETHOS_U_NPU_DRIVER_SRC_PATH}>
+         $<$<BOOL:${ETHOS_U_NPU_ENABLED}>:ETHOSU_DRIVER_LIBS=$<TARGET_FILE:ethosu_core_driver>>
+ 
+-- 
+2.40.1
+

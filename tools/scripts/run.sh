@@ -11,6 +11,7 @@ BUILD_PATH="build"
 TARGET="corstone310"
 AUDIO_SOURCE="ROM"
 FVP_TYPE="fvp"
+NPU_ID=""
 FVP_BIN=""
 
 set -e
@@ -27,14 +28,15 @@ Options:
     -t,--target Target to run
     -f, --fvp_type  FVP type to use (fvp, vht)
     -s, --audio Audio source (ROM, VSI)
+    -n, --npu-id  NPU ID to use (U55, U65)
 
 Examples:
     blinky, aws-iot-example, keyword-detection, speech-recognition
 EOF
 }
 
-SHORT=t:,f:,s:,h,p:
-LONG=target:,fvp_type:,audio:,help,path:
+SHORT=t:,f:,n:,s:,h,p:
+LONG=target:,fvp_type:,npu-id:,audio:,help,path:
 OPTS=$(getopt -n run --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -58,6 +60,10 @@ do
       FVP_TYPE=$2
       shift 2
       ;;
+    -n | --npu-id )
+      NPU_ID=$2
+      shift 2
+      ;;
     -s | --audio )
       AUDIO_SOURCE=$2
       shift 2
@@ -77,8 +83,21 @@ done
 case "$TARGET" in
     corstone300 )
       if [ "$FVP_TYPE" == "fvp" ]; then
-        FVP_BIN="FVP_Corstone_SSE-300_Ethos-U55"
+        if [ "$NPU_ID" == "" ] || [ "$NPU_ID" == "U55" ]; then
+          FVP_BIN="FVP_Corstone_SSE-300_Ethos-U55"
+        elif [ "$NPU_ID" == "U65" ]; then
+          FVP_BIN="FVP_Corstone_SSE-300_Ethos-U65"
+        else
+          echo "Invalid NPU ID <U55|U65>"
+          show_usage
+          exit 2
+        fi
       elif [ "$FVP_TYPE" == "vht" ]; then
+        if [ "$NPU_ID" != "" ]; then
+          echo "NPU ID cannot be specified for FVP type vht"
+          show_usage
+          exit 2
+        fi
         FVP_BIN="VHT_Corstone_SSE-300_Ethos-U55"
       else
         echo "Invalid FVP type <fvp|vht>"
@@ -88,8 +107,21 @@ case "$TARGET" in
       ;;
     corstone310 )
       if [ "$FVP_TYPE" == "fvp" ]; then
-        FVP_BIN="FVP_Corstone_SSE-310"
+        if [ "$NPU_ID" == "" ] || [ "$NPU_ID" == "U55" ]; then
+          FVP_BIN="FVP_Corstone_SSE-310"
+        elif [ "$NPU_ID" == "U65" ]; then
+          FVP_BIN="FVP_Corstone_SSE-310_Ethos-U65"
+        else
+          echo "Invalid NPU ID <U55|U65>"
+          show_usage
+          exit 2
+        fi
       elif [ "$FVP_TYPE" == "vht" ]; then
+        if [ "$NPU_ID" != "" ]; then
+          echo "NPU ID cannot be specified for FVP type vht"
+          show_usage
+          exit 2
+        fi
         FVP_BIN="VHT_Corstone_SSE-310"
       else
         echo "Invalid FVP type <fvp|vht>"

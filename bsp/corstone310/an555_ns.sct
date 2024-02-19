@@ -67,9 +67,15 @@ LR_CODE (ROM_START + ((((0) + (FLASH_S_PARTITION_SIZE)) + BL2_HEADER_SIZE))) {
         *.o (activation_buf)
 
         ; activation buffers a.k.a tensor arena when memory mode dedicated sram
+        *.o (.bss.NoInit.activation_buf_dram)
+
+        ; activation buffers a.k.a tensor arena when
+        ; memory mode sram only or shared sram
         *.o (.bss.NoInit.activation_buf_sram)
 
         ; Buffer for transferring VSI audio data from S to NS
         *.o (.bss.NoInit.vsi_audio_buffer)
+        ; Cache area (if used)
+        *.o (.bss.NoInit.ethos_u_cache)
     }
 }

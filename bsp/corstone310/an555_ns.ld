@@ -227,6 +227,7 @@ SECTIONS
   {
     . = ALIGN (16);
     *(.bss.NoInit.activation_buf_sram)
+    *(.bss.NoInit.activation_buf_dram)
   } > DDR AT > DDR
 
   .vsibuffer :
@@ -234,6 +235,12 @@ SECTIONS
     . = ALIGN (4);
     /* Buffer for transferring VSI audio data from S to NS */
     *(.bss.NoInit.vsi_audio_buffer)
+  } > DDR AT > DDR
+
+  .ethosucache :
+  {
+    . = ALIGN (16);
+    *(.bss.NoInit.ethos_u_cache)
   } > DDR AT > DDR
 
   .bss :
