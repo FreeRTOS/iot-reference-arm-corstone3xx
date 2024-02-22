@@ -12,9 +12,9 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "The build type" FORCE)
 endif()
 
-set(CMAKE_EXECUTABLE_SUFFIX ".axf")
+set(CMAKE_EXECUTABLE_SUFFIX ".axf" PARENT_SCOPE)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON PARENT_SCOPE)
 
 add_subdirectory(bsp)
 add_subdirectory(components EXCLUDE_FROM_ALL)
