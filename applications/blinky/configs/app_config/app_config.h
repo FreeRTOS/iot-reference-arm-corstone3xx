@@ -37,9 +37,3 @@
 #define appCONFIG_LOGGING_TASK_PRIORITY             ( configMAX_PRIORITIES - 1 )
 #define appCONFIG_LOGGING_TASK_STACK_SIZE           ( 2048 )
 #define appCONFIG_LOGGING_MESSAGE_QUEUE_LENGTH      ( 32 )
-
-/** @brief Increase backoff algorithm timeout by 8 seconds when device advisor
- * test is active.
- */
-
-#define appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE    0

@@ -307,6 +307,3 @@ Creating an empty PS flash layout.
 4 0 [None] FreeRTOS_AddEndPoint: MAC: 44-21 IPv4: c0a80069ip
 5 34 [OTA Task ] [INFO] OTA over MQTT, Application version from appFirmwareVersion 0.0.20
 ```
-
-## Running AWS IoT Core Device Advisor tests
-Follow the instructions descrived in [Running AWS IoT Core Device Advisor tests](./running_aws_iot_core_device_advisor_tests.md).
