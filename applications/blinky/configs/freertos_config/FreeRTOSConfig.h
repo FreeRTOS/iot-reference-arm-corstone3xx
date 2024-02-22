@@ -169,11 +169,8 @@ void vLoggingPrintf( const char * pcFormat,
 
 /* Sets the length of the buffers into which logging messages are written - so
  * also defines the maximum length of each log message. */
-#if ( appCONFIG_DEVICE_ADVISOR_TEST_ACTIVE == 1 )
-    #define configLOGGING_MAX_MESSAGE_LENGTH        20480
-#else
-    #define configLOGGING_MAX_MESSAGE_LENGTH        1024
-#endif
+#define configLOGGING_MAX_MESSAGE_LENGTH            1024
+
 /* Prepend each log message with a message number, the task name and a time stamp. */
 #define configLOGGING_INCLUDE_TIME_AND_TASK_NAME    1
 
