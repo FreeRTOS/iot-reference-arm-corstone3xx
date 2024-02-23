@@ -27,9 +27,7 @@ include(ApplyPatches)
 
 set(PATCH_FILES_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/patches")
 set(PATCH_FILES
-    "${PATCH_FILES_DIRECTORY}/0001-corstone300-Add-missing-FVP-VSI-handlers.patch"
-    "${PATCH_FILES_DIRECTORY}/0002-platform-irq-Add-VSI-IRQ-numbers-for-CS300-and-CS310.patch"
-    "${PATCH_FILES_DIRECTORY}/0003-bsp-Add-CMSIS-Driver-implementation-for-VSI.patch"
+    "${PATCH_FILES_DIRECTORY}/0001-bsp-Add-CMSIS-Driver-implementation-for-VSI.patch"
 )
 iot_reference_arm_corstone3xx_apply_patches("${arm_corstone_platform_bsp_SOURCE_DIR}" "${PATCH_FILES}")
 
