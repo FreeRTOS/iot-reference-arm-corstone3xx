@@ -41,9 +41,9 @@ index 0000000..8158d09
 +#define ARM_SAI_DRV_VERSION    ARM_DRIVER_VERSION_MAJOR_MINOR( 1, 0 ) /* driver version */
 +
 +/* Audio Peripheral definitions */
-+#define AudioI                 ARM_VSI0_NS   /* Audio Input access struct */
-+#define AudioI_IRQn            ARM_VSI0_IRQn /* Audio Input Interrupt number */
-+#define AudioI_Handler         VSI0_Handler  /* Audio Input Interrupt handler */
++#define AudioI                 ARM_VSI0_NS       /* Audio Input access struct */
++#define AudioI_IRQn            ARM_VSI0_IRQn     /* Audio Input Interrupt number */
++#define AudioI_Handler         ARM_VSI0_Handler  /* Audio Input Interrupt handler */
 +
 +/* Audio Peripheral registers */
 +#define CONTROL                Regs[ 0 ] /* Control register */
@@ -367,11 +367,11 @@ index 0000000..8158d09
 +    ARM_SAI_Control,
 +    ARM_SAI_GetStatus
 +};
-diff --git a/corstone300/CMSIS_Driver/Include/arm_vsi.h b/corstone300/CMSIS_Driver/Include/arm_vsi.h
+diff --git a/corstone300/CMSIS_Driver/arm_vsi.h b/corstone300/CMSIS_Driver/arm_vsi.h
 new file mode 100644
 index 0000000..a5c121c
 --- /dev/null
-+++ b/corstone300/CMSIS_Driver/Include/arm_vsi.h
++++ b/corstone300/CMSIS_Driver/arm_vsi.h
 @@ -0,0 +1,117 @@
 +/* Copyright 2021-2023 Arm Limited and/or its affiliates
 + * <open-source-office@arm.com>
@@ -491,17 +491,17 @@ index 0000000..a5c121c
 +
 +#endif /* __ARM_VSI_H */
 diff --git a/corstone300/CMakeLists.txt b/corstone300/CMakeLists.txt
-index 8d9824f..339fbde 100644
+index 6ff2169..00f06dd 100644
 --- a/corstone300/CMakeLists.txt
 +++ b/corstone300/CMakeLists.txt
-@@ -28,6 +28,7 @@ target_sources(arm-corstone-platform-bsp
-         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_AN552_MPC.c
-         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_Flash.c
-         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_I2C.c
+@@ -22,6 +22,7 @@ target_include_directories(arm-corstone-platform-bsp
+ target_sources(arm-corstone-platform-bsp
+     PRIVATE
+         ${CMAKE_CURRENT_LIST_DIR}/Device/Source/Driver_MPC.c
 +        ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_SAI.c
          ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_SPI.c
-         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_SSE300_PPC.c
          ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_USART.c
+         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_I2C.c
 diff --git a/corstone310/CMSIS_Driver/Driver_SAI.c b/corstone310/CMSIS_Driver/Driver_SAI.c
 new file mode 100644
 index 0000000..8158d09
@@ -522,9 +522,9 @@ index 0000000..8158d09
 +#define ARM_SAI_DRV_VERSION    ARM_DRIVER_VERSION_MAJOR_MINOR( 1, 0 ) /* driver version */
 +
 +/* Audio Peripheral definitions */
-+#define AudioI                 ARM_VSI0_NS   /* Audio Input access struct */
-+#define AudioI_IRQn            ARM_VSI0_IRQn /* Audio Input Interrupt number */
-+#define AudioI_Handler         VSI0_Handler  /* Audio Input Interrupt handler */
++#define AudioI                 ARM_VSI0_NS       /* Audio Input access struct */
++#define AudioI_IRQn            ARM_VSI0_IRQn     /* Audio Input Interrupt number */
++#define AudioI_Handler         ARM_VSI0_Handler  /* Audio Input Interrupt handler */
 +
 +/* Audio Peripheral registers */
 +#define CONTROL                Regs[ 0 ] /* Control register */
@@ -848,11 +848,11 @@ index 0000000..8158d09
 +    ARM_SAI_Control,
 +    ARM_SAI_GetStatus
 +};
-diff --git a/corstone310/CMSIS_Driver/Include/arm_vsi.h b/corstone310/CMSIS_Driver/Include/arm_vsi.h
+diff --git a/corstone310/CMSIS_Driver/arm_vsi.h b/corstone310/CMSIS_Driver/arm_vsi.h
 new file mode 100644
 index 0000000..a5c121c
 --- /dev/null
-+++ b/corstone310/CMSIS_Driver/Include/arm_vsi.h
++++ b/corstone310/CMSIS_Driver/arm_vsi.h
 @@ -0,0 +1,117 @@
 +/* Copyright 2021-2023 Arm Limited and/or its affiliates
 + * <open-source-office@arm.com>
@@ -975,14 +975,14 @@ diff --git a/corstone310/CMakeLists.txt b/corstone310/CMakeLists.txt
 index dfae235..57e3b1a 100644
 --- a/corstone310/CMakeLists.txt
 +++ b/corstone310/CMakeLists.txt
-@@ -26,6 +26,7 @@ target_include_directories(arm-corstone-platform-bsp
+@@ -23,6 +23,7 @@ target_include_directories(arm-corstone-platform-bsp
  target_sources(arm-corstone-platform-bsp
      PRIVATE
-         ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_MPC.c
+         ${CMAKE_CURRENT_LIST_DIR}/Device/Source/Driver_MPC.c
 +        ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_SAI.c
          ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_SPI.c
          ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_USART.c
          ${CMAKE_CURRENT_LIST_DIR}/CMSIS_Driver/Driver_TGU.c
--- 
+--
 2.34.1
 
