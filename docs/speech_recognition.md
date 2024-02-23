@@ -38,12 +38,7 @@ Or, run the command below to perform a clean build:
 ```
 
 ## Provisioning the device credentials into Protected Storage
-During the build process a ```provisioning_data.bin``` is built into the ```build/applications/speech_recognition/provisioning_data``` directory.
-This binary contains the device credentials (private key and certificate).
-
-If the content of the .pem files that were used during the build process (passed with ```--certificate_path``` and ```--private_key_path```) changed, then ```cmake --build build -j -- provisioning_data``` rebuilds this provisioning binary.
-
-The binary has to be loaded to the ```0x210FF000``` address so the ```speech-recognition``` can detect that a provisioning bundle is present and writes the credentials into the Protected Storage. (The run.sh script automatically does this.)
+Check [Device Provisioning](./device_provisioning.md) for detailed information.
 
 ## Running the application
 
