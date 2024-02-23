@@ -1,4 +1,4 @@
-/* Copyright 2017-2023 Arm Limited and/or its affiliates
+/* Copyright 2017-2024 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -43,7 +43,10 @@ static void prvWriteChars( int fd,
 void bsp_serial_init( void )
 {
     Driver_USART0.Initialize( NULL );
+    Driver_USART0.PowerControl( ARM_POWER_FULL );
     Driver_USART0.Control( ARM_USART_MODE_ASYNCHRONOUS, DEFAULT_UART_BAUDRATE );
+    Driver_USART0.Control( ARM_USART_CONTROL_TX, 1 );
+    Driver_USART0.Control( ARM_USART_CONTROL_RX, 1 );
 
     if( xLoggingMutex == NULL )
     {
@@ -55,6 +58,10 @@ void bsp_serial_init( void )
 void bsp_serial_print( char * str )
 {
     ( void ) Driver_USART0.Send( str, strlen( str ) );
+
+    while( Driver_USART0.GetTxCount() != strlen( str ) )
+    {
+    }
 }
 
 #if defined( __ARMCOMPILER_VERSION )
@@ -202,6 +209,10 @@ static void prvWriteChars( int fd,
     }
 
     bool allCharsWritten = ( bool ) ( Driver_USART0.Send( str, len ) == ARM_DRIVER_OK );
+
+    while( Driver_USART0.GetTxCount() != len )
+    {
+    }
 
     ( void ) xSemaphoreGive( xLoggingMutex );
 

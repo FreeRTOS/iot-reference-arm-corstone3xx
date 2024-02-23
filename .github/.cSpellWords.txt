@@ -16,6 +16,7 @@ cborpretty
 cffi
 cmac
 CMAC
+CMSDK
 cmsis
 CMSIS
 CMSIS's
@@ -55,6 +56,7 @@ fftwrap
 fsanitize
 FVPs
 gemmlowp
+GPIO
 havege
 hkdf
 HKDF
@@ -110,6 +112,7 @@ otapalconfig
 OTARSA
 PAKE
 PCKS
+PERIPH
 pkeyutl
 pkparse
 pkwrite
@@ -117,12 +120,14 @@ ppuc
 prepoccessor
 pyelftools
 pyproject
+QSPI
 Retarget
 Rfbo
 RIHN
 RLATENCY
 RSAES
 RSASSA
+SBCON
 SECP
 speex
 Speex
@@ -131,7 +136,9 @@ speexdsp
 srecord
 srtp
 SRTP
+SSRAM
 suppr
+SYSWDOG
 tinycbor
 tinycbor's
 TINYCBOR

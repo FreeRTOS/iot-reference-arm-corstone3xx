@@ -143,6 +143,12 @@ target_sources(toolchain-override
         $<$<VERSION_GREATER_EQUAL:${ARM_GNU_TOOLCHAIN_VERSION},11.3.1>:${CMAKE_CURRENT_LIST_DIR}/common/syscalls_stub.c>
 )
 
+target_include_directories(arm-corstone-platform-bsp
+    PUBLIC
+        $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone300>:${CMAKE_CURRENT_LIST_DIR}/corstone300/include>
+        $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone310>:${CMAKE_CURRENT_LIST_DIR}/corstone310/include>
+)
+
 # BSP serial library
 
 add_library(fri-bsp STATIC)
@@ -155,8 +161,6 @@ target_sources(fri-bsp
 
 target_include_directories(fri-bsp
     PUBLIC
-        $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone300>:${CMAKE_CURRENT_LIST_DIR}/corstone300/include>
-        $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone310>:${CMAKE_CURRENT_LIST_DIR}/corstone310/include>
         common
 )
 
