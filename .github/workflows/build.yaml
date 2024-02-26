@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Arm Limited and/or its affiliates
+# Copyright (c) 2023-2024 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -20,6 +20,14 @@ on:
 jobs:
   ubuntu:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        application: [keyword-detection, speech-recognition]
+        audio: [ROM, VSI]
+        inference: [ETHOS, SOFTWARE]
+        exclude:
+          - application: speech-recognition
+            inference: SOFTWARE
     steps:
       - name: Checkout project
         uses: actions/checkout@v3
@@ -29,6 +37,7 @@ jobs:
       - name: Install python 3
         uses: actions/setup-python@v3
         with:
+          python-version: '3.10'
           architecture:   x64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -37,7 +46,7 @@ jobs:
         run: |
           pip install cmake ninja imgtool cffi intelhex cbor2 cbor jinja2 PyYaml pyelftools
           sudo apt-get -y update
-          sudo apt-get -y install srecord
+          sudo apt-get -y install srecord libsndfile1-dev
       - name: Install GNU Arm toolchain
         shell: bash
         run: |
@@ -56,22 +65,27 @@ jobs:
           ./tools/ci/generate_credentials.sh -f -p applications/aws_iot_example/configs/aws_configs
           git config --global user.email "ci@example.com"
           git config --global user.name "ci"
-      - name: Build the project
+      - name: Build ${{ matrix.application }} application
         shell: bash
         run: |
           export PATH=$HOME/arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi/bin:$PATH
-          ./tools/scripts/build.sh aws-iot-example --toolchain GNU --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
+          ./tools/scripts/build.sh ${{ matrix.application }} \
+          --inference ${{ matrix.inference }} \
+          --audio ${{ matrix.audio }} \
+          --toolchain GNU \
+          --certificate_path $PWD/certificate.pem  \
+          --private_key_path $PWD/private_key.pem
       - name: Copy artifacts
         shell: bash
         run: |
-          tar -czf gnu_build.tar.gz \
-          build/aws-iot-example_merged.elf \
-          build/aws-iot-example-update_signed.bin \
+          tar -czf ${{ matrix.application }}_gnu_build.tar.gz \
+          build/${{ matrix.application }}_merged.elf \
+          build/${{ matrix.application }}-update_signed.bin \
           build/update-signature.txt
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: FRI-build-logs
           path: |
-            ${{ github.workspace }}/gnu_build.tar.gz
+            ${{ github.workspace }}/${{ matrix.application }}_gnu_build.tar.gz
           retention-days: 5
