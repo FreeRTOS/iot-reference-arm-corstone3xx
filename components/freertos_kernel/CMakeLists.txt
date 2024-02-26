@@ -8,7 +8,7 @@ set(freertos_kernel_SOURCE_DIR
     "Path to FreeRTOS-Kernel source code"
 )
 
-set(FREERTOS_HEAP "4" CACHE STRING "" FORCE)
+set(FREERTOS_HEAP "${CMAKE_CURRENT_LIST_DIR}/integration/src/heap_management.c" CACHE STRING "" FORCE)
 
 if(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone300")
     set(FREERTOS_PORT GCC_ARM_CM55_TFM)

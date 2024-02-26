@@ -60,7 +60,7 @@ __RAM_SIZE = (ISRAM1_SIZE - PROVISIONING_SIZE);
   </h>
   -----------------------------------------------------------------------------*/
 __STACK_SIZE = 0x00001000;
-__HEAP_SIZE  = 0x000B0000;
+__HEAP_SIZE  = 0x000C0000;
 
 /*
  *-------------------- <<< end of configuration section >>> -------------------

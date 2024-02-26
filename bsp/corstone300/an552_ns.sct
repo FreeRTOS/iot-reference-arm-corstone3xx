@@ -17,7 +17,7 @@ LR_CODE (0x28000000 + ((((0) + (0x40000)) + (0x400)))) {
 
     ARM_LIB_STACK +0 ALIGN 32 EMPTY (0x0001000) {
     }
-    ARM_LIB_HEAP +0 ALIGN 8 EMPTY (0x00b0000) {
+    ARM_LIB_HEAP +0 ALIGN 8 EMPTY (0x00C0000) {
     }
 
     ;-----------------------------------------------------
