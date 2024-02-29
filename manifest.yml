@@ -12,7 +12,7 @@ dependencies:
       path: "components/freertos_kernel/library"
   - name: "arm-corstone-platform-bsp"
     license: "Apache-2.0"
-    version: "2909da50e2cde79e0a0e482a1554804baca16017"
+    version: "e4a99aed488057bd15315b88e1ee9d8a63df767f"
     repository:
       type: "git"
       url: "https://git.gitlab.arm.com/iot/open-iot-sdk/arm-corstone-platform-bsp.git"
