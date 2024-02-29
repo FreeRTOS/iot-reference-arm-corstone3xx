@@ -35,7 +35,10 @@ __ROM_SIZE = (FLASH_NS_PARTITION_SIZE - BL2_HEADER_SIZE - BL2_TRAILER_SIZE);
  -----------------------------------------------------------------------------*/
 PROVISIONING_SIZE = 0x1000;
 __RAM_BASE = 0x21000000;
-__RAM_SIZE = (0x00200000 - PROVISIONING_SIZE);
+__RAM_SIZE = 0x00200000;
+__RAM_S_SIZE = 0x20000;
+__RAM_NS_BASE = __RAM_BASE + __RAM_S_SIZE;
+__RAM_NS_SIZE = (__RAM_SIZE - __RAM_S_SIZE - PROVISIONING_SIZE);
 
 /*--------------------- Stack / Heap Configuration ----------------------------
   <h> Stack / Heap Configuration
@@ -53,7 +56,7 @@ __HEAP_SIZE  = 0x000C0000;
 MEMORY
 {
   FLASH (rx)  : ORIGIN = __ROM_BASE, LENGTH = __ROM_SIZE
-  RAM   (rwx) : ORIGIN = __RAM_BASE, LENGTH = __RAM_SIZE
+  RAM   (rwx) : ORIGIN = __RAM_NS_BASE, LENGTH = __RAM_NS_SIZE
   DDR   (rwx) : ORIGIN = 0x60000000, LENGTH = 0x10000000
 }
 

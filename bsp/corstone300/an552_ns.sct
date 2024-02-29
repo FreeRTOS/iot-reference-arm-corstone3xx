@@ -1,4 +1,4 @@
-/* Copyright 2023 Arm Limited and/or its affiliates
+/* Copyright 2023-2024, Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -10,8 +10,8 @@ LR_CODE (0x28000000 + ((((0) + (0x40000)) + (0x400)))) {
         * (+RO)
     }
 
-    /* The last 0x1000 bytes are reserved for the provisioning bundle */
-    ER_DATA (0x21000000) (0x00200000 - 0x1000) {
+    /* Where 0x20000 is NS_RAM_SIZE and 0x1000 is the provisioning size */
+    ER_DATA (0x21000000 + 0x20000) (0x00200000 - 0x20000 - 0x1000) {
         * (+ZI +RW)
     }
 
