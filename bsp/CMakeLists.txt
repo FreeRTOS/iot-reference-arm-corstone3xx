@@ -119,6 +119,10 @@ elseif(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone315")
     list(APPEND TFM_CMAKE_APP_ARGS
         -DTFM_BL1_LOGGING=ON
     )
+
+    set(ISP_MVE_FP ON CACHE BOOL "MVE FP is used by ISP driver" FORCE)
+
+    add_subdirectory(isp_mali-c55)
 else()
     message(FATAL_ERROR "Invalid ARM_CORSTONE_BSP_TARGET_PLATFORM (${ARM_CORSTONE_BSP_TARGET_PLATFORM}) set. Supported are corstone300/corstone310")
 endif()

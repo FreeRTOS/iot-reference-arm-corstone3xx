@@ -157,3 +157,10 @@ dependencies:
       type: "git"
       url: "https://gitlab.xiph.org/xiph/speexdsp.git"
       path: "components/ai/speexdsp/library"
+  - name: "isp_mali-c55"
+    license: "BSD-3-Clause"
+    version: "r0p0_1.0"
+    repository:
+      type: "git"
+      url: "https://git.gitlab.arm.com/iot/m-class/drivers/isp_mali-c55.git"
+      path: "bsp/isp_mali-c55/library"
