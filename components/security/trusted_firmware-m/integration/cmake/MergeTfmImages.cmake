@@ -1,4 +1,4 @@
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024, Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -15,35 +15,62 @@ ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
 # This function is making use of CMake optional arguments feature, the reason why this feature
 # is used is that not every application will need to pass the non-secure provisioning data load address
 # and the non-secure provisioning data path to this function.
-# ARGV5 is mapped to non-secure provisioning data load address.
-# ARGV6 is mapped to non-secure provisioning data path.
-function(iot_reference_arm_corstone3xx_tf_m_merge_images target bl2_address tfm_s_address ns_address s_prov_bundle_address)
-    if(DEFINED ARGV5)
-        set(ns_provisioning_data_param ${ARGV6} -Binary -offset ${ARGV5})
+# ARGV1 is mapped to non-secure provisioning data load address.
+# ARGV2 is mapped to non-secure provisioning data path.
+#target bl2_address tfm_s_address ns_address s_prov_bundle_address
+function(iot_reference_arm_corstone3xx_tf_m_merge_images target)
+    if(DEFINED ARGV1 AND DEFINED ARGV2)
+        set(ns_provisioning_data_param ${ARGV2} -Binary -offset ${ARGV1})
     else()
         set(ns_provisioning_data_param "")
     endif()
     find_program(srec_cat NAMES srec_cat REQUIRED)
     find_program(objcopy NAMES arm-none-eabi-objcopy objcopy REQUIRED)
-    add_custom_command(
-        TARGET
-            ${target}
-        POST_BUILD
-        DEPENDS
-            $<TARGET_FILE_DIR:${target}>/${target}_signed.bin
-        COMMAND
-            ${srec_cat} ${BINARY_DIR}/api_ns/bin/bl2.bin -Binary -offset ${bl2_address}
-                ${BINARY_DIR}/api_ns/bin/tfm_s_signed.bin -Binary -offset ${tfm_s_address}
-                $<TARGET_FILE_DIR:${target}>/${target}_signed.bin -Binary -offset ${ns_address}
-                ${ns_provisioning_data_param}
-                ${BINARY_DIR}/api_ns/bin/encrypted_provisioning_bundle.bin -Binary -offset ${s_prov_bundle_address}
-                -o $<TARGET_FILE_DIR:${target}>/${target}_merged.hex
-        COMMAND
-            ${objcopy} -I ihex -O elf32-little
-                $<TARGET_FILE_DIR:${target}>/${target}_merged.hex
-                $<TARGET_FILE_DIR:${target}>/${target}_merged.elf
-        COMMAND
-            ${CMAKE_COMMAND} -E echo "-- merged: $<TARGET_FILE_DIR:${target}>/${target}_merged.elf"
-        VERBATIM
-    )
+    if(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone300" OR ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone310")
+        add_custom_command(
+            TARGET
+                ${target}
+            POST_BUILD
+            DEPENDS
+                $<TARGET_FILE_DIR:${target}>/${target}_signed.bin
+            COMMAND
+                ${srec_cat} ${BINARY_DIR}/api_ns/bin/bl2.bin -Binary -offset ${BL2_IMAGE_LOAD_ADDRESS}
+                    ${BINARY_DIR}/api_ns/bin/tfm_s_signed.bin -Binary -offset ${S_IMAGE_LOAD_ADDRESS}
+                    $<TARGET_FILE_DIR:${target}>/${target}_signed.bin -Binary -offset ${NS_IMAGE_LOAD_ADDRESS}
+                    ${ns_provisioning_data_param}
+                    ${BINARY_DIR}/api_ns/bin/encrypted_provisioning_bundle.bin -Binary -offset ${S_PROVISIONING_BUNDLE_LOAD_ADDRESS}
+                    -o $<TARGET_FILE_DIR:${target}>/${target}_merged.hex
+            COMMAND
+                ${objcopy} -I ihex -O elf32-little
+                    $<TARGET_FILE_DIR:${target}>/${target}_merged.hex
+                    $<TARGET_FILE_DIR:${target}>/${target}_merged.elf
+            COMMAND
+                ${CMAKE_COMMAND} -E echo "-- merged: $<TARGET_FILE_DIR:${target}>/${target}_merged.elf"
+            VERBATIM
+        )
+    else()
+        add_custom_command(
+            TARGET
+                ${target}
+            POST_BUILD
+            DEPENDS
+                $<TARGET_FILE_DIR:${target}>/${target}_signed.bin
+            COMMAND
+                ${srec_cat} ${BINARY_DIR}/api_ns/bin/bl1_1.bin -Binary -offset ${BL1_IMAGE_LOAD_ADDRESS}
+                    ${BINARY_DIR}/api_ns/bin/cm_provisioning_bundle.bin -Binary -offset ${S_CM_PROVISIONING_BUNDLE_LOAD_ADDRESS}
+                    ${BINARY_DIR}/api_ns/bin/dm_provisioning_bundle.bin -Binary -offset ${S_DM_PROVISIONING_BUNDLE_LOAD_ADDRESS}
+                    ${BINARY_DIR}/api_ns/bin/bl2_signed.bin -Binary -offset ${BL2_IMAGE_LOAD_ADDRESS}
+                    ${BINARY_DIR}/api_ns/bin/tfm_s_signed.bin -Binary -offset ${S_IMAGE_LOAD_ADDRESS}
+                    $<TARGET_FILE_DIR:${target}>/${target}_signed.bin -Binary -offset ${NS_IMAGE_LOAD_ADDRESS}
+                    ${ns_provisioning_data_param}
+                    -o $<TARGET_FILE_DIR:${target}>/${target}_merged.hex
+            COMMAND
+                ${objcopy} -I ihex -O elf32-little
+                    $<TARGET_FILE_DIR:${target}>/${target}_merged.hex
+                    $<TARGET_FILE_DIR:${target}>/${target}_merged.elf
+            COMMAND
+                ${CMAKE_COMMAND} -E echo "-- merged: $<TARGET_FILE_DIR:${target}>/${target}_merged.elf"
+            VERBATIM
+        )
+    endif()
 endfunction()
