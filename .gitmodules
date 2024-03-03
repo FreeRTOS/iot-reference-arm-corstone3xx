@@ -64,3 +64,6 @@
 [submodule "components/aws_iot/coresntp/library"]
 	path = components/aws_iot/coresntp/library
 	url = https://github.com/FreeRTOS/coreSNTP.git
+[submodule "isp_mali-c55"]
+	path = bsp/isp_mali-c55/library
+	url = https://git.gitlab.arm.com/iot/m-class/drivers/isp_mali-c55.git
