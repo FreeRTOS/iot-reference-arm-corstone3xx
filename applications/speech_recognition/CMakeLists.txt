@@ -192,10 +192,6 @@ iot_reference_arm_corstone3xx_tf_m_sign_image(
 # scripts.
 iot_reference_arm_corstone3xx_tf_m_merge_images(
     speech-recognition
-    ${BL2_IMAGE_LOAD_ADDRESS}
-    ${S_IMAGE_LOAD_ADDRESS}
-    ${NS_IMAGE_LOAD_ADDRESS}
-    ${S_PROVISIONING_BUNDLE_LOAD_ADDRESS}
     ${NS_PROVISIONING_BUNDLE_LOAD_ADDRESS}
     ${CMAKE_BINARY_DIR}/helpers/provisioning/provisioning_data.bin
 )
