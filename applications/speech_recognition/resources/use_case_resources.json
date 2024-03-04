@@ -1,0 +1,22 @@
+[
+    {
+        "name": "asr",
+        "url_prefix": [
+          "https://github.com/ARM-software/ML-zoo/raw/eb2170aac1317f00b128ab82bdb159cfcca36ea6/models/speech_recognition/tiny_wav2letter/tflite_pruned_int8/"
+        ],
+        "resources": [
+          {
+            "name": "tiny_wav2letter_pruned_int8.tflite",
+            "url": "{url_prefix:0}tiny_wav2letter_pruned_int8.tflite"
+          },
+          {
+            "name": "ifm0.npy",
+            "url": "{url_prefix:0}testing_input/input_1_int8/0.npy"
+          },
+          {
+            "name": "ofm0.npy",
+            "url": "{url_prefix:0}testing_output/Identity_int8/0.npy"
+          }
+        ]
+    }
+]

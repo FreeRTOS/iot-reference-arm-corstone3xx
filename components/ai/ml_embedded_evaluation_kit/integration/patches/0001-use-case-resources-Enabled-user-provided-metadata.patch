@@ -1,0 +1,101 @@
+From f3f30b50769f5c3cf3c32f1b715acefd6ba0b8bc Mon Sep 17 00:00:00 2001
+From: Hugues Kamba-Mpiana <hugues.kambampiana@arm.com>
+Date: Mon, 4 Mar 2024 16:01:55 +0000
+Subject: [PATCH] use-case-resources: Enabled user provided metadata
+
+An optional argument has been added to the `set_up_default_resources.py`
+Python script to allow passing of a user defined use case resources
+metadata JSON file.
+This shortens the build time by only downloading the resources the
+end user is interested in. It also shortens the optimization part
+which takes additional minutes as it is done for all models and for
+all the specified NPU configurations.
+
+
+Signed-off-by: Hugues Kamba-Mpiana <hugues.kambampiana@arm.com>
+---
+ set_up_default_resources.py | 23 ++++++++++++++++++-----
+ 1 file changed, 18 insertions(+), 5 deletions(-)
+
+diff --git a/set_up_default_resources.py b/set_up_default_resources.py
+index f5cd0ac..5bbb5e9 100755
+--- a/set_up_default_resources.py
++++ b/set_up_default_resources.py
+@@ -96,21 +96,24 @@ class UseCase:
+ MPS3_MAX_SRAM_SZ = 2 * 1024 * 1024  # 2 MiB (2 banks of 1 MiB each)
+ 
+ 
+-def load_use_case_resources(current_file_dir: Path) -> typing.List[UseCase]:
++def load_use_case_resources(
++        current_file_dir: Path, use_case_resources_file: Path
++) -> typing.List[UseCase]:
+     """
+     Load use case metadata resources
+ 
+     Parameters
+     ----------
+     current_file_dir:   Directory of the current script
++    use_case_resources_file: Path to a JSON file containing the use case
++                             metadata resources.
+ 
+     Returns
+     -------
+     The use cases resources object parsed to a dict
+     """
+ 
+-    resources_path = current_file_dir / "scripts" / "py" / "use_case_resources.json"
+-    with open(resources_path, encoding="utf8") as f:
++    with open(use_case_resources_file, encoding="utf8") as f:
+         use_cases = json.load(f)
+         return [
+             UseCase(
+@@ -579,7 +582,8 @@ def set_up_resources(
+         additional_npu_config_names: tuple = (),
+         arena_cache_size: int = 0,
+         check_clean_folder: bool = False,
+-        additional_requirements_file: Path = ""
++        additional_requirements_file: Path = "",
++        use_case_resources_file: Path = "",
+ ) -> Path:
+     """
+     Helpers function that retrieve the output from a command.
+@@ -597,6 +601,8 @@ def set_up_resources(
+     additional_requirements_file (str): Path to a requirements.txt file if
+                                         additional packages need to be
+                                         installed.
++    use_case_resources_file (str): Path to a JSON file containing the use case
++                                   metadata resources.
+ 
+     Returns
+     -------
+@@ -619,7 +625,7 @@ def set_up_resources(
+         )
+     logging.info("Using Python version: %s", sys.version_info)
+ 
+-    json_uc_res = load_use_case_resources(current_file_dir)
++    json_uc_res = load_use_case_resources(current_file_dir, use_case_resources_file)
+     setup_script_hash = get_md5sum_for_file(Path(__file__).resolve())
+ 
+     metadata_dict, setup_script_hash_verified = initialize_resources_directory(
+@@ -706,6 +712,12 @@ if __name__ == "__main__":
+         type=str,
+         default=Path(__file__).parent.resolve() / 'scripts' / 'py' / 'requirements.txt'
+     )
++    parser.add_argument(
++         "--use-case-resources-file",
++        help="Path to the use case resources file",
++        type=str,
++        default=Path(__file__).parent.resolve() / 'scripts' / 'py' / 'use_case_resources.json'
++    )
+ 
+     args = parser.parse_args()
+ 
+@@ -724,4 +736,5 @@ if __name__ == "__main__":
+         args.arena_cache_size,
+         args.clean,
+         args.requirements_file,
++        args.use_case_resources_file,
+     )
+-- 
+2.34.1
+

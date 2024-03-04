@@ -21,6 +21,7 @@ set(ETHOS_U_NPU_DRIVER_SRC_PATH "${ml_embedded_evaluation_kit_SOURCE_DIR}/depend
 # Extra arguments for setting up default resources (for vela optimizer)
 set(ML_RESOURCES_SET_UP_ARGS
     "--additional-ethos-u-config-name=${ETHOSU_TARGET_NPU_CONFIG}"
+    "--use-case-resources-file=${ML_USE_CASE_RESOURCES_FILE}"
 )
 
 # Tensorflow settings
@@ -35,7 +36,11 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tensorflow-microlite)
 set(RESOURCES_OUTFILE "${ml_embedded_evaluation_kit_SOURCE_DIR}/resources_downloaded/resources_downloaded_metadata.json")
 if(NOT EXISTS "${RESOURCES_OUTFILE}")
     execute_process(
-        COMMAND ${CMAKE_COMMAND} -E env CC=gcc ${PYTHON} ${ml_embedded_evaluation_kit_SOURCE_DIR}/set_up_default_resources.py ${ML_RESOURCES_SET_UP_ARGS}
+        COMMAND
+            ${CMAKE_COMMAND}
+                -E env CC=gcc
+                ${PYTHON} ${ml_embedded_evaluation_kit_SOURCE_DIR}/set_up_default_resources.py
+                    ${ML_RESOURCES_SET_UP_ARGS}
         RESULT_VARIABLE return_code
     )
     if (NOT return_code EQUAL "0")

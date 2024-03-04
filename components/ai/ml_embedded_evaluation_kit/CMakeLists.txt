@@ -12,7 +12,7 @@ include(ApplyPatches)
 
 set(PATCH_FILES_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/integration/patches")
 set(PATCH_FILES
-    "${PATCH_FILES_DIRECTORY}/0001-resources-Replace-model-wav2letter-with-tiny_wav2let.patch"
+    "${PATCH_FILES_DIRECTORY}/0001-use-case-resources-Enabled-user-provided-metadata.patch"
     "${PATCH_FILES_DIRECTORY}/0002-Use-CMSIS_device_header-instead-of-RTE_Components.h.patch"
     "${PATCH_FILES_DIRECTORY}/0003-Make-ETHOSU_ARCH-configurable-in-TensorFlow-CMake.patch"
     "${PATCH_FILES_DIRECTORY}/0004-Move-activation_buf_dram-to-.bss.NoInit-region.patch"
