@@ -2,15 +2,15 @@
 
 ## Setting up Arm ecosystem FVPs
 
-* Download the Corstone-310 FVP from [here](https://developer.arm.com/downloads/-/arm-ecosystem-fvps)
-* Run the following commands to install the Corstone-310 FVP and add FVP path
+* Download the Corstone-315 FVP from [here](https://developer.arm.com/downloads/-/arm-ecosystem-fvps)
+* Run the following commands to install the Corstone-315 FVP and add FVP path
   to `PATH` variable.
     ```bash
-    mkdir FVP_Corstone_SSE-310_11.24_13
-    tar -xzf <download location>/FVP_Corstone_SSE-310_11.24_13_Linux64.tgz -C FVP_Corstone_SSE-310_11.24_13
-    cd FVP_Corstone_SSE-310_11.24_13
-    ./FVP_Corstone_SSE-310.sh
-    echo PATH=\"<FVP installation path>/FVP_Corstone_SSE-310_11.24_13/models/Linux64_GCC-9.3:\$PATH\" >> ~/.bashrc
+    mkdir FVP_Corstone_SSE-315_11.24_22
+    tar -xzf <download location>/FVP_Corstone_SSE-315_11.24_22_Linux64.tgz -C FVP_Corstone_SSE-315_11.24_22
+    cd FVP_Corstone_SSE-315_11.24_22
+    ./FVP_Corstone_SSE-315.sh
+    echo PATH=\"<FVP installation path>/FVP_Corstone_SSE-315_11.24_22/models/Linux64_GCC-9.3:\$PATH\" >> ~/.bashrc
     source ~/.bashrc
     ```
 

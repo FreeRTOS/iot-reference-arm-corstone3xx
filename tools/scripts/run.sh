@@ -8,10 +8,11 @@ HERE="$(dirname "$0")"
 ROOT="$(realpath $HERE/../..)"
 EXAMPLE=""
 BUILD_PATH="build"
-TARGET="corstone310"
+TARGET="corstone315"
 AUDIO_SOURCE="ROM"
-NPU_ID=""
-FVP_BIN=""
+NPU_ID="U65"
+FVP_BIN="FVP_Corstone_SSE-315"
+FRAMES=""
 
 set -e
 
