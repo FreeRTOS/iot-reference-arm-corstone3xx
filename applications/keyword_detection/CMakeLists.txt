@@ -32,6 +32,7 @@ else()
 endif()
 set(ML_USE_CASE "kws")
 set(ML_MODEL "GenerateKWSModel")
+set(ML_USE_CASE_RESOURCES_FILE "${CMAKE_CURRENT_LIST_DIR}/resources/use_case_resources.json")
 set(TFM_PLATFORM_UPGRADE_STRATEGY "SWAP_USING_SCRATCH")
 set(TFM_PLATFORM_CONFIRM_IMAGE ON)
 

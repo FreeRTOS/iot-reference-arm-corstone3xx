@@ -27,6 +27,9 @@ necessary ML libraries and running Vela compiler on the default models for the s
 In order for your application to access the API headers for the libraries, you need to link to the two resulting static
 libraries: `${ML_USE_CASE}_api`, `${ML_USE_CASE}_model`.
 These libraries provide the necessary include paths to the respective APIs from the ML Embedded Evaluation Kit.
+In addition, you need to provide a JSON file containing the metadata for the model to use.
+This is provided to the build system by setting the path to the JSON file with the
+`ML_USE_CASE_RESOURCES_FILE` CMake variable.
 
 ## Documentation
 
