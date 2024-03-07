@@ -1,0 +1,14 @@
+[
+    {
+        "name": "object_detection",
+        "url_prefix": [
+            "https://github.com/emza-vs/ModelZoo/blob/v1.0/object_detection/"
+        ],
+        "resources": [
+            {
+                "name": "yolo-fastest_192_face_v4.tflite",
+                "url": "{url_prefix:0}yolo-fastest_192_face_v4.tflite?raw=true"
+            }
+        ]
+    }
+]

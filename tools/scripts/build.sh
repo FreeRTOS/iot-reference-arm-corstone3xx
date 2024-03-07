@@ -93,7 +93,7 @@ Options:
     --certificate_path          Path to the AWS device certificate
     --private_key_path          Path to the AWS device private key
 Examples:
-    blinky, freertos-iot-libraries-tests, keyword-detection, speech-recognition
+    blinky, freertos-iot-libraries-tests, keyword-detection, object-detection, speech-recognition
 EOF
 }
 
@@ -188,8 +188,12 @@ case "$1" in
         EXAMPLE="$1"
         PATH_TO_SOURCE="$ROOT/applications/speech_recognition"
         ;;
+    object-detection)
+        EXAMPLE="$1"
+        PATH_TO_SOURCE="$ROOT/applications/object_detection"
+        ;;
     *)
-        echo "Missing example <blinky,freertos-iot-libraries-tests,keyword-detection,speech-recognition>"
+        echo "Missing example <blinky,freertos-iot-libraries-tests,keyword-detection,object-detection,speech-recognition>"
         show_usage
         exit 2
         ;;
@@ -280,6 +284,11 @@ fi
 if [ "$EXAMPLE" == "speech-recognition" ] && [ "$ML_INFERENCE_ENGINE" == "SOFTWARE" ]; then
     echo "Error: Invalid combination of example and ML Inference engine. speech-recognition only support ETHOS ML Inference" >&2
     exit 1
+fi
+
+if [ "$EXAMPLE" == "object-detection" ] && [ "$TARGET" != "corstone315" ]; then
+    echo "Error: Invalid combination of example and target. object-detection only supports corstone315" >&2
+    exit 2
 fi
 
 build_with_cmake

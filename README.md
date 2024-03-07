@@ -24,6 +24,9 @@ CPU and Ethos NPU, alongside a range of other components in a scalable and
 flexible reference package. This enables designers to build secure,
 AI-capable SoCs faster.
 
+* [Corstone-315](https://developer.arm.com/Processors/Corstone-315)
+  * Arm Cortex-M85 CPU, Ethos-U65 NPU and Mali-C55 ISP
+  * Supported versions: 11.24.13 and above
 * [Corstone-310](https://developer.arm.com/Processors/Corstone-310)
   * Arm Cortex-M85 CPU and Ethos-U55 NPU
   * Supported versions: 11.24.13 and above
@@ -65,6 +68,8 @@ This reference integration contains following two examples:
     * Demonstrates detecting keywords from an audio source using Machine Learning.
 * [Speech Recognition](docs/speech_recognition.md)
     * Demonstrates detecting sentences from an audio source using Machine Learning.
+* [Object Detection](docs/object_detection.md)
+    * Demonstrates detection of faces from image source using Machine Learning.
 
 The Keyword-Detection and Speech-Recognition applications demonstrate [secure connectivity](#secure-tls-connection)
 to AWS IoT core using [Mbed TLS](#mbed-tls), [PKCS#11 PSA Shim](#pkcs11-psa-shim) and
@@ -151,6 +156,11 @@ API.
 This implementation maps the AWS OTA PAL APIs to the PSA Firmware Update and
 PSA Cryptography APIs. The writing, verification and activation of the update
 image are protected by the PSA secure services.
+
+### Mali-C55 Versatile Image Signal Processor for Computer Vision and Smart Display Systems
+
+Implementation of [Arm® Mali™-C55 bare-metal driver](https://gitlab.arm.com/iot/m-class/drivers/isp_mali-c55),
+that demonstrates the usage of the Mali-C55 ISP with the Corstone M85 processor.
 
 ## Contributing
 
