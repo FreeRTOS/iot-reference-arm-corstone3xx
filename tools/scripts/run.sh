@@ -28,14 +28,15 @@ Options:
     -t,--target Target to run
     -s, --audio Audio source (ROM, VSI)
     -n, --npu-id  NPU ID to use (U55, U65)
+    --frames  Path to camera frames for the ISP to stream
 
 Examples:
-    blinky, keyword-detection, speech-recognition
+    blinky, keyword-detection, speech-recognition, object-detection
 EOF
 }
 
 SHORT=t:,n:,s:,h,p:
-LONG=target:,npu-id:,audio:,help,path:
+LONG=target:,npu-id:,audio:,help,path:,frames:
 OPTS=$(getopt -n run --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -61,6 +62,10 @@ do
       ;;
     -s | --audio )
       AUDIO_SOURCE=$2
+      shift 2
+      ;;
+    --frames )
+      FRAMES=$2
       shift 2
       ;;
     --)
@@ -121,8 +126,12 @@ case "$1" in
         EXAMPLE="$1"
         MERGED_IMAGE_PATH="$BUILD_PATH/speech-recognition_merged.elf"
         ;;
+    object-detection)
+        EXAMPLE="$1"
+        MERGED_IMAGE_PATH="$BUILD_PATH/object-detection_merged.elf"
+        ;;
     *)
-        echo "Usage: $0 <blinky,keyword-detection,speech-recognition>" >&2
+        echo "Usage: $0 <blinky,keyword-detection,object-detection,speech-recognition>" >&2
         exit 1
         ;;
 esac
@@ -167,9 +176,17 @@ case "$TARGET" in
       -C mps4_board.uart0.out_file="-" \
       -C mps4_board.uart0.unbuffered_output=1 \
       -C mps4_board.subsystem.ethosu.extra_args="--fast" \
+      -C mps4_board.isp_c55_capture_ds.do_capture=0 \
+      -C mps4_board.isp_c55_capture_fr.do_capture=0 \
+      -C mps4_board.isp_c55_camera.image_file=${FRAMES} \
       --stat"
       ;;
 esac
+
+if [ "$EXAMPLE" == "object-detection" ] && [ "$TARGET" != "corstone315" ]; then
+    echo "Error: Invalid combination of example and target. object-detection only supports corstone315" >&2
+    exit 2
+fi
 
 # Start the FVP
 $FVP_BIN -a $MERGED_IMAGE_PATH $OPTIONS $AVH_AUDIO_OPTIONS
