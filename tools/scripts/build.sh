@@ -83,7 +83,7 @@ Options:
     -h,--help                   Show this help
     -p,--path                   Path to the build directory
     -c,--clean                  Clean build
-    -t,--target                 Build target (corstone300 or corstone310)
+    -t,--target                 Build target (corstone300 | corstone310 | corstone315)
     -i,--inference              ML Inference engine selection (ETHOS | SOFTWARE)
     -s,--audio                  Audio source (ROM | VSI)
     -n | --npu-id               Ethos NPU model identifier (U55 | U65)
@@ -241,11 +241,11 @@ case "$TARGET" in
     corstone300 )
       TARGET_PROCESSOR="cortex-m55"
       ;;
-    corstone310 )
+    corstone310 | corstone315 )
       TARGET_PROCESSOR="cortex-m85"
       ;;
     *)
-      echo "Invalid target <corstone300 | corstone310>"
+      echo "Invalid target <corstone300 | corstone310 | corstone315>"
       show_usage
       exit 2
       ;;

@@ -97,8 +97,11 @@ case "$TARGET" in
         exit 2
       fi
       ;;
+    corstone315 )
+      FVP_BIN="FVP_Corstone_SSE-315"
+      ;;
     *)
-      echo "Invalid target <corstone300|corstone310>"
+      echo "Invalid target <corstone300 | corstone310 | corstone315>"
       show_usage
       exit 2
       ;;
@@ -141,17 +144,31 @@ case "$AUDIO_SOURCE" in
       ;;
 esac
 
-
-OPTIONS="-C mps3_board.visualisation.disable-visualisation=1 \
--C core_clk.mul=200000000 \
--C mps3_board.smsc_91c111.enabled=1 \
--C mps3_board.hostbridge.userNetworking=1 \
--C mps3_board.telnetterminal0.start_telnet=0 \
--C mps3_board.uart0.out_file="-" \
--C mps3_board.uart0.unbuffered_output=1 \
--C ethosu.extra_args="--fast" \
---stat \
--C mps3_board.DISABLE_GATING=1"
+case "$TARGET" in
+    corstone300 | corstone310 )
+      OPTIONS="-C mps3_board.visualisation.disable-visualisation=1 \
+      -C core_clk.mul=200000000 \
+      -C mps3_board.smsc_91c111.enabled=1 \
+      -C mps3_board.hostbridge.userNetworking=1 \
+      -C mps3_board.telnetterminal0.start_telnet=0 \
+      -C mps3_board.uart0.out_file="-" \
+      -C mps3_board.uart0.unbuffered_output=1 \
+      -C ethosu.extra_args="--fast" \
+      --stat \
+      -C mps3_board.DISABLE_GATING=1"
+      ;;
+    corstone315 )
+      OPTIONS="-C mps4_board.visualisation.disable-visualisation=1 \
+      -C core_clk.mul=200000000 \
+      -C mps4_board.smsc_91c111.enabled=1 \
+      -C mps4_board.hostbridge.userNetworking=1 \
+      -C mps4_board.telnetterminal0.start_telnet=0 \
+      -C mps4_board.uart0.out_file="-" \
+      -C mps4_board.uart0.unbuffered_output=1 \
+      -C mps4_board.subsystem.ethosu.extra_args="--fast" \
+      --stat"
+      ;;
+esac
 
 # Start the FVP
 $FVP_BIN -a $MERGED_IMAGE_PATH $OPTIONS $AVH_AUDIO_OPTIONS
