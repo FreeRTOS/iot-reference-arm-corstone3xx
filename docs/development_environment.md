@@ -42,7 +42,7 @@ git submodule update --init --recursive
 
     ```bash
     sudo apt install python3-pip -y
-    python3 -m pip install ninja imgtool cffi intelhex cbor2 jinja2 PyYaml pyelftools click
+    python3 -m pip install ninja imgtool cffi intelhex cbor2 jinja2 PyYaml pyelftools click pyhsslms
     ```
 
     **NOTE**: The virtual environment can be deactivated when not needed anymore

@@ -92,6 +92,33 @@ elseif(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone310")
         "ethos-u65-256"
         "ethos-u65-512"
     )
+elseif(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone315")
+    set(TFM_PLATFORM_LOCAL_PATH "arm/mps4/corstone315" CACHE STRING "TFM Platform local path")
+    set(TFM_FLASH_S_PARTITION_SIZE "0x40000")
+    set(TFM_FLASH_NS_PARTITION_SIZE "0x340000")
+
+    set(BL1_IMAGE_LOAD_ADDRESS 0x11000000 CACHE STRING "Bootload stage 1 image loading address")
+    set(BL2_IMAGE_LOAD_ADDRESS 0x12031400 CACHE STRING "Bootload image loading address")
+    set(S_IMAGE_LOAD_ADDRESS 0x38000000 CACHE STRING "Secure TF-M firmware loading address")
+    set(NS_IMAGE_LOAD_ADDRESS 0x28040000 CACHE STRING "Non-secure user application loading address")
+    set(S_CM_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x12024000 CACHE STRING "Secure CM provisioning bundle loading address")
+    set(S_DM_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x1202aa00 CACHE STRING "Secure DM provisioning bundle loading address")
+    set(NS_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x213FF000 CACHE STRING "Non-Secure provisioning bundle loading address")
+
+    set(ETHOS_U_BASE_ADDR "0x40004000" CACHE STRING "Ethos-U NPU base address" FORCE)
+    set(ETHOS_U_IRQN "16" CACHE STRING "Ethos-U NPU Interrupt" FORCE)
+    set(ETHOS_U_SEC_ENABLED "0" CACHE STRING "Ethos-U NPU Security enable" FORCE)
+    set(ETHOS_U_PRIV_ENABLED "0" CACHE STRING "Ethos-U NPU Privilege enable" FORCE)
+    set(ETHOS_U_NPU_ID "U65" CACHE STRING "Arm Ethos-U NPU IP (U55 or U65)")
+    set(DEFAULT_ML_MAC_U65 "256")
+    set(VALID_ETHOSU_TARGET_NPU_CONFIGS
+        "ethos-u65-256"
+        "ethos-u65-512"
+    )
+
+    list(APPEND TFM_CMAKE_APP_ARGS
+        -DTFM_BL1_LOGGING=ON
+    )
 else()
     message(FATAL_ERROR "Invalid ARM_CORSTONE_BSP_TARGET_PLATFORM (${ARM_CORSTONE_BSP_TARGET_PLATFORM}) set. Supported are corstone300/corstone310")
 endif()
@@ -147,6 +174,7 @@ target_include_directories(arm-corstone-platform-bsp
     PUBLIC
         $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone300>:${CMAKE_CURRENT_LIST_DIR}/corstone300/include>
         $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone310>:${CMAKE_CURRENT_LIST_DIR}/corstone310/include>
+        $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone315>:${CMAKE_CURRENT_LIST_DIR}/corstone315/include>
 )
 
 # BSP serial library
