@@ -22,12 +22,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        application: [keyword-detection, speech-recognition]
+        application: [keyword-detection, speech-recognition, object-detection]
         audio: [ROM, VSI]
         inference: [ETHOS, SOFTWARE]
         exclude:
           - application: speech-recognition
             inference: SOFTWARE
+          - application: object-detection
+            audio: VSI
     steps:
       - name: Checkout project
         uses: actions/checkout@v3
@@ -44,7 +46,7 @@ jobs:
       - name: Install build dependencies
         shell: bash
         run: |
-          pip install cmake ninja imgtool cffi intelhex cbor2 cbor jinja2 PyYaml pyelftools
+          pip install cmake ninja imgtool cffi intelhex cbor2 cbor jinja2 PyYaml pyelftools pyhsslms
           sudo apt-get -y update
           sudo apt-get -y install srecord libsndfile1-dev
       - name: Install GNU Arm toolchain

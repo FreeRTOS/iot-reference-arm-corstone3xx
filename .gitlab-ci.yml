@@ -20,14 +20,20 @@ variables:
 # Those fragments contain base variables required by pipelines for applications.
 # They can be used to set matrix parameters and extended using << : .anchor syntax
 .pipeline_config_non_ml_applications: &pipeline_config_non_ml_applications
-  TARGET: [corstone310, corstone300]
+  TARGET: [corstone315, corstone310, corstone300]
   TOOLCHAIN: [ARMCLANG, GNU]
   INFERENCE: [ETHOS]
   AUDIO: [ROM]
 .pipeline_config_ml_applications: &pipeline_config_ml_applications
-  TARGET: [corstone310, corstone300]
+  TARGET: [corstone315, corstone310, corstone300]
   TOOLCHAIN: [ARMCLANG, GNU]
   AUDIO: [ROM, VSI]
+.pipeline_config_object_detection_applications: &pipeline_config_object_detection_applications
+  TARGET: [corstone315]
+  TOOLCHAIN: [ARMCLANG, GNU]
+  INFERENCE: [ETHOS, SOFTWARE]
+  AUDIO: [ROM]
+  APP: [object-detection]
 
 stages:
   - quality-check
@@ -58,10 +64,15 @@ workflow:
       if [ $TARGET == "corstone310" ];then
         FVP_BIN=FVP_Corstone_SSE-310
       fi
+    - |
+      if [ $TARGET == "corstone315" ];then
+        FVP_BIN=FVP_Corstone_SSE-315
+      fi
   parallel:
     matrix:
       - *pipeline_config_non_ml_applications
       - *pipeline_config_ml_applications
+      - *pipeline_config_object_detection_applications
   variables:
     PYTHONUNBUFFERED: 1
 
@@ -115,6 +126,8 @@ build-applications:
          << : *pipeline_config_ml_applications
          APP: [speech-recognition]
          INFERENCE: [ETHOS]
+       -
+         << : *pipeline_config_object_detection_applications
 
   artifacts:
     paths:
@@ -164,6 +177,17 @@ test-applications:
         --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
         --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log" \
         --pythonhome-path "/opt/python/3.9.18"
+      elif [[ $APP == "object-detection" ]]; then
+        pytest -s tools/tests/test_applications.py \
+        --frm-file-path "applications/${APP_UNDERSCORED}/resources/test.frm" \
+        --build-artefacts-path "build" \
+        --fvp $FVP_BIN \
+        --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
+        --merged-elf-name "${APP}_merged.elf" \
+        --signed-update-bin-name "${APP}-update_signed.bin" \
+        --timeout-seconds 1800 \
+        --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
+        --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
       else
         pytest -s tools/tests/test_applications.py \
         --build-artefacts-path "build" \
@@ -185,6 +209,8 @@ test-applications:
          << : *pipeline_config_ml_applications
          APP: [speech-recognition]
          INFERENCE: [ETHOS]
+       -
+         << : *pipeline_config_object_detection_applications
 
 integration-tests:
   stage: test
