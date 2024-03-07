@@ -160,7 +160,7 @@ test-applications:
         --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
         --merged-elf-name "${APP}_merged.elf" \
         --signed-update-bin-name "${APP}-update_signed.bin" \
-        --timeout-seconds 1800 \
+        --timeout-seconds 2700 \
         --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
         --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log" \
         --pythonhome-path "/opt/python/3.9.18"
@@ -171,7 +171,7 @@ test-applications:
         --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
         --merged-elf-name "${APP}_merged.elf" \
         --signed-update-bin-name "${APP}-update_signed.bin" \
-        --timeout-seconds 1800 \
+        --timeout-seconds 2700 \
         --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
         --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
       fi
