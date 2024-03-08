@@ -18,7 +18,7 @@ Follow the instructions described in [Prerequisites](prerequisites.md) and
 ensure that all the prerequisites are met before continuing.
 
 ## Setting up AWS connectivity
-Follow the instructions descrived in [Setting Up AWS Connectivity](./setting_up_aws_connectivity.md).
+Follow the instructions described in [Setting Up AWS Connectivity](./setting_up_aws_connectivity.md).
 
 ## Building the application
 
@@ -197,10 +197,10 @@ INFO - 	Operator 0: ethos-u
 ```
 
 ## Observing MQTT connectivity
-Follow the instructions descrived in the [Observing MQTT connectivity](./aws_iot_cloud_connection.md) section.
+Follow the instructions described in the [Observing MQTT connectivity](./aws_iot_cloud_connection.md) section.
 
 ## Firmware update with AWS
-Follow the instructions descrived in the [Firmware update with AWS](./aws_iot_cloud_connection.md) section.
+Follow the instructions described in the [Firmware update with AWS](./aws_iot_cloud_connection.md) section.
 
 ### Expected output
 
