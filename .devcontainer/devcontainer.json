@@ -1,0 +1,49 @@
+{
+    /* Copyright 2024 Arm Limited and/or its affiliates
+    * <open-source-office@arm.com>
+    * SPDX-License-Identifier: MIT
+    */
+    "name": "Arm Featured Reference Integration",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            "SHELL_CHOICE": "zsh"
+        }
+    },
+    // "workspaceFolder": "/workspace",
+    "mounts": [
+        "source=${localWorkspaceFolderBasename}-bashhistory,target=/commandhistory,type=volume"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools-extension-pack",
+                "zachflower.uncrustify",
+                "marus25.cortex-debug"
+            ],
+            "settings": {
+                "terminal.integrated.profiles.linux": {
+                    "zsh (login)": {
+                        "path": "zsh",
+                        "args": [
+                            "-l"
+                        ]
+                    },
+                    "bash (login)": {
+                        "path": "bash",
+                        "args": [
+                            "-l"
+                        ]
+                    }
+                },
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                "terminal.integrated.defaultProfile.windows": "C:\\Windows\\System32\\bash.exe"
+            }
+        }
+    },
+    "remoteUser": "ubuntu",
+    "postCreateCommand": "bash /workspaces/tmp-project-fri-devcontainer/tools/scripts/container_post_startup.sh",
+    "remoteEnv": {
+        "PATH": "${containerEnv:PATH}"
+    }
+}
