@@ -1,0 +1,7 @@
+// Copyright 2024 Arm Limited and/or its affiliates
+// <open-source-office@arm.com>
+// SPDX-License-Identifier: MIT
+
+{
+    "C_Cpp.errorSquiggles": "disabled"
+}

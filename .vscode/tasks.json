@@ -1,0 +1,150 @@
+// Copyright 2021-2024 Arm Limited and/or its affiliates
+// <open-source-office@arm.com>
+// SPDX-License-Identifier: MIT
+
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Arm Featured Reference Integration applications",
+            "type": "shell",
+            "command": "${workspaceFolder}/tools/scripts/build.sh",
+            "args": [
+                "${input:FRIApplication}",
+                "${input:FRITarget}",
+                "${input:FRICertificatPath}",
+                "${input:FRIPrivateKeyPath}",
+                "${input:FRIBuildDirectory}",
+                "-TGNU",
+                "${input:FRICleanBeforeBuild}"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "message": 5
+                }
+            }
+        },
+        {
+            "label": "Run Arm Featured Reference Integration applications",
+            "type": "shell",
+            "command": "tools/scripts/run.sh",
+            "args": [
+                "${input:FRIApplication}",
+                "${input:FRITarget}",
+                "${input:FRICameraFramesPath}",
+                "${input:FRIBuildDirectory}"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "test",
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "message": 5
+                }
+            }
+        },
+        {
+            "label": "Debug Arm Featured Reference Integration applications",
+            "type": "shell",
+            "command": "tools/scripts/run.sh",
+            "args": [
+                "${input:FRIApplication}",
+                "${input:FRITarget}",
+                "${input:FRIBuildDirectory}",
+                "${input:FRICameraFramesPath}",
+                "${input:FRIGdbDebuggerPlugin}",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "isBackground": true,
+            "group": "test",
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "message": 5
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "telnetterminal0: Listening for serial connection on port 5000",
+                    "endsPattern": "GDBServer: Listening on:0.0.0.0 port:31627"
+                }
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "type": "pickString",
+            "id": "FRIApplication",
+            "description": "Which FRI application do you want to launch?",
+            "options": [
+                "blinky",
+                "keyword-detection",
+                "speech-recognition",
+                "object-detection",
+                "freertos-iot-libraries-tests"
+            ],
+            "default": "blinky"
+        },
+        {
+            "type": "promptString",
+            "id": "FRIBuildDirectory",
+            "description": "Where would you like the build directory to be?",
+            "default": "-pbuild"
+        },
+        {
+            "type": "pickString",
+            "id": "FRITarget",
+            "description": "Select the target for the FRI application",
+            "options": [
+                "-tcorstone300",
+                "-tcorstone310",
+                "-tcorstone315"
+            ],
+            "default": "-tcorstone315"
+        },
+        {
+            "type": "promptString",
+            "id": "FRICertificatPath",
+            "description": "Enter the path to the device AWS certificate",
+            "default": "-C${workspaceFolder}/certificate.pem"
+        },
+        {
+            "type": "promptString",
+            "id": "FRIPrivateKeyPath",
+            "description": "Enter the path to the device AWS private key",
+            "default": "-P${workspaceFolder}/private_key.pem"
+        },
+        {
+            "type": "promptString",
+            "id": "FRICleanBeforeBuild",
+            "description": "Clean build directory? (enter -c)",
+            "default": ""
+        },
+        {
+            "type": "promptString",
+            "id": "FRICameraFramesPath",
+            "description": "Enter the path to the camera frames",
+            "default": "-fapplications/object_detection/resources/test.frm"
+        },
+        {
+            "type": "promptString",
+            "id": "FRIGdbDebuggerPlugin",
+            "description": "Where is debugger plugin GDBRemoteConnection.so stored (path)",
+            "default": "-dtools/plugin/GDBRemoteConnection.so"
+        }
+    ]
+}
