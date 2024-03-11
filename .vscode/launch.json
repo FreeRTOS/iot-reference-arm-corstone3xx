@@ -1,0 +1,41 @@
+// Copyright 2021-2024 Arm Limited and/or its affiliates
+// <open-source-office@arm.com>
+// SPDX-License-Identifier: MIT
+
+{
+    "configurations": [
+        {
+            "name": "Debug Arm Featured Reference Integration applications",
+            "type": "cortex-debug",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/build",
+            "executable": "${input:FRIApplication}.axf",
+            "servertype": "external",
+            "gdbTarget": ":31627",
+            "overrideLaunchCommands": [
+                "-enable-pretty-printing",
+                "load ${input:FRIApplication}.axf",
+                "break main.c:main",
+                "add-symbol-file iot_reference_arm_corstone3xx/components/security/trusted_firmware-m/integration/trusted_firmware-m-build-prefix/src/trusted_firmware-m-build-build/api_ns/bin/bl2.axf",
+                "add-symbol-file iot_reference_arm_corstone3xx/components/security/trusted_firmware-m/integration/trusted_firmware-m-build-prefix/src/trusted_firmware-m-build-build/api_ns/bin/tfm_s.axf",
+            ],
+            "preLaunchTask": "Debug Arm Featured Reference Integration applications",
+            "showDevDebugOutput": "raw"
+        }
+    ],
+    "inputs": [
+        {
+            "type": "pickString",
+            "id": "FRIApplication",
+            "description": "Which FRI application do you want to launch?",
+            "options": [
+                "blinky",
+                "keyword-detection",
+                "speech-recognition",
+                "object-detection",
+                "freertos-iot-libraries-tests"
+            ],
+            "default": "blinky"
+        },
+    ]
+}
