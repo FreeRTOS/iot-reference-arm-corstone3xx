@@ -11,7 +11,7 @@ function(iot_reference_arm_corstone3xx_convert_audio_source_to_code audio_path g
         # use ml-embedded-evaluation-kit's Python Virtual Environment which
         # contains dependencies for gen_audio_cpp.py
         COMMAND bash -c " \
-            source ${ml_embedded_evaluation_kit_SOURCE_DIR}/resources_downloaded/env/bin/activate && \
+            source ${CMAKE_CURRENT_BINARY_DIR}/mlek_resources_downloaded/env/bin/activate && \
             python3 ${ml_embedded_evaluation_kit_SOURCE_DIR}/scripts/py/gen_audio_cpp.py \
             --audio_path ${audio_path} \
             --source_folder_path ${generated_path} \

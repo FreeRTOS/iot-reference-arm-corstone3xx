@@ -1,9 +1,9 @@
-From f3f30b50769f5c3cf3c32f1b715acefd6ba0b8bc Mon Sep 17 00:00:00 2001
-From: Hugues Kamba-Mpiana <hugues.kambampiana@arm.com>
-Date: Mon, 4 Mar 2024 16:01:55 +0000
-Subject: [PATCH] use-case-resources: Enabled user provided metadata
+From 37e11fb6a28f9de8b0d0be9ad595f0f6a91ca2c4 Mon Sep 17 00:00:00 2001
+From: Hugues Kamba Mpiana <hugues.kambampiana@arm.com>
+Date: Tue, 12 Mar 2024 15:49:00 +0000
+Subject: [PATCH] use-case-resources: User selectable model resources
 
-An optional argument has been added to the `set_up_default_resources.py`
+An optional argument is added to the `set_up_default_resources.py`
 Python script to allow passing of a user defined use case resources
 metadata JSON file.
 This shortens the build time by only downloading the resources the
@@ -11,14 +11,18 @@ end user is interested in. It also shortens the optimization part
 which takes additional minutes as it is done for all models and for
 all the specified NPU configurations.
 
+In addition, the location of the downloaded resources can be specified
+to allow users to place them wherever they require. Such location
+can be a build directory so they can be deleted whenever a clean build
+is required if different model resources need to be downloaded.
 
-Signed-off-by: Hugues Kamba-Mpiana <hugues.kambampiana@arm.com>
+Signed-off-by: Hugues Kamba Mpiana <hugues.kambampiana@arm.com>
 ---
- set_up_default_resources.py | 23 ++++++++++++++++++-----
- 1 file changed, 18 insertions(+), 5 deletions(-)
+ set_up_default_resources.py | 43 +++++++++++++++++++++++++++----------
+ 1 file changed, 32 insertions(+), 11 deletions(-)
 
 diff --git a/set_up_default_resources.py b/set_up_default_resources.py
-index f5cd0ac..5bbb5e9 100755
+index f5cd0ac..8565d10 100755
 --- a/set_up_default_resources.py
 +++ b/set_up_default_resources.py
 @@ -96,21 +96,24 @@ class UseCase:
@@ -49,26 +53,38 @@ index f5cd0ac..5bbb5e9 100755
          use_cases = json.load(f)
          return [
              UseCase(
-@@ -579,7 +582,8 @@ def set_up_resources(
+@@ -579,7 +582,9 @@ def set_up_resources(
          additional_npu_config_names: tuple = (),
          arena_cache_size: int = 0,
          check_clean_folder: bool = False,
 -        additional_requirements_file: Path = ""
 +        additional_requirements_file: Path = "",
 +        use_case_resources_file: Path = "",
++        downloaded_model_resources_path: Path = "",
  ) -> Path:
      """
      Helpers function that retrieve the output from a command.
-@@ -597,6 +601,8 @@ def set_up_resources(
+@@ -597,6 +602,9 @@ def set_up_resources(
      additional_requirements_file (str): Path to a requirements.txt file if
                                          additional packages need to be
                                          installed.
 +    use_case_resources_file (str): Path to a JSON file containing the use case
 +                                   metadata resources.
++    downloaded_model_resources_path (str): Path to store model resources files.
  
      Returns
      -------
-@@ -619,7 +625,7 @@ def set_up_resources(
+@@ -608,8 +616,7 @@ def set_up_resources(
+     """
+     # Paths.
+     current_file_dir = Path(__file__).parent.resolve()
+-    download_dir = current_file_dir / "resources_downloaded"
+-    metadata_file_path = download_dir / "resources_downloaded_metadata.json"
++    metadata_file_path = downloaded_model_resources_path / "resources_downloaded_metadata.json"
+ 
+     # Is Python minimum requirement matched?
+     if sys.version_info < py3_version_minimum:
+@@ -619,18 +626,18 @@ def set_up_resources(
          )
      logging.info("Using Python version: %s", sys.version_info)
  
@@ -77,24 +93,62 @@ index f5cd0ac..5bbb5e9 100755
      setup_script_hash = get_md5sum_for_file(Path(__file__).resolve())
  
      metadata_dict, setup_script_hash_verified = initialize_resources_directory(
-@@ -706,6 +712,12 @@ if __name__ == "__main__":
+-        download_dir,
++        downloaded_model_resources_path,
+         check_clean_folder,
+         metadata_file_path,
+         setup_script_hash
+     )
+ 
+     env_path, env_activate = set_up_python_venv(
+-        download_dir,
++        downloaded_model_resources_path,
+         additional_requirements_file
+     )
+ 
+@@ -640,7 +647,7 @@ def set_up_resources(
+         download_resources(
+             use_case,
+             metadata_dict,
+-            download_dir,
++            downloaded_model_resources_path,
+             check_clean_folder,
+             setup_script_hash_verified
+         )
+@@ -657,7 +664,7 @@ def set_up_resources(
+         # Consolidate all config names while discarding duplicates:
+         run_vela_on_all_models(
+             current_file_dir,
+-            download_dir,
++            downloaded_model_resources_path,
+             env_activate,
+             arena_cache_size,
+             npu_config_names=list(set(default_npu_config_names + list(additional_npu_config_names)))
+@@ -706,6 +713,18 @@ if __name__ == "__main__":
          type=str,
          default=Path(__file__).parent.resolve() / 'scripts' / 'py' / 'requirements.txt'
      )
 +    parser.add_argument(
 +         "--use-case-resources-file",
 +        help="Path to the use case resources file",
-+        type=str,
++        type=Path,
 +        default=Path(__file__).parent.resolve() / 'scripts' / 'py' / 'use_case_resources.json'
++    )
++    parser.add_argument(
++         "--downloaded-model-resources-path",
++        help="Path to downloaded model resources",
++        type=Path,
++        default=Path(__file__).parent.resolve() / 'resources_downloaded'
 +    )
  
      args = parser.parse_args()
  
-@@ -724,4 +736,5 @@ if __name__ == "__main__":
+@@ -724,4 +743,6 @@ if __name__ == "__main__":
          args.arena_cache_size,
          args.clean,
          args.requirements_file,
 +        args.use_case_resources_file,
++        args.downloaded_model_resources_path,
      )
 -- 
 2.34.1
