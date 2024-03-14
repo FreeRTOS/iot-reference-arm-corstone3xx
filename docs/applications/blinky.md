@@ -9,10 +9,11 @@ on the secure-side and prints it on the console. In addition, to simulate LED
 blinking, `LED On` and `LED off` are printed onto the console at regular
 intervals.
 
-## Prerequisites
+## Development environment
 
-Follow the instructions described in [Prerequisites](prerequisites.md) and
-ensure that all the prerequisites are met before continuing.
+The [document](../development_environment/introduction.md)
+describes the steps to setup the development environment. Ensure that, it is
+setup correctly before proceeding.
 
 ## Building the application
 
