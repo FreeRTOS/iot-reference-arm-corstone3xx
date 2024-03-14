@@ -11,13 +11,15 @@ The Object Detection application demonstrates face detection on a `.frm` input f
 ### The following frame configurations are supported:
 - FRM (From File)
 
-## Prerequisites
+## Development environment
 
-Follow the instructions described in [Prerequisites](prerequisites.md) and
-ensure that all the prerequisites are met before continuing.
+The [document](../development_environment/introduction.md)
+describes the steps to setup the development environment. Ensure that, it is
+setup correctly before proceeding.
 
 ## Setting up AWS connectivity
-Follow the instructions described in [Setting Up AWS Connectivity](./setting_up_aws_connectivity.md).
+
+Follow the instructions described in [Setting Up AWS Connectivity](./aws_iot/setting_up_aws_connectivity.md).
 
 ## Building the application
 
@@ -35,7 +37,8 @@ Follow the instructions described in [Setting Up AWS Connectivity](./setting_up_
 ```
 
 ## Provisioning the device credentials into Protected Storage
-Check [Device Provisioning](./device_provisioning.md) for detailed information.
+
+Check [Device Provisioning](./device_provisioning/device_provisioning.md) for detailed information.
 
 ## Running the application
 
@@ -356,10 +359,12 @@ Deleted S3 bucket iotmsw-ci-test-bucket-9ba0432f-e481-4fde-b3e5-a45bcf076e7a
 ```
 
 ## Observing MQTT connectivity
-Follow the instructions described in the [Observing MQTT connectivity](./aws_iot_cloud_connection.md) section.
+
+Follow the instructions described in the [Observing MQTT connectivity](./aws_iot/aws_iot_cloud_connection.md) section.
 
 ## Firmware update with AWS
-Follow the instructions described in the [Firmware update with AWS](./aws_iot_cloud_connection.md) section.
+
+Follow the instructions described in the [Firmware update with AWS](./aws_iot/aws_iot_cloud_connection.md) section.
 
 ### Expected output
 

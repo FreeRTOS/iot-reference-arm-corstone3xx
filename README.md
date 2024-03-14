@@ -62,13 +62,13 @@ The project contains the following subdirectories:
 
 This reference integration contains following two examples:
 
-* [Blinky example](docs/blinky.md)
+* [Blinky example](docs/applications/blinky.md)
     * Demonstrates FreeRTOS kernel and TF-M integration
-* [Keyword Detection](docs/keyword_detection.md)
+* [Keyword Detection](docs/applications/keyword_detection.md)
     * Demonstrates detecting keywords from an audio source using Machine Learning.
-* [Speech Recognition](docs/speech_recognition.md)
+* [Speech Recognition](docs/applications/speech_recognition.md)
     * Demonstrates detecting sentences from an audio source using Machine Learning.
-* [Object Detection](docs/object_detection.md)
+* [Object Detection](docs/applications/object_detection.md)
     * Demonstrates detection of faces from image source using Machine Learning.
 
 The Keyword-Detection and Speech-Recognition applications demonstrate [secure connectivity](#secure-tls-connection)

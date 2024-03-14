@@ -92,8 +92,8 @@ Now run the application by running the following command:
 Once the device advisor has completed all the tests, you can download the AWS
 IoT Core Qualification report by following the instructions in the [page](https://docs.aws.amazon.com/iot/latest/developerguide/device-advisor-console-tutorial.html#device-advisor-console-qualification-report).
 
-[creating-an-iot-thing-for-your-device]: ./setting_up_aws_connectivity.md#creating-an-iot-thing-for-your-device
-[creating-a-policy-and-attach-it-to-your-certificate]: ./setting_up_aws_connectivity.md#creating-a-policy-and-attach-it-to-your-certificate
+[creating-an-iot-thing-for-your-device]: ../aws_iot/setting_up_aws_connectivity.md#creating-an-iot-thing-for-your-device
+[creating-a-policy-and-attach-it-to-your-certificate]: ../aws_iot/setting_up_aws_connectivity.md#creating-a-policy-and-attach-it-to-your-certificate
 
 ## Note
 AWS IoT Core Device Advisor Tests are supported on `keyword-detection` application only.

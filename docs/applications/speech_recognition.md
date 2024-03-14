@@ -12,13 +12,15 @@ The following audio source configurations are supported:
 
 The sixth LED blinks at a regular interval to indicate that the system is alive and waits for input.
 
-## Prerequisites
+## Development environment
 
-Follow the instructions described in [Prerequisites](prerequisites.md) and
-ensure that all the prerequisites are met before continuing.
+The [document](../development_environment/introduction.md)
+describes the steps to setup the development environment. Ensure that, it is
+setup correctly before proceeding.
 
 ## Setting up AWS connectivity
-Follow the instructions described in [Setting Up AWS Connectivity](./setting_up_aws_connectivity.md).
+
+Follow the instructions described in [Setting Up AWS Connectivity](./aws_iot/setting_up_aws_connectivity.md).
 
 ## Building the application
 
@@ -38,12 +40,13 @@ Or, run the command below to perform a clean build:
 ```
 
 ## Provisioning the device credentials into Protected Storage
-Check [Device Provisioning](./device_provisioning.md) for detailed information.
+
+Check [Device Provisioning](./device_provisioning/device_provisioning.md) for detailed information.
 
 ## Running the application
 
 ### Note:
-If you would like to run the speech recognition application using VSI configuration as the input audio source, you must run the [setup_python_vsi.sh](../tools/scripts/setup_python_vsi.sh) script to setup the needed python environment for VSI prior to running the application.
+If you would like to run the speech recognition application using VSI configuration as the input audio source, you must run the [setup_python_vsi.sh](../../tools/scripts/setup_python_vsi.sh) script to setup the needed python environment for VSI prior to running the application.
 
 To run the Speech-Recognition example, run the following command:
 
@@ -197,10 +200,12 @@ INFO - 	Operator 0: ethos-u
 ```
 
 ## Observing MQTT connectivity
-Follow the instructions described in the [Observing MQTT connectivity](./aws_iot_cloud_connection.md) section.
+
+Follow the instructions described in the [Observing MQTT connectivity](./aws_iot/aws_iot_cloud_connection.md) section.
 
 ## Firmware update with AWS
-Follow the instructions described in the [Firmware update with AWS](./aws_iot_cloud_connection.md) section.
+
+Follow the instructions described in the [Firmware update with AWS](./aws_iot/aws_iot_cloud_connection.md) section.
 
 ### Expected output
 
