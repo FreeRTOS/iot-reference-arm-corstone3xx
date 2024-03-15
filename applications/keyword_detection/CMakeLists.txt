@@ -183,6 +183,8 @@ iot_reference_arm_corstone3xx_tf_m_merge_images(
     keyword-detection
     ${NS_PROVISIONING_BUNDLE_LOAD_ADDRESS}
     ${CMAKE_BINARY_DIR}/helpers/provisioning/provisioning_data.bin
+    ${NS_DDR4_IMAGE_LOAD_ADDRESS}
+    ${SECTORS_BIN_DIR}/ddr.bin
 )
 
 iot_reference_arm_corstone3xx_generate_aws_update_digest_and_signature(

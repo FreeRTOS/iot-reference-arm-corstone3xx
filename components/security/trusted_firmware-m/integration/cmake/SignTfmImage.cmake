@@ -1,4 +1,4 @@
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -14,7 +14,16 @@ function(iot_reference_arm_corstone3xx_tf_m_sign_image target signed_target_name
     else()
         set(pad_option "")
     endif()
-    target_elf_to_bin(${target} ${target}_unsigned)
+
+    set(LINKER_SECTION_NAMES  "ddr.bin")
+    set(OUTPUT_BINARY_NAME    "flash")
+
+    extract_sections_from_axf(
+        ${target}
+        SECTIONS_NAMES   "${LINKER_SECTION_NAMES}"
+        OUTPUT_BIN_NAME  "${OUTPUT_BINARY_NAME}"
+    )
+
     add_custom_command(
         TARGET
             ${target}
@@ -31,7 +40,7 @@ function(iot_reference_arm_corstone3xx_tf_m_sign_image target signed_target_name
                 --align 1 --pad-header ${pad_option} -H 0x400 -s auto
                 --measured-boot-record
                 --confirm
-                $<TARGET_FILE_DIR:${target}>/${target}_unsigned.bin
+                ${SECTORS_BIN_DIR}/${OUTPUT_BINARY_NAME}.bin
                 $<TARGET_FILE_DIR:${target}>/${signed_target_name}.bin
         COMMAND
             ${CMAKE_COMMAND} -E echo "-- signed: $<TARGET_FILE_DIR:${target}>/${signed_target_name}.bin"

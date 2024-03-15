@@ -24,6 +24,11 @@ function(iot_reference_arm_corstone3xx_tf_m_merge_images target)
     else()
         set(ns_provisioning_data_param "")
     endif()
+    if(DEFINED ARGV3 AND DEFINED ARGV4)
+        set(ddr_binary_param ${ARGV4} -Binary -offset ${ARGV3})
+    else()
+        set(ddr_binary_param "")
+    endif()
     find_program(srec_cat NAMES srec_cat REQUIRED)
     find_program(objcopy NAMES arm-none-eabi-objcopy objcopy REQUIRED)
     if(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone300" OR ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone310")
@@ -37,6 +42,7 @@ function(iot_reference_arm_corstone3xx_tf_m_merge_images target)
                 ${srec_cat} ${BINARY_DIR}/api_ns/bin/bl2.bin -Binary -offset ${BL2_IMAGE_LOAD_ADDRESS}
                     ${BINARY_DIR}/api_ns/bin/tfm_s_signed.bin -Binary -offset ${S_IMAGE_LOAD_ADDRESS}
                     $<TARGET_FILE_DIR:${target}>/${target}_signed.bin -Binary -offset ${NS_IMAGE_LOAD_ADDRESS}
+                    ${ddr_binary_param}
                     ${ns_provisioning_data_param}
                     ${BINARY_DIR}/api_ns/bin/encrypted_provisioning_bundle.bin -Binary -offset ${S_PROVISIONING_BUNDLE_LOAD_ADDRESS}
                     -o $<TARGET_FILE_DIR:${target}>/${target}_merged.hex
@@ -62,6 +68,7 @@ function(iot_reference_arm_corstone3xx_tf_m_merge_images target)
                     ${BINARY_DIR}/api_ns/bin/bl2_signed.bin -Binary -offset ${BL2_IMAGE_LOAD_ADDRESS}
                     ${BINARY_DIR}/api_ns/bin/tfm_s_signed.bin -Binary -offset ${S_IMAGE_LOAD_ADDRESS}
                     $<TARGET_FILE_DIR:${target}>/${target}_signed.bin -Binary -offset ${NS_IMAGE_LOAD_ADDRESS}
+                    ${ddr_binary_param}
                     ${ns_provisioning_data_param}
                     -o $<TARGET_FILE_DIR:${target}>/${target}_merged.hex
             COMMAND
