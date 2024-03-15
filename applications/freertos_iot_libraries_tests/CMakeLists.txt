@@ -22,7 +22,7 @@ set(MCUBOOT_IMAGE_VERSION_NS_UPDATE "0.0.1+20")
 
 # Trusted Firmware-M setup
 set(TFM_CMAKE_APP_ARGS
-    -DPROJECT_CONFIG_HEADER_FILE=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/aws_iot_example/configs/tfm_config/project_config.h
+    -DPROJECT_CONFIG_HEADER_FILE=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/freertos_iot_libraries_tests/configs/tfm_config/project_config.h
     -DMCUBOOT_DATA_SHARING=ON
     -DMCUBOOT_CONFIRM_IMAGE=ON
     -DMCUBOOT_UPGRADE_STRATEGY=SWAP_USING_SCRATCH
