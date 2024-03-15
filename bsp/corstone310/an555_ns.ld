@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022 Arm Limited. All rights reserved.
+ * Copyright (c) 2009-2024 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -118,9 +118,6 @@ SECTIONS
     LONG (LOADADDR(.data))
     LONG (ADDR(.data))
     LONG (SIZEOF(.data) / 4)
-    LONG (LOADADDR(.model))
-    LONG (ADDR(.model))
-    LONG (SIZEOF(.model) / 4)
     __copy_table_end__ = .;
 
     /* .zero.table */
@@ -206,7 +203,7 @@ SECTIONS
 
   } > RAM
 
-  .model : AT ( LOADADDR(.data) + SIZEOF(.data) )
+  ddr.bin :
   {
     __ddr_start__ = .;
     . = ALIGN(16);
@@ -218,30 +215,16 @@ SECTIONS
     . = ALIGN (16);
     /* labels */
     *(labels)
-    __ddr_end__ = .;
-  } > DDR
-
-  __ddr_load_address__ = LOADADDR(.model);
-
-  .activationbuf :
-  {
     . = ALIGN (16);
     *(.bss.NoInit.activation_buf_sram)
     *(.bss.NoInit.activation_buf_dram)
-  } > DDR AT > DDR
-
-  .vsibuffer :
-  {
     . = ALIGN (4);
     /* Buffer for transferring VSI audio data from S to NS */
     *(.bss.NoInit.vsi_audio_buffer)
-  } > DDR AT > DDR
-
-  .ethosucache :
-  {
     . = ALIGN (16);
     *(.bss.NoInit.ethos_u_cache)
-  } > DDR AT > DDR
+    __ddr_end__ = .;
+  } > DDR
 
   .bss :
   {
