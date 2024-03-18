@@ -26,6 +26,4 @@ dictionaries:
 # Paths and files to ignore
 ignorePaths:
   - 'dependency'
-  - 'docs'
   - 'ThirdParty'
-  - 'History.txt'

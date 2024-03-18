@@ -266,7 +266,7 @@ target_link_libraries(keyword-detection
 
 ### Application helper libraries
 
-It is expected that applications share some common code, these are organised as libraries and made available in a helpers subdirectory within the root applications subdirectory so they can be used by any application.
+It is expected that applications share some common code, these are organized as libraries and made available in a helpers subdirectory within the root applications subdirectory so they can be used by any application.
 
 ```sh
 applications/helpers/

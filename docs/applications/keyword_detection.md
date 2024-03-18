@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Keyword Detection application demonstrates identifying keywords on a voice input either by utilising ML accelerator [Ethos-U55](https://www.arm.com/products/silicon-ip-cpu/ethos/ethos-u55) or by using software. The application encompasses [TrustedFirmware-M](https://www.trustedfirmware.org/projects/tf-m/) running on the secure side of the Armv8-M processor, while the ML inference engine (tensorflow-lite) and the model running on the non-secure side of the Armv8-M processor.
+The Keyword Detection application demonstrates identifying keywords on a voice input either by utilizing ML accelerator [Ethos-U55](https://www.arm.com/products/silicon-ip-cpu/ethos/ethos-u55) or by using software. The application encompasses [TrustedFirmware-M](https://www.trustedfirmware.org/projects/tf-m/) running on the secure side of the Armv8-M processor, while the ML inference engine (tensorflow-lite) and the model running on the non-secure side of the Armv8-M processor.
 
 The following inference configurations are supported:
 * ETHOS (uses Ethos-U55).
