@@ -4,7 +4,7 @@
 
 The Speech Recognition application demonstrates identifying sentences on a voice input by utilising ML accelerator [Ethos-U55](https://www.arm.com/products/silicon-ip-cpu/ethos/ethos-u55). The application encompasses [TrustedFirmware-M](https://www.trustedfirmware.org/projects/tf-m/) running on the secure side of the Armv8-M processor, while the ML inference engine (tensorflow-lite) and the model running on the non-secure side of the Armv8-M processor.
 
-When a sentence is infered, it is printed on the terminal and sent to the configured cloud provider.
+When a sentence is inferred, it is printed on the terminal and sent to the configured cloud provider.
 
 The following audio source configurations are supported:
 * ROM.
@@ -46,7 +46,7 @@ Check [Device Provisioning](./device_provisioning/device_provisioning.md) for de
 ## Running the application
 
 ### Note:
-If you would like to run the speech recognition application using VSI configuration as the input audio source, you must run the [setup_python_vsi.sh](../../tools/scripts/setup_python_vsi.sh) script to setup the needed python environment for VSI prior to running the application.
+If you would like to run the speech recognition application using VSI configuration as the input audio source, you must run the [setup_python_vsi.sh](../../tools/scripts/setup_python_vsi.sh) script to setup the needed Python environment for VSI prior to running the application.
 
 To run the Speech-Recognition example, run the following command:
 

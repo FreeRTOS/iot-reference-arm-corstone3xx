@@ -55,7 +55,7 @@ AWS IoT Core authenticates device connections with the help of X.509 certificate
 
 1. Run the ```./tools/scripts/generate_credentials.py``` Python script, that's going to generate a private key
    and a certificate that's signed  with this key.
-   * Optionally you can specify metadata for the certificate. Use the ```-h``` flag for the python script to see the available options.
+   * Optionally you can specify metadata for the certificate. Use the ```-h``` flag for the Python script to see the available options.
   ```bash
   python ./tools/scripts/generate_credentials.py --certificate_valid_time <validity duration in days > \
                                                 --certificate_country_name <Country Name (2 letter code)> \

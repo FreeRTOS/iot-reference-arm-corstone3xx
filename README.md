@@ -24,15 +24,17 @@ CPU and Ethos NPU, alongside a range of other components in a scalable and
 flexible reference package. This enables designers to build secure,
 AI-capable SoCs faster.
 
+Arm's [Fixed Virtual Platform](https://www.arm.com/products/development-tools/simulation/fixed-virtual-platforms)
+is used to run the application artefacts.
+The [currently released version <11.24.22>](https://developer.arm.com/downloads/-/arm-ecosystem-fvps)
+of FVP is supported by the FRI.
+
 * [Corstone-315](https://developer.arm.com/Processors/Corstone-315)
   * Arm Cortex-M85 CPU, Ethos-U65 NPU and Mali-C55 ISP
-  * Supported versions: 11.24.13 and above
 * [Corstone-310](https://developer.arm.com/Processors/Corstone-310)
   * Arm Cortex-M85 CPU and Ethos-U55 NPU
-  * Supported versions: 11.24.13 and above
 * [Corstone-300](https://developer.arm.com/Processors/Corstone-300)
   * Arm Cortex-M55 CPU and Ethos-U55 NPU
-  * Supported versions: 11.24.13 and above
 
 ## Supported Toolchains
 
@@ -44,19 +46,9 @@ AI-capable SoCs faster.
   `Arm Compiler for Embedded (armclang)` by default, append the extra option
   `--toolchain GNU` to build using Arm GNU Toolchain.
 
-## Directory structure
+## Project organisation
 
-The project contains the following subdirectories:
-
-| Subdirectory | Description |
-| ---          | ---         |
-|[applications](./applications/)| Contains applications that consume the components integrated in this reference integration. The applications can be built for all supported boards mentioned above.|
-|[bsp](./bsp/)| Contains dependencies for the board support package (BSP) utilized in device drivers, firmware booting, and other functionalities that enable an embedded operating system to operate within a specific hardware environment.|
-|[components](./components/)| Contains dependencies employed in the development of complete IoT applications fetched via Git Submodules. Read [this](./components/README.md) for more info.|
-|[docs](./docs/)| Contains various documentation to work with this project.|
-|[release_changes](./release_changes)| Contains the release changes to be compiled to generate a release note.|
-|[tools](./tools/)| Contains all the tools created by this projects that are not imported from any components.|
-
+The [document](docs/project_organisation.md) describes the organistation of the project in detail.
 
 ## Examples
 
