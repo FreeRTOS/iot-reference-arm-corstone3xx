@@ -115,7 +115,7 @@ Prevents giant files from being committed.
 Checks commit messages against pre-defined style.
 
 #### Black and flake8
-Checks python files formatting.
+Checks Python files formatting.
 
 #### Uncrustify
 Checks C/C++ code formatting.

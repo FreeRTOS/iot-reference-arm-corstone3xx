@@ -13,7 +13,7 @@
     git config --global user.email "email@address"
     git config --global user.name "User Name"
     ```
-* Setting up python 3 virtual environment
+* Setting up Python 3 virtual environment
 
     ```bash
     sudo apt update
@@ -22,7 +22,7 @@
     source ~/fri-venv/bin/activate
     ```
 
-* Installing required python 3 modules
+* Installing required Python 3 modules
 
     ```bash
     sudo apt install python3-pip -y
@@ -76,7 +76,7 @@ Follow the intructions in the [document](./pre_commit_and_towncrier_setup.md)
 to setup pre-commit hooks and towncrier.
 
 Run the [setup_python_vsi.sh](../../tools/scripts/setup_python_vsi.sh) script
-to setup the needed python environment for VSI to work.
+to setup the needed Python environment for VSI to work.
 
 ## Cloning the Repository
 

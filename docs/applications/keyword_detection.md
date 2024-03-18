@@ -68,7 +68,7 @@ Check [Device Provisioning](./device_provisioning/device_provisioning.md) for de
 ## Running the application
 
 ### Note:
-If you would like to run the keyword detection application using VSI configuration as the input audio source, you must run the [setup_python_vsi.sh](../../tools/scripts/setup_python_vsi.sh) script to setup the needed python environment for VSI prior to running the application.
+If you would like to run the keyword detection application using VSI configuration as the input audio source, you must run the [setup_python_vsi.sh](../../tools/scripts/setup_python_vsi.sh) script to setup the needed Python environment for VSI prior to running the application.
 
 To run the Keyword-Detection example, run the following command:
 

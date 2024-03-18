@@ -23,7 +23,7 @@ Follow the instructions described in [Setting Up AWS Connectivity](./aws_iot/set
 
 ## Building the application
 
-### To build the Object-Detection example, run the following command:
+To build the Object-Detection example, run the following command:
 ```bash
 ./tools/scripts/build.sh object-detection --certificate_path <certificate pem's path> --private_key_path <private key pem's path> -t corstone315 --toolchain GNU
 ```
@@ -31,7 +31,7 @@ Follow the instructions described in [Setting Up AWS Connectivity](./aws_iot/set
 
 - The `toolchain` is used to select the `GNU`, that supports the `Mali-C55`.
 
-### Or, run the command below to perform a clean build:
+Or, run the command below to perform a clean build:
 ```bash
 ./tools/scripts/build.sh object-detection --certificate_path <certificate pem's path> --private_key_path <private key pem's path> -t corstone315 --toolchain GNU -c
 ```
@@ -82,16 +82,16 @@ Booting TF-M v2.0.0
 14 1260 [IP-Task] [INFO] Network is up
 15 1260 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
 16 1260 [IP-Task] vDHCP_RATimerReload: 8640000
-17 1291 [MQTT Agent Task] [INFO] Creating a TLS connection to a1nn4qspc1z547-ats.iot.eu-west-1.amazonaws.com:8883.
-18 1307 [MQTT Agent Task] [INFO] Resolving host name: a1nn4qspc1z547-ats.iot.eu-west-1.amazonaws.com.
+17 1291 [MQTT Agent Task] [INFO] Creating a TLS connection to <iot-core-endpoint>.amazonaws.com:8883.
+18 1307 [MQTT Agent Task] [INFO] Resolving host name: <iot-core-endpoint>.amazonaws.com.
 19 1322 [IP-Task] ipARP_REPLY from ac1433feip to ac143301ip end-point ac143301ip
 20 6334 [MQTT Agent Task] DNS_ReadReply returns -11
 21 6341 [MQTT Agent Task] prvIncreaseDNS4Index: from 0 to 0
-22 6356 [MQTT Agent Task] DNS[0xE135]: The answer to 'a1nn4qspc1z547-ats.iot.eu-west-1.amazonaws.com' (99.81.255.142) will be stored
-23 6374 [MQTT Agent Task] [INFO] Initiating TCP connection with host: a1nn4qspc1z547-ats.iot.eu-west-1.amazonaws.com:8883
+22 6356 [MQTT Agent Task] DNS[0xE135]: The answer to '<iot-core-endpoint>.amazonaws.com' (99.81.255.142) will be stored
+23 6374 [MQTT Agent Task] [INFO] Initiating TCP connection with host: <iot-core-endpoint>.amazonaws.com:8883
 24 6392 [MQTT Agent Task] FreeRTOS_connect: 37762 to 6351ff8eip:8883
-25 6492 [MQTT Agent Task] [INFO] Initiating TLS handshake with host: a1nn4qspc1z547-ats.iot.eu-west-1.amazonaws.com:8883
-26 8622 [MQTT Agent Task] [INFO] Successfully created a TLS connection to a1nn4qspc1z547-ats.iot.eu-west-1.amazonaws.com:8883.
+25 6492 [MQTT Agent Task] [INFO] Initiating TLS handshake with host: <iot-core-endpoint>.amazonaws.com:8883
+26 8622 [MQTT Agent Task] [INFO] Successfully created a TLS connection to <iot-core-endpoint>.amazonaws.com:8883.
 27 8640 [MQTT Agent Task] [INFO] Creating an MQTT connection to the broker.
 28 8993 [MQTT Agent Task] [INFO] MQTT connection established with the broker.
 29 9004 [MQTT Agent Task] [INFO] Successfully connected to the MQTT broker.
@@ -99,12 +99,12 @@ Booting TF-M v2.0.0
 31 9022 [MQTT Agent Task] [INFO] Starting a clean MQTT Session.
 32 9031 [OTA Task ] [INFO]  Received: 0   Queued: 0   Processed: 0   Dropped: 0
 33 9042 [OTA Agent Task] [INFO] Current State=[RequestingJob], Event=[Start], New state=[RequestingJob]
-34 9413 [OTA Agent Task] [INFO] Subscribed to topic $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/jobs/notify-next.
-35 9432 [OTA Agent Task] [INFO] Subscribed to MQTT topic: $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/jobs/notify-next
-36 10163 [MQTT Agent Task] [INFO] Publishing message to $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/jobs/$next/get.
+34 9413 [OTA Agent Task] [INFO] Subscribed to topic $aws/things/<mqtt-client-identifier>/jobs/notify-next.
+35 9432 [OTA Agent Task] [INFO] Subscribed to MQTT topic: $aws/things/<mqtt-client-identifier>/jobs/notify-next
+36 10163 [MQTT Agent Task] [INFO] Publishing message to $aws/things/<mqtt-client-identifier>/jobs/$next/get.
 37 10484 [MQTT Agent Task] [INFO] Ack packet deserialized with result: MQTTSuccess.
 38 10496 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
-39 10508 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/jobs/$next/get to broker.
+39 10508 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/<mqtt-client-identifier>/jobs/$next/get to broker.
 40 10530 [OTA Agent Task] [WARN] OTA Timer handle NULL for Timerid=0, can't stop.
 41 10542 [OTA Agent Task] [INFO] Current State=[WaitingForJob], Event=[RequestJobDocument], New state=[WaitingForJob]
 42 11258 [MQTT Agent Task] [INFO] De-serialized incoming PUBLISH packet: DeserializerResult=MQTTSuccess.
@@ -122,23 +122,23 @@ Booting TF-M v2.0.0
 54 11442 [OTA Agent Task] [INFO] In self test mode.
 55 11450 [OTA Agent Task] [INFO] New image has a higher version number than the current image: New image version=0.0.20, Previous image version=0.0.10
 56 11471 [OTA Agent Task] [INFO] Image version is valid: Begin testing file: File ID=0
-57 12044 [MQTT Agent Task] [INFO] Publishing message to $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/jobs/AFR_OTA-ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/update.
+57 12044 [MQTT Agent Task] [INFO] Publishing message to $aws/things/<mqtt-client-identifier>/jobs/AFR_OTA-ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/update.
 58 12372 [MQTT Agent Task] [INFO] Ack packet deserialized with result: MQTTSuccess.
 59 12383 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
 60 12395 [MQTT Agent Task] [INFO] De-serialized incoming PUBLISH packet: DeserializerResult=MQTTSuccess.
 61 12410 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
-62 12421 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/jobs/AFR_OTA-ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/update to broker.
+62 12421 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/<mqtt-client-identifier>/jobs/AFR_OTA-ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/update to broker.
 63 12452 [OTA Agent Task] [INFO] Job parsing success: OtaJobParseErr_t=OtaJobParseErrNone, Job name=AFR_OTA-ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a
 64 12475 [OTA Agent Task] [INFO] Signal task inference stop
 65 12484 [OTA Agent Task] [INFO] Current State=[CreatingFile], Event=[ReceivedJobDocument], New state=[CreatingFile]
 66 12500 [OTA Agent Task] [INFO] Beginning self-test.
 67 12508 [OTA Agent Task] [INFO] Received OtaJobEventStartTest callback from OTA Agent.
-68 13171 [MQTT Agent Task] [INFO] Publishing message to $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/jobs/AFR_OTA-ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/update.
+68 13171 [MQTT Agent Task] [INFO] Publishing message to $aws/things/<mqtt-client-identifier>/jobs/AFR_OTA-ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/update.
 69 13498 [MQTT Agent Task] [INFO] Ack packet deserialized with result: MQTTSuccess.
 70 13510 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
 71 13521 [MQTT Agent Task] [INFO] De-serialized incoming PUBLISH packet: DeserializerResult=MQTTSuccess.
 72 13536 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
-73 13548 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/jobs/AFR_OTA-ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/update to broker.
+73 13548 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/<mqtt-client-identifier>/jobs/AFR_OTA-ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/update to broker.
 74 13579 [OTA Agent Task] [INFO] New image validation succeeded in self test mode.
 75 13590 [OTA Agent Task] [INFO] OTA active state `4` from OTA Agent.
 76 13600 [OTA Agent Task] [INFO] Signal task inference stop
@@ -323,8 +323,8 @@ INFO - Running inference on image at addr 0x21224300
 106 18371 [acamera] [INFO] 1) (0.950913) -> Detection box: {x=108,y=71,w=13,h=21}
 107 18383 [acamera] [INFO] 2) (0.884787) -> Detection box: {x=47,y=78,w=20,h=31}
 108 18394 [acamera] [INFO] Complete recognition: Detected faces: 3
-109 18534 [ML_MQTT] [INFO] Attempting to publish (Detected faces: 3) to the MQTT topic iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/ml/inference.
-110 18557 [MQTT Agent Task] [INFO] Publishing message to iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/ml/inference.
+109 18534 [ML_MQTT] [INFO] Attempting to publish (Detected faces: 3) to the MQTT topic <mqtt-client-identifier>/ml/inference.
+110 18557 [MQTT Agent Task] [INFO] Publishing message to <mqtt-client-identifier>/ml/inference.
 00T00:00:18.575Z GENERIC(CRIT) :-- CAMERA STREAM TRIGGER #6 --
 abstract_port__vsync_s__setValue : (idx = 0) Frame #6 is ready.
 abstract_port__vsync_s__setValue : (idx = 1) Frame #6 is ready.
@@ -349,13 +349,6 @@ INFO - Running inference on image at addr 0x21224300
 119 18719 [acamera] [INFO] 2) (0.958923) -> Detection box: {x=47,y=78,w=20,h=31}
 120 18730 [acamera] [INFO] 3) (0.546118) -> Detection box: {x=170,y=91,w=16,h=21}
 121 18741 [acamera] [INFO] Complete recognition: Detected faces: 4
-.
-OTA update status: DELETE_IN_PROGRESS
-An error occurred (ResourceNotFoundException) when calling the GetOTAUpdate operation: Requested otaUpdateJob ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a does not exist
-Deleted update ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a
-Deleted thing arn:aws:iot:eu-west-1:965412032949:thing/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a
-Deleted S3 object object-detection-update_signed.bin from iotmsw-ci-test-bucket-9ba0432f-e481-4fde-b3e5-a45bcf076e7a
-Deleted S3 bucket iotmsw-ci-test-bucket-9ba0432f-e481-4fde-b3e5-a45bcf076e7a
 ```
 
 ## Observing MQTT connectivity
@@ -402,16 +395,16 @@ Creating an empty PS flash layout.
 14 1260 [IP-Task] [INFO] Network is up
 15 1260 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
 16 1260 [IP-Task] vDHCP_RATimerReload: 8640000
-17 1291 [MQTT Agent Task] [INFO] Creating a TLS connection to a1nn4qspc1z547-ats.iot.eu-west-1.amazonaws.com:8883.
-18 1307 [MQTT Agent Task] [INFO] Resolving host name: a1nn4qspc1z547-ats.iot.eu-west-1.amazonaws.com.
+17 1291 [MQTT Agent Task] [INFO] Creating a TLS connection to <iot-core-endpoint>.amazonaws.com:8883.
+18 1307 [MQTT Agent Task] [INFO] Resolving host name: <iot-core-endpoint>.amazonaws.com.
 19 1323 [IP-Task] ipARP_REPLY from ac1433feip to ac143301ip end-point ac143301ip
 20 6334 [MQTT Agent Task] DNS_ReadReply returns -11
 21 6341 [MQTT Agent Task] prvIncreaseDNS4Index: from 0 to 0
-22 6352 [MQTT Agent Task] DNS[0xB324]: The answer to 'a1nn4qspc1z547-ats.iot.eu-west-1.amazonaws.com' (52.208.143.40) will be stored
-23 6371 [MQTT Agent Task] [INFO] Initiating TCP connection with host: a1nn4qspc1z547-ats.iot.eu-west-1.amazonaws.com:8883
+22 6352 [MQTT Agent Task] DNS[0xB324]: The answer to '<iot-core-endpoint>.amazonaws.com' (52.208.143.40) will be stored
+23 6371 [MQTT Agent Task] [INFO] Initiating TCP connection with host: <iot-core-endpoint>.amazonaws.com:8883
 24 6388 [MQTT Agent Task] FreeRTOS_connect: 25748 to 34d08f28ip:8883
-25 6482 [MQTT Agent Task] [INFO] Initiating TLS handshake with host: a1nn4qspc1z547-ats.iot.eu-west-1.amazonaws.com:8883
-26 8653 [MQTT Agent Task] [INFO] Successfully created a TLS connection to a1nn4qspc1z547-ats.iot.eu-west-1.amazonaws.com:8883.
+25 6482 [MQTT Agent Task] [INFO] Initiating TLS handshake with host: <iot-core-endpoint>.amazonaws.com:8883
+26 8653 [MQTT Agent Task] [INFO] Successfully created a TLS connection to <iot-core-endpoint>.amazonaws.com:8883.
 27 8671 [MQTT Agent Task] [INFO] Creating an MQTT connection to the broker.
 28 9099 [MQTT Agent Task] [INFO] MQTT connection established with the broker.
 29 9110 [MQTT Agent Task] [INFO] Successfully connected to the MQTT broker.
@@ -419,15 +412,15 @@ Creating an empty PS flash layout.
 31 9128 [MQTT Agent Task] [INFO] Starting a clean MQTT Session.
 32 9137 [OTA Task ] [INFO]  Received: 0   Queued: 0   Processed: 0   Dropped: 0
 33 9149 [OTA Agent Task] [INFO] Current State=[RequestingJob], Event=[Start], New state=[RequestingJob]
-34 9633 [OTA Agent Task] [INFO] Subscribed to topic $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/jobs/notify-next.
-35 9653 [OTA Agent Task] [INFO] Subscribed to MQTT topic: $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/jobs/notify-next
-36 10383 [MQTT Agent Task] [INFO] Publishing message to $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/jobs/$next/get.
+34 9633 [OTA Agent Task] [INFO] Subscribed to topic $aws/things/<mqtt-client-identifier>/jobs/notify-next.
+35 9653 [OTA Agent Task] [INFO] Subscribed to MQTT topic: $aws/things/<mqtt-client-identifier>/jobs/notify-next
+36 10383 [MQTT Agent Task] [INFO] Publishing message to $aws/things/<mqtt-client-identifier>/jobs/$next/get.
 37 10922 [MQTT Agent Task] [INFO] Ack packet deserialized with result: MQTTSuccess.
 38 10934 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
 39 10946 [MQTT Agent Task] [INFO] De-serialized incoming PUBLISH packet: DeserializerResult=MQTTSuccess.
 40 10961 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
 41 10973 [MQTT Agent Task] [INFO] Received job message callback, size 1020.
-42 10983 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/jobs/$next/get to broker.
+42 10983 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/<mqtt-client-identifier>/jobs/$next/get to broker.
 43 11006 [OTA Agent Task] [WARN] OTA Timer handle NULL for Timerid=0, can't stop.
 44 11017 [OTA Agent Task] [INFO] Current State=[WaitingForJob], Event=[RequestJobDocument], New state=[WaitingForJob]
 45 11035 [OTA Agent Task] [INFO] Extracted parameter: [key: value]=[execution.jobId: AFR_OTA-ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a]
@@ -443,11 +436,11 @@ Creating an empty PS flash layout.
 55 11203 [OTA Agent Task] [INFO] Signal task inference stop
 56 11253 [OTA Agent Task] [INFO] Setting OTA data interface.
 57 11261 [OTA Agent Task] [INFO] Current State=[CreatingFile], Event=[ReceivedJobDocument], New state=[CreatingFile]
-58 12464 [OTA Agent Task] [INFO] Subscribed to topic $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/data/cbor.
+58 12464 [OTA Agent Task] [INFO] Subscribed to topic $aws/things/<mqtt-client-identifier>/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/data/cbor.
 59 12490 [OTA Agent Task] [INFO] Current State=[RequestingFileBlock], Event=[CreateFile], New state=[RequestingFileBlock]
-60 13214 [MQTT Agent Task] [INFO] Publishing message to $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor.
-61 13399 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor to broker.
-62 13428 [OTA Agent Task] [INFO] Published to MQTT topic to request the next block: topic=$aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor
+60 13214 [MQTT Agent Task] [INFO] Publishing message to $aws/things/<mqtt-client-identifier>/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor.
+61 13399 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/<mqtt-client-identifier>/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor to broker.
+62 13428 [OTA Agent Task] [INFO] Published to MQTT topic to request the next block: topic=$aws/things/<mqtt-client-identifier>/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor
 63 13459 [OTA Agent Task] [INFO] Current State=[WaitingForFileBlock], Event=[RequestFileBlock], New state=[WaitingForFileBlock]
 64 14010 [MQTT Agent Task] [INFO] De-serialized incoming PUBLISH packet: DeserializerResult=MQTTSuccess.
 65 14024 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
@@ -457,9 +450,9 @@ Creating an empty PS flash layout.
 
 ...
 
-3487 567949 [MQTT Agent Task] [INFO] Publishing message to $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor.
-3488 568137 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor to broker.
-3489 568166 [OTA Agent Task] [INFO] Published to MQTT topic to request the next block: topic=$aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor
+3487 567949 [MQTT Agent Task] [INFO] Publishing message to $aws/things/<mqtt-client-identifier>/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor.
+3488 568137 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/<mqtt-client-identifier>/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor to broker.
+3489 568166 [OTA Agent Task] [INFO] Published to MQTT topic to request the next block: topic=$aws/things/<mqtt-client-identifier>/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor
 3490 568198 [OTA Agent Task] [INFO] Current State=[WaitingForFileBlock], Event=[RequestFileBlock], New state=[WaitingForFileBlock]
 3491 569141 [MQTT Agent Task] [INFO] De-serialized incoming PUBLISH packet: DeserializerResult=MQTTSuccess.
 3492 569156 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
@@ -470,9 +463,9 @@ Creating an empty PS flash layout.
 3497 569212 [OTA Agent Task] [INFO] Signal task inference stop
 3498 569221 [OTA Agent Task] [INFO] Current State=[WaitingForFileBlock], Event=[ReceivedFileBlock], New state=[WaitingForFileBlock]
 3499 569872 [OTA Task ] [INFO]  Received: 278   Queued: 278   Processed: 278   Dropped: 0
-3500 569983 [MQTT Agent Task] [INFO] Publishing message to $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor.
-3501 570169 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor to broker.
-3502 570198 [OTA Agent Task] [INFO] Published to MQTT topic to request the next block: topic=$aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor
+3500 569983 [MQTT Agent Task] [INFO] Publishing message to $aws/things/<mqtt-client-identifier>/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor.
+3501 570169 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/<mqtt-client-identifier>/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor to broker.
+3502 570198 [OTA Agent Task] [INFO] Published to MQTT topic to request the next block: topic=$aws/things/<mqtt-client-identifier>/streams/AFR_OTA-eac26517-1848-4705-8242-97bda52cab40/get/cbor
 3503 570230 [OTA Agent Task] [INFO] Current State=[WaitingForFileBlock], Event=[RequestFileBlock], New state=[WaitingForFileBlock]
 3504 571172 [MQTT Agent Task] [INFO] De-serialized incoming PUBLISH packet: DeserializerResult=MQTTSuccess.
 3505 571187 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
@@ -480,14 +473,11 @@ Creating an empty PS flash layout.
 3507 571210 [OTA Agent Task] [INFO] Received valid file block: Block index=278, Size=2953
 3508 571223 [OTA Agent Task] [INFO] Received final block of the update.
 3509 571894 [OTA Agent Task] [INFO] Received entire update and validated the signature.
-3510 572014 [MQTT Agent Task] [INFO] Publishing message to $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/jobs/AFR_OTA-ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/update.
+3510 572014 [MQTT Agent Task] [INFO] Publishing message to $aws/things/<mqtt-client-identifier>/jobs/AFR_OTA-ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/update.
 3511 573260 [MQTT Agent Task] [INFO] Ack packet deserialized with result: MQTTSuccess.
 3512 573272 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
 3513 573284 [MQTT Agent Task] [INFO] De-serialized incoming PUBLISH packet: DeserializerResult=MQTTSuccess.
 3514 573299 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
-3515 573312 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/iotmsw-ci-test-thing-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/jobs/AFR_OTA-ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/update to broker.
+3515 573312 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/<mqtt-client-identifier>/jobs/AFR_OTA-ota-test-update-id-9ba0432f-e481-4fde-b3e5-a45bcf076e7a/update to broker.
 3516 573343 [OTA Agent Task] [INFO] Received OtaJobEventActivate callback from OTA Agent.
 ```
-
-## Running AWS IoT Core Device Advisor tests
-Follow the instructions described in [Running AWS IoT Core Device Advisor tests](./running_aws_iot_core_device_advisor_tests.md).
