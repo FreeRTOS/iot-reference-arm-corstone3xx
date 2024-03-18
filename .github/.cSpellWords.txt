@@ -37,6 +37,7 @@ coef
 compatibil
 coremqtt
 COSE
+CLRF
 CSRS
 Customisation
 DACTIVATION
@@ -74,6 +75,7 @@ endpointid
 evlog
 EVTOLUX
 evtolux
+feip
 FIFOS
 fftr
 fftwrap
@@ -90,6 +92,7 @@ Hdlcd
 hdlcd
 hkdf
 HKDF
+Hskei
 ICSR
 IDAQAB
 indet
@@ -116,12 +119,14 @@ Libseepx
 LLMNR
 lltoa
 luma
+LUOG
 LUTS
 luts
 MACROFIED
 MAXR
 MAXW
 MAXRW
+mcomplete
 mcuboot
 MCUBOOT
 mbed
@@ -145,6 +150,7 @@ nents
 NIOS
 NSPE
 NVIC
+ohmyzsh
 Onoa
 OPTIM
 OPTIMISED
@@ -159,7 +165,9 @@ pkparse
 pkwrite
 ppuc
 prepoccessor
+PRHNQ
 pyelftools
+pyhsslms
 pyproject
 QADD
 QDADD
@@ -219,6 +227,8 @@ VECTACTIVE
 venv
 vmean
 vsocket
+vsync
+YPJLH
 WGHT
 wght
 WLATENCY
