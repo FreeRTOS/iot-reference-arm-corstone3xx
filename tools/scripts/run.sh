@@ -37,7 +37,7 @@ Examples:
 EOF
 }
 
-SHORT=t:,n:,s:,h,p:,d:
+SHORT=t:,n:,s:,h,p:,f:,d:
 LONG=target:,npu-id:,audio:,help,path:,frames:,debug:
 OPTS=$(getopt -n run --options $SHORT --longoptions $LONG -- "$@")
 
@@ -66,9 +66,10 @@ do
       AUDIO_SOURCE=$2
       shift 2
       ;;
-    --frames )
-      FRAMES=$2
+    -f | --frames )
+      FRAMES=$(realpath "$2")
       shift 2
+      ;;
     -d | --debug )
       GDB_PLUGIN=$(realpath "$2")
       if [ ! -f $GDB_PLUGIN ]; then
@@ -140,7 +141,7 @@ case "$1" in
         MERGED_IMAGE_PATH="$BUILD_PATH/object-detection_merged.elf"
         ;;
     *)
-        echo "Usage: $0 <blinky,keyword-detection,object-detection,speech-recognition>" >&2
+        show_usage
         exit 1
         ;;
 esac
