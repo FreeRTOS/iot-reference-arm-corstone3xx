@@ -11,7 +11,7 @@ HERE="$(dirname "$0")"
 ROOT="$(realpath $HERE/../..)"
 EXAMPLE=""
 CLEAN=0
-BUILD_PATH="$ROOT/build"
+BUILD_PATH="$(realpath $ROOT/build)"
 TARGET="corstone315"
 TARGET_PROCESSOR=""
 ML_INFERENCE_ENGINE="ETHOS"
@@ -88,10 +88,10 @@ Options:
     -s,--audio                  Audio source (ROM | VSI)
     -n | --npu-id               Ethos NPU model identifier (U55 | U65)
     --npu-mac                   Number of 8x8 MACs performed per cycle by the NPU (32 | 64 | 128 | 256 | 512)
-    --toolchain                 Compiler (GNU or ARMCLANG)
+    -T,--toolchain                 Compiler (GNU or ARMCLANG)
     --configure-only Create build tree but do not build
-    --certificate_path          Path to the AWS device certificate
-    --private_key_path          Path to the AWS device private key
+    -C,--certificate_path          Path to the AWS device certificate
+    -P,--private_key_path          Path to the AWS device private key
 Examples:
     blinky, freertos-iot-libraries-tests, keyword-detection, object-detection, speech-recognition
 EOF
@@ -102,7 +102,7 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-SHORT=t:,i:,s:,c,h,p:,n:
+SHORT=t:,i:,T:,s:,c,h,C:,P:p:,n:
 LONG=target:,inference:,toolchain:,audio:,clean,help,configure-only,certificate_path:,private_key_path:,path:,npu-id:,npu-mac:
 OPTS=$(getopt -n build --options $SHORT --longoptions $LONG -- "$@")
 
@@ -120,7 +120,7 @@ do
       shift
       ;;
     -p | --path )
-      BUILD_PATH=$2
+      BUILD_PATH=$(realpath "$2")
       shift 2
       ;;
     -t | --target )
@@ -143,15 +143,15 @@ do
       AUDIO_SOURCE=$2
       shift 2
       ;;
-    --toolchain )
+    -T | --toolchain )
       TOOLCHAIN=$2
       shift 2
       ;;
-    --certificate_path )
+    -C | --certificate_path )
       CERTIFICATE_PATH=$(realpath "$2")
       shift 2
       ;;
-    --private_key_path )
+    -P | --private_key_path )
       PRIVATE_KEY_PATH=$(realpath "$2")
       shift 2
       ;;
