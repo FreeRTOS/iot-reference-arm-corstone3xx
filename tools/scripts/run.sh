@@ -14,6 +14,8 @@ NPU_ID="U65"
 FVP_BIN="FVP_Corstone_SSE-315"
 FRAMES=""
 OPTIONS=""
+DISPLAY=true
+DISPLAY_OPTIONS=""
 
 set -e
 
@@ -24,21 +26,22 @@ Usage: $0 [options] example
 Run an example.
 
 Options:
-    -h,--help   Show this help
-    -p,--path   Build path
-    -t,--target Target to run
-    -s, --audio Audio source (ROM, VSI)
-    -n, --npu-id  NPU ID to use (U55, U65)
-    --frames  Path to camera frames for the ISP to stream
-    -d, --debug   Path to debugger plugin to start FVP
+    -h,--help       Show this help
+    -p,--path       Build path
+    -t,--target     Target to run
+    -s,--audio      Audio source (ROM, VSI)
+    -n,--npu-id     NPU ID to use (U55, U65)
+    -f,--frames     Path to camera frames for the ISP to stream
+    -d,--debug      Path to debugger plugin to start FVP
+    -D,--display    Is display (GUI) available
 
 Examples:
     blinky, keyword-detection, speech-recognition, object-detection
 EOF
 }
 
-SHORT=t:,n:,s:,h,p:,f:,d:
-LONG=target:,npu-id:,audio:,help,path:,frames:,debug:
+SHORT=t:,n:,s:,h,p:,f:,d:,D:
+LONG=target:,npu-id:,audio:,help,path:,frames:,debug:,display:
 OPTS=$(getopt -n run --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -76,6 +79,10 @@ do
         echo "Error: Please provide the path to a `GDBRemoteConnection.so` file"
         exit 2
       fi
+      shift 2
+      ;;
+    -D | --display )
+      DISPLAY=$2
       shift 2
       ;;
     --)
@@ -168,6 +175,10 @@ if [ -f "$GDB_PLUGIN" ]; then
   OPTIONS="--allow-debug-plugin --plugin $GDB_PLUGIN"
 fi
 
+if [ "$DISPLAY" = false ]; then
+  DISPLAY_OPTIONS="-C vis_hdlcd.disable_visualisation=1"
+fi
+
 case "$TARGET" in
     corstone300 | corstone310 )
       OPTIONS="$OPTIONS \
@@ -183,7 +194,8 @@ case "$TARGET" in
       -C mps3_board.DISABLE_GATING=1"
       ;;
     corstone315 )
-      OPTIONS="$OPTIONS -C mps4_board.visualisation.disable-visualisation=1 \
+      OPTIONS="$OPTIONS $DISPLAY_OPTIONS \
+      -C mps4_board.visualisation.disable-visualisation=1 \
       -C core_clk.mul=200000000 \
       -C mps4_board.smsc_91c111.enabled=1 \
       -C mps4_board.hostbridge.userNetworking=1 \

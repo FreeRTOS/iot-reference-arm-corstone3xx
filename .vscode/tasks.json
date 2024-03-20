@@ -39,7 +39,8 @@
                 "${input:FRIApplication}",
                 "${input:FRITarget}",
                 "${input:FRICameraFramesPath}",
-                "${input:FRIBuildDirectory}"
+                "${input:FRIBuildDirectory}",
+                "${input:FRIDisplay}"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -64,6 +65,7 @@
                 "${input:FRIBuildDirectory}",
                 "${input:FRICameraFramesPath}",
                 "${input:FRIGdbDebuggerPlugin}",
+                "${input:FRIDisplay}"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -145,6 +147,16 @@
             "id": "FRIGdbDebuggerPlugin",
             "description": "Where is debugger plugin GDBRemoteConnection.so stored (path)",
             "default": "-dtools/plugin/GDBRemoteConnection.so"
-        }
+        },
+        {
+            "type": "pickString",
+            "id": "FRIDisplay",
+            "description": "Is display (GUI) available?",
+            "options": [
+                "-Dtrue",
+                "-Dfalse"
+            ],
+            "default": "-Dfalse"
+        },
     ]
 }
