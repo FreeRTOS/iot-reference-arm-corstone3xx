@@ -89,7 +89,6 @@ Options:
     -n | --npu-id               Ethos NPU model identifier (U55 | U65)
     --npu-mac                   Number of 8x8 MACs performed per cycle by the NPU (32 | 64 | 128 | 256 | 512)
     -T,--toolchain                 Compiler (GNU or ARMCLANG)
-    --configure-only Create build tree but do not build
     -C,--certificate_path          Path to the AWS device certificate
     -P,--private_key_path          Path to the AWS device private key
 Examples:
@@ -154,10 +153,6 @@ do
     -P | --private_key_path )
       PRIVATE_KEY_PATH=$(realpath "$2")
       shift 2
-      ;;
-    --configure-only )
-      BUILD=0
-      shift
       ;;
     --)
       shift;
