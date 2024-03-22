@@ -123,7 +123,7 @@ the SSL/TLS and DTLS protocols. The project provides reference implementation
 of [PSA Cryptography API Specification](https://developer.arm.com/documentation/ihi0086/b)
 by supporting the cryptographic operations via. PSA Crypto APIs. Follow the
 [link](https://www.trustedfirmware.org/projects/mbed-tls/) for more information
-on Mbed TLS.
+on Mbed TLS. To have a better overview of how Mbed TLS is integrated with the FRI project, you're kindly asked to check [Mbed TLS component document](docs/components/security/mbedtls/mbedtls.md)
 
 ### PKCS11 PSA Shim
 
