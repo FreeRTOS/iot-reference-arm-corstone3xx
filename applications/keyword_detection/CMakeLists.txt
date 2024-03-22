@@ -142,7 +142,6 @@ target_link_libraries(keyword-detection
         helpers-events
         helpers-sntp
         mbedtls
-        mbedtls-threading-freertos
         ota-for-aws-iot-embedded-sdk
         provisioning-lib
         tfm-ns-interface

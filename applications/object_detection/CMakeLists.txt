@@ -126,7 +126,6 @@ target_link_libraries(object-detection
         isp-config
         isp_platform_driver
         mbedtls
-        mbedtls-threading-freertos
         ota-for-aws-iot-embedded-sdk
         provisioning-lib
         tfm-ns-interface

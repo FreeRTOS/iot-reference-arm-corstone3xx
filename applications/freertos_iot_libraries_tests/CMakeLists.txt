@@ -110,7 +110,6 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         ota-for-aws-iot-embedded-sdk
         provisioning-lib
         mbedtls
-        mbedtls-threading-freertos
         tfm-ns-interface
 )
 

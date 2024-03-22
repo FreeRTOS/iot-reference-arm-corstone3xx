@@ -21,6 +21,11 @@ target_link_libraries(mbedtls-threading-freertos
         mbedtls
 )
 
+target_link_libraries(mbedtls-config
+    INTERFACE
+        mbedtls-threading-freertos
+)
+
 target_link_libraries(mbedx509
     PUBLIC
         mbedtls-config
