@@ -13,6 +13,14 @@
     git config --global user.email "email@address"
     git config --global user.name "User Name"
     ```
+
+* Installing CMake
+
+    ```bash
+    sudo apt update
+    sudo apt install cmake -y
+    ```
+
 * Setting up Python 3 virtual environment
 
     ```bash
@@ -97,3 +105,11 @@ argument, you should run:
 ```
 git submodule update --init --recursive
 ```
+
+## Troubleshooting
+
+* If the error `[MQTT Agent Task] DNS_ReadReply returns -11` is appearing, then
+  try disabling DHCP in FreeRTOS TCP/IP stack:
+    * In the file,
+      `applications/<application_name>/configs/freertos_config/FreeRTOSIPConfig.h`,
+      set `ipconfigUSE_DHCP` to value `0`

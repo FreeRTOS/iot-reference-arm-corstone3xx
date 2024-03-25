@@ -13,6 +13,7 @@ ASYM
 BBOOL
 blinky
 Blinky
+buildx
 BWCAP
 CALIB
 cbor
@@ -138,6 +139,7 @@ Merkle
 Mfcc
 MFCC
 MFLN
+mlek
 mqtt
 mqttconfig
 Mqtt

@@ -56,15 +56,15 @@ AWS IoT Core authenticates device connections with the help of X.509 certificate
    and a certificate that's signed  with this key.
    * Optionally you can specify metadata for the certificate. Use the ```-h``` flag for the Python script to see the available options.
   ```bash
-  python ./tools/scripts/generate_credentials.py --certificate_valid_time <validity duration in days > \
-                                                --certificate_country_name <Country Name (2 letter code)> \
-                                                --certificate_state_province_name <State or Province Name (full name)> \
-                                                --certificate_locality_name <Locality Name (eg, city)> \
-                                                --certificate_org_name <Organization Name (eg, company)> \
-                                                --certificate_org_unit_name <Organizational Unit Name (eg, section)> \
-                                                --certificate_email_address_name <Email Address> \
-                                                --certificate_out_path <output path> \
-                                                --private_key_out_path <output path>
+  python3 ./tools/scripts/generate_credentials.py --certificate_valid_time <validity duration in days > \
+                                                  --certificate_country_name <Country Name (2 letter code)> \
+                                                  --certificate_state_province_name <State or Province Name (full name)> \
+                                                  --certificate_locality_name <Locality Name (eg, city)> \
+                                                  --certificate_org_name <Organization Name (eg, company)> \
+                                                  --certificate_org_unit_name <Organizational Unit Name (eg, section)> \
+                                                  --certificate_email_address_name <Email Address> \
+                                                  --certificate_out_path <output path> \
+                                                  --private_key_out_path <output path>
   ```
 1. In the left navigation panel **Manager** section of the AWS IoT console,
    expand **Security**, and then select **Certificates**.

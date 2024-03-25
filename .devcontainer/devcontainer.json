@@ -42,7 +42,7 @@
         }
     },
     "remoteUser": "ubuntu",
-    "postCreateCommand": "bash /workspaces/tmp-project-fri-devcontainer/tools/scripts/container_post_startup.sh",
+    "postCreateCommand": "bash /workspaces/iot-reference-arm-corstone3xx/tools/scripts/container_post_startup.sh",
     "remoteEnv": {
         "PATH": "${containerEnv:PATH}"
     }
