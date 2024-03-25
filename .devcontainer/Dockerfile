@@ -29,13 +29,16 @@ RUN apt-get update && \
     liblzma-dev \
     libncurses5 \
     libncurses5-dev \
+    libncursesw5 \
     libpython3.9-dev \
     libreadline6-dev \
     libsndfile1 \
     libsqlite3-dev \
     libssl-dev \
+    libxcursor-dev \
     lzma \
     lzma-dev \
+    ninja-build \
     pkg-config \
     python3.9 \
     python3-pip \

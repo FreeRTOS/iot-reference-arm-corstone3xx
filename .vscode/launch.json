@@ -14,7 +14,6 @@
             "gdbTarget": ":31627",
             "overrideLaunchCommands": [
                 "-enable-pretty-printing",
-                "load ${input:FRIApplication}.axf",
                 "break main.c:main",
                 "add-symbol-file iot_reference_arm_corstone3xx/components/security/trusted_firmware-m/integration/trusted_firmware-m-build-prefix/src/trusted_firmware-m-build-build/api_ns/bin/bl2.axf",
                 "add-symbol-file iot_reference_arm_corstone3xx/components/security/trusted_firmware-m/integration/trusted_firmware-m-build-prefix/src/trusted_firmware-m-build-build/api_ns/bin/tfm_s.axf",

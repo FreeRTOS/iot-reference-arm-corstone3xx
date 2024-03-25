@@ -71,6 +71,9 @@ https://github.com/FreeRTOS/iot-reference-arm-corstone3xx
 * The VS Code window (instance) will reload, clone the source code, and start
 building the dev container. A progress notification provides status updates.
 
+If building the container fails, then check the [troubleshooting](#troubleshooting)
+section for possible solutions.
+
 Note:
   `zsh` and `ohmyzsh` is setup by default in the container. If you would like to
   use `bash`, then:
@@ -156,16 +159,33 @@ These options allow you to run reference applications in debug mode.
 * On the top right corner, click on `Downloads`
 * In the search window enter `FM000A`
   * Click on the search result `Fast Models (FM000A)`
-* Download `Third Party Add-ons for Fast Models` for your operating system
-* The `Third Party Add-ons for Fast Models` installer needs Graphical User
-Interface, therefore, if you are running the installer in VS Code devcontainer,
-then make sure X11 forwarding is working between devcontainer and host before
-running following the following:
-  * copy downloaded ``Third Party Add-ons for Fast Models` to devcontainer
-  (drag and drop from host to devcontainer)
-  * tar -xzf FastModels_ThirdParty_IP_11-25_b15_Linux64_armv8l.tgz
-  * cd FastModels_ThirdParty_IP_11-25_Linux64_armv8l
-  * ./setup.bin
+* Download `Third Party Add-ons for Fast Models <version> on Linux`[AArch64/x86]
+  based on the processor architecture of the machine
+* copy downloaded ``Third Party Add-ons for Fast Models` to devcontainer
+(drag and drop from host to devcontainer)
+
+  ```bash
+  tar -xzf FastModels_ThirdParty_IP_11-25_b15_Linux64[_armv8l].tgz
+  cd FastModels_ThirdParty_IP_11-25_Linux64[_armv8l]
+  ./setup.bin --i-accept-the-end-user-license-agreement
+  ```
+
+  > Note:
+      Using this option means you have read and accepted the terms and
+      conditions of the End User License Agreement for the product and version
+      installed.
+
+      NOTICE FOR SOFTWARE FILES DELIVERED BY ARM LIMITED FOR CONVENIENCE ONLY
+
+      THIS NOTICE ("NOTICE") IS FOR THE USE OF THE SOFTWARE ACCOMPANYING THIS
+      NOTICE. ARM IS ONLY DELIVERING THE SOFTWARE TO YOU FOR CONVENIENCE ON
+      CONDITION THAT YOU ACCEPT THAT THE SOFTWARE IS NOT LICENSED TO YOU BY ARM
+      BUT THAT THE SOFTWARE IS SUBJECT TO A SEPARATE LICENSE. BY CLICKING
+      "I AGREE" OR BY INSTALLING OR OTHERWISE USING OR COPYING THE SOFTWARE YOU
+      INDICATE THAT YOU AGREE TO BE BOUND BY ALL THE TERMS OF THE INDIVIDUAL
+      LICENSE AGREEMENTS OF THE SOFTWARE AND IF YOU DO NOT AGREE TO THE TERMS OF
+      THIS NOTICE, ARM IS UNWILLING TO DELIVER THE SOFTWARE TO YOU AND YOU MAY
+      NOT INSTALL, USE OR COPY THE SOFTWARE.
 
   Once the installation is successful, the GDBRemoteConnection library can be
   found in
@@ -195,3 +215,28 @@ Run and Debug (Ctrl+Shift+D)
 
 As soon as a debugging session starts, the DEBUG CONSOLE panel is displayed and
 shows debugging output.
+
+## Troubleshooting
+
+### Linux machines
+
+* If building the container fails with:
+  ```
+  ERROR [3/5] RUN apk add --no-cache  git-lfs  nodejs  python3  npm  make  g++
+  docker-cli  docker-cli-buildx  docker-cli-compose  openssh-client-def
+  ```
+    then, try turing VPN off and rebuild the container.
+* If the error `[MQTT Agent Task] DNS_ReadReply returns -11` is appearing even
+  with VPN turned off, then try disabling DHCP in FreeRTOS TCP/IP stack:
+    * In the file,
+      `applications/<application_name>/configs/freertos_config/FreeRTOSIPConfig.h`,
+      set `ipconfigUSE_DHCP` to value `0`
+
+### Windows machines
+
+* If building the container fails with:
+  ```
+  ERROR [3/5] RUN apk add --no-cache  git-lfs  nodejs  python3  npm  make  g++
+  docker-cli  docker-cli-buildx  docker-cli-compose  openssh-client-def
+  ```
+    then, try turing VPN off and rebuild the container.
