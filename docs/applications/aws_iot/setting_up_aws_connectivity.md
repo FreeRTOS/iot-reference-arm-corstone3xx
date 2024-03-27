@@ -23,7 +23,6 @@ via MQTT as well as enable an over-the-air update.
 1. Login to your account and browse to the [AWS IoT console](https://console.aws.amazon.com/iotv2/).
    * If this takes you to AWS Console, click on **Services** above and then
      click on **IoT Core**.
-   * Ensure your **Region** is correct.
 1. In the left navigation pane **Manage** section, expand **All devices** then
    select **Things**.
    * These instructions assume you do not have any IoT things registered in

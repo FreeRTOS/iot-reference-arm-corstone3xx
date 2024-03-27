@@ -39,15 +39,15 @@ of the verification fails, then MCUBoot stops the booting process.
 
 To see messages being sent by the application:
 1. Login to your account and browse to the [AWS IoT console](https://console.aws.amazon.com/iotv2/).
-1. In the left navigation panel, choose **Manage**, and then choose **Things**.
+1. In the left navigation panel, choose **Manage**, followed by **All devices**, and then choose **Things**.
 1. Select the thing you created, and open the **Activity** tab. This will show
    the application connecting and subscribing to a topic.
 1. Click on the **MQTT test client** button. This will open a new page.
 1. Click on **Subscribe to a topic**.
 1. In the **Subscription topic** field enter the topic name
-   `pubsub/<mqtt-client-identifier>/task_0`
+   `<mqtt-client-identifier>/ml/inference.`
     > `mqtt-client-identifier` value is defined in
-      `configs/aws_configs/aws_clientcredential.h` as
+      `applications/<application_name>/configs/aws_configs/aws_clientcredential.h` as
       `clientcredentialIOT_THING_NAME`.
 1. In the **MQTT payload display** combo box select `Display payloads as
    strings (more accurate)`
@@ -90,8 +90,7 @@ in the next step.
    * For simplicity, use the same region for the bucket as where your Instance
     is located.
 1. Follow the instructions at: [Create an OTA Update service role](https://docs.aws.amazon.com/freertos/latest/userguide/create-service-role.html)
-1. Follow the instructions at: [Create an OTA user policy](https://docs.aws.amazon.com/freertos/latest/userguide/create-ota-user-policy.html)
-1. Go to AWS IoT web interface and choose **Manage** and then **Jobs**
+1. Go to AWS IoT web interface and choose **Manage** followed by **Remote actions**, and then **Jobs**
 1. Click the create job button and select **Create FreeRTOS OTA update job**
 1. Give it a name and click next
 1. Select the device to update (the Thing you created in earlier steps)
@@ -109,10 +108,8 @@ in the next step.
 1. For **Path name of file on device** put in `non_secure image`
 1. As the role, select the OTA role you created in step 2.
 1. Click next
-1. Create an ID for you Job
-1. Add a description
 1. **Job type**, select
    *Your job will complete after deploying to the selected devices/groups
    (snapshot).*
-1. Click next, your update job is ready and running - next time your
-   application connects it will perform the update.
+1. Click next, now your update job is ready and running
+   * If your application is connected to AWS, the update will begin immediately. If not, next time your application connects to AWS it will perform the update.
