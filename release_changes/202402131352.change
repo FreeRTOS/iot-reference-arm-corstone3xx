@@ -1,3 +1,0 @@
-aws-iot-example: Remove example.
-ci: Build ML apps in Github Actions
-keyword-detection: Add AWS Device Advisor validation.

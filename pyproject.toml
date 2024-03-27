@@ -5,8 +5,8 @@ build-backend = "setuptools.build_meta"
 local_scheme = "no-local-version"
 
 [tool.towncrier]
-directory = "release_changes"
-filename = "CHANGELOG.md"
+directory = "../release_changes"
+filename = "../CHANGELOG.md"
 template = "tools/ci/towncrier/template.rst"
 
 [[tool.towncrier.type]]

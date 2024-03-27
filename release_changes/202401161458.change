@@ -1,3 +1,0 @@
-ml-eval-kit: Require apps to include build CMake module
-ml-eval-kit: Remove default NPU config list patch
-ml-eval-kit: Build individual libraries

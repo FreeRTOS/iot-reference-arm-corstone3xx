@@ -1,5 +1,5 @@
 name : "IoT Reference Integration for Corstone-3xx"
-version: "v202307.00-preview"
+version: "v202403.00"
 description: |-
   "Reference IoT integration projects using the Arm Corstone platforms and FreeRTOS libraries"
 dependencies:
@@ -12,7 +12,7 @@ dependencies:
       path: "components/freertos_kernel/library"
   - name: "arm-corstone-platform-bsp"
     license: "Apache-2.0"
-    version: "e4a99aed488057bd15315b88e1ee9d8a63df767f"
+    version: "v0.3.0"
     repository:
       type: "git"
       url: "https://git.gitlab.arm.com/iot/open-iot-sdk/arm-corstone-platform-bsp.git"
