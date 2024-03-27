@@ -19,19 +19,19 @@ setup correctly before proceeding.
 
 To build the blinky example, run the following command:
 ```bash
-./tools/scripts/build.sh blinky
+./tools/scripts/build.sh blinky --target <corstone300/corstone310/corstone315> --toolchain <ARMCLANG/GNU>
 ```
 
 Run the command below to perform a clean build:
 ```bash
-./tools/scripts/build.sh blinky -c
+./tools/scripts/build.sh blinky --target <corstone300/corstone310/corstone315> --toolchain <ARMCLANG/GNU> -c
 ```
 
 ## Running the application
 
 To run the blinky example, run the following command:
 ```bash
-./tools/scripts/run.sh blinky
+./tools/scripts/run.sh blinky --target <corstone300/corstone310/corstone315>
 ```
 
 ### Expected output

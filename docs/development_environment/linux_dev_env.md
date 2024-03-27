@@ -76,7 +76,11 @@ Follow the intructions in the [document](./pre_commit_and_towncrier_setup.md)
 to setup pre-commit hooks and towncrier.
 
 Run the [setup_python_vsi.sh](../../tools/scripts/setup_python_vsi.sh) script
-to setup the needed Python environment for VSI to work.
+to setup the needed Python environment for VSI to work:
+
+```bash
+./tools/scripts/setup_python_vsi.sh
+```
 
 ## Cloning the Repository
 

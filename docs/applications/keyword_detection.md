@@ -47,7 +47,7 @@ Follow the instructions described in [Setting Up AWS Connectivity](./aws_iot/set
 To build the Keyword-Detection example, run the following command:
 
 ```bash
-./tools/scripts/build.sh keyword-detection --certificate_path <certificate pem's path> --private_key_path <private key pem's path> --target <corstone300/corstone310> --inference <ETHOS/SOFTWARE> --audio <ROM/VSI>
+./tools/scripts/build.sh keyword-detection --certificate_path <certificate pem's path> --private_key_path <private key pem's path> --target <corstone300/corstone310/corstone315> --inference <ETHOS/SOFTWARE> --audio <ROM/VSI> --toolchain <ARMCLANG/GNU>
 ```
 * The `certificate pem's path` and `private key pem's path` should be the downloaded key's and certificate's path if you chose the **Auto-generate a new certificate** during the Thing creation. If you chose **Skip creating a certificate at this time** then these paths should locate the generated credential files that were created by the `./tools/scripts/generate_credentials.py` script in the previous step.
 
@@ -58,7 +58,7 @@ To build the Keyword-Detection example, run the following command:
 Or, run the command below to perform a clean build:
 
 ```bash
-./tools/scripts/build.sh keyword-detection --certificate_path <certificate pem's path> --private_key_path <private key pem's path> --target <corstone300/corstone310> --inference <ETHOS/SOFTWARE> --audio <ROM/VSI> -c
+./tools/scripts/build.sh keyword-detection --certificate_path <certificate pem's path> --private_key_path <private key pem's path> --target <corstone300/corstone310/corstone315> --inference <ETHOS/SOFTWARE> --audio <ROM/VSI> --toolchain <ARMCLANG/GNU> -c
 ```
 
 ## Provisioning the device credentials into Protected Storage
@@ -68,12 +68,16 @@ Check [Device Provisioning](./device_provisioning/device_provisioning.md) for de
 ## Running the application
 
 ### Note:
-If you would like to run the keyword detection application using VSI configuration as the input audio source, you must run the [setup_python_vsi.sh](../../tools/scripts/setup_python_vsi.sh) script to setup the needed Python environment for VSI prior to running the application.
+If you would like to run the keyword detection application using VSI configuration as the input audio source, you must run the [setup_python_vsi.sh](../../tools/scripts/setup_python_vsi.sh) script to setup the needed Python environment for VSI prior to running the application:
+
+```bash
+./tools/scripts/setup_python_vsi.sh
+```
 
 To run the Keyword-Detection example, run the following command:
 
 ```bash
-./tools/scripts/run.sh keyword-detection --target <corstone300/corstone310> --audio <ROM/VSI>
+./tools/scripts/run.sh keyword-detection --target <corstone300/corstone310/corstone315> --audio <ROM/VSI>
 ```
 
 ### Expected output
@@ -131,16 +135,11 @@ Creating an empty PS flash layout.
 30 8376 [OTA Task ] [INFO]  Received: 0   Queued: 0   Processed: 0   Dropped: 0
 31 8388 [OTA Agent Task] [WARN] Index: 0. OTA event id: 0
 32 8397 [OTA Agent Task] [WARN] Index: 1. OTA event id: 2
-33 8446 [MQTT PUB SUB] [INFO] Subscribed to topic pubsub/<mqtt-client-identifier>/task_0.
-34 8464 [MQTT PUB SUB] [INFO] Successfully subscribed to topic: pubsub/<mqtt-client-identifier>/task_0
 35 9279 [OTA Agent Task] [INFO] Subscribed to topic $aws/things/<mqtt-client-identifier>/jobs/notify-next.
 36 9300 [OTA Agent Task] [INFO] Subscribed to MQTT topic: $aws/things/<mqtt-client-identifier>/jobs/notify-next
-37 10029 [MQTT Agent Task] [INFO] Publishing message to pubsub/<mqtt-client-identifier>/task_0.
-38 10084 [MQTT PUB SUB] [INFO] Sent PUBLISH packet to broker pubsub/<mqtt-client-identifier>/task_0 to broker.
 39 10105 [MQTT Agent Task] [INFO] De-serialized incoming PUBLISH packet: DeserializerResult=MQTTSuccess.
 40 10119 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
 41 10131 [MQTT Agent Task] [INFO] Received incoming publish message Task 0 publishing message 0
-42 10145 [MQTT PUB SUB] [INFO] Successfully sent QoS 0 publish to topic: pubsub/<mqtt-client-identifier>/task_0 (PassCount:1, FailCount:0).
 43 10894 [MQTT Agent Task] [INFO] Publishing message to $aws/things/<mqtt-client-identifier>/jobs/$next/get.
 44 10986 [MQTT Agent Task] [INFO] Ack packet deserialized with result: MQTTSuccess.
 45 10998 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
