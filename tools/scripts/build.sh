@@ -276,11 +276,6 @@ if [ "$EXAMPLE" != "blinky" ] && [ ! -f "$PRIVATE_KEY_PATH" ]; then
     exit 2
 fi
 
-if [ "$EXAMPLE" == "speech-recognition" ] && [ "$ML_INFERENCE_ENGINE" == "SOFTWARE" ]; then
-    echo "Error: Invalid combination of example and ML Inference engine. speech-recognition only support ETHOS ML Inference" >&2
-    exit 1
-fi
-
 if [ "$EXAMPLE" == "object-detection" ] && [ "$TARGET" != "corstone315" ]; then
     echo "Error: Invalid combination of example and target. object-detection only supports corstone315" >&2
     exit 2
