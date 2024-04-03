@@ -1,4 +1,4 @@
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -10,6 +10,7 @@ add_library(mbedtls-config INTERFACE)
 target_link_libraries(mbedtls
     PUBLIC
         mbedtls-config
+        tfm-ns-interface
 )
 
 add_library(mbedtls-threading-freertos

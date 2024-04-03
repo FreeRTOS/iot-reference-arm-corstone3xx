@@ -1,0 +1,45 @@
+From 6f7cd697c427d9f7430d668a3412997c0a053701 Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Tue, 30 Apr 2024 14:13:29 +0100
+Subject: [PATCH] md: Fix guards for functions and headers
+
+The guard should be CRYPTO_CLIENT and not CRYPTO_C as these
+function/headers can be used even when CRYPTO_C is not defined.
+
+Signed-off-by: Ahmed Ismail <Ahmed.Ismail@arm.com>
+---
+ library/md.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/library/md.c b/library/md.c
+index 12a3ea237..c95846aa0 100644
+--- a/library/md.c
++++ b/library/md.c
+@@ -41,7 +41,7 @@
+ #include "mbedtls/sha512.h"
+ #include "mbedtls/sha3.h"
+ 
+-#if defined(MBEDTLS_PSA_CRYPTO_C)
++#if defined(MBEDTLS_PSA_CRYPTO_CLIENT)
+ #include <psa/crypto.h>
+ #include "md_psa.h"
+ #include "psa_util_internal.h"
+@@ -761,13 +761,13 @@ mbedtls_md_type_t mbedtls_md_get_type(const mbedtls_md_info_t *md_info)
+     return md_info->type;
+ }
+ 
+-#if defined(MBEDTLS_PSA_CRYPTO_C)
++#if defined(MBEDTLS_PSA_CRYPTO_CLIENT)
+ int mbedtls_md_error_from_psa(psa_status_t status)
+ {
+     return PSA_TO_MBEDTLS_ERR_LIST(status, psa_to_md_errors,
+                                    psa_generic_status_to_mbedtls);
+ }
+-#endif /* MBEDTLS_PSA_CRYPTO_C */
++#endif /* MBEDTLS_PSA_CRYPTO_CLIENT */
+ 
+ 
+ /************************************************************************
+-- 
+2.34.1
+

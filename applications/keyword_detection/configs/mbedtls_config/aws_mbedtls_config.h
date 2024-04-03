@@ -11,6 +11,8 @@
 /*
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright 2024 Arm Limited and/or its affiliates
+ *  <open-source-office@arm.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -1755,7 +1757,7 @@ void mbedtls_platform_free( void * ptr );
  *
  * Uncomment this to enable internal use of PSA Crypto and new associated APIs.
  */
-/*#define MBEDTLS_USE_PSA_CRYPTO */
+#define MBEDTLS_USE_PSA_CRYPTO
 
 /**
  * \def MBEDTLS_PSA_CRYPTO_CONFIG
