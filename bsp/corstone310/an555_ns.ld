@@ -59,7 +59,7 @@ __RAM_SIZE = (ISRAM1_SIZE - PROVISIONING_SIZE);
     <o1> Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
   </h>
   -----------------------------------------------------------------------------*/
-__STACK_SIZE = 0x00001000;
+__STACK_SIZE = 0x00002000;
 __HEAP_SIZE  = 0x000C0000;
 
 /*
