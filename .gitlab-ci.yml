@@ -21,12 +21,11 @@ variables:
 # They can be used to set matrix parameters and extended using << : .anchor syntax
 .pipeline_config_corstone315: &pipeline_config_corstone315
   TARGET: [corstone315]
-  TOOLCHAIN: [ARMCLANG, GNU]
 .pipeline_config_corstone310: &pipeline_config_corstone310
   TARGET: [corstone310]
-  TOOLCHAIN: [ARMCLANG, GNU]
 .pipeline_config_corstone300: &pipeline_config_corstone300
   TARGET: [corstone300]
+.pipeline_config_toolchain: &pipeline_config_toolchain
   TOOLCHAIN: [ARMCLANG, GNU]
 
 stages:
@@ -43,36 +42,13 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-# This base job load the right docker image and sets some default variables
-.base_job:
-  extends: .base-job-rules
-  tags:
-    - iotmsw-amd64
-  before_script:
-    - python -m pip install pyelftools
-    - |
-      if [ $TARGET == "corstone300" ];then
-        FVP_BIN=FVP_Corstone_SSE-300_Ethos-U55
-      fi
-    - |
-      if [ $TARGET == "corstone310" ];then
-        FVP_BIN=FVP_Corstone_SSE-310
-      fi
-    - |
-      if [ $TARGET == "corstone315" ];then
-        FVP_BIN=FVP_Corstone_SSE-315
-      fi
-  parallel:
-    matrix:
-      - *pipeline_config_corstone315
-      - *pipeline_config_corstone310
-      - *pipeline_config_corstone300
-  variables:
-    PYTHONUNBUFFERED: 1
-
 # This build job is used as a template for building the available platforms' applications
 .build_job:
-  extends: .base_job
+  tags:
+    - iotmsw-amd64
+  extends: .base-job-rules
+  before_script:
+    - python -m pip install pyelftools
   script:
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - ./tools/ci/generate_credentials.sh -f -p applications/${APP_UNDERSCORED}/configs/aws_configs
@@ -98,12 +74,6 @@ workflow:
           applications/${APP_UNDERSCORED}/configs/aws_configs
       fi
 
-# The test job extends .basejob. It add rules to map targets to FVP binaries,
-# require the application to be built and retrieve the artifacts.
-.test_job:
-  stage: test
-  extends: .base_job
-
 # Build Corstone315 applications which later are tested.
 build-applications-corstone315:
   stage: build
@@ -111,26 +81,10 @@ build-applications-corstone315:
   parallel:
     matrix:
        -
-         << : *pipeline_config_corstone315
-         APP: [blinky]
+         << : [*pipeline_config_corstone315, *pipeline_config_toolchain]
+         APP: [blinky, keyword-detection, speech-recognition, object-detection]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
-       -
-         << : *pipeline_config_corstone315
-         APP: [keyword-detection]
-         INFERENCE: [ETHOS, SOFTWARE]
-         AUDIO: [ROM, VSI]
-       -
-         << : *pipeline_config_corstone315
-         APP: [speech-recognition]
-         INFERENCE: [ETHOS]
-         AUDIO: [ROM, VSI]
-       -
-         << : *pipeline_config_corstone315
-         APP: [object-detection]
-         INFERENCE: [ETHOS, SOFTWARE]
-         AUDIO: [ROM]
-
   artifacts:
     paths:
       - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
@@ -145,21 +99,10 @@ build-applications-corstone310:
   parallel:
     matrix:
        -
-         << : *pipeline_config_corstone310
-         APP: [blinky]
+         << : [*pipeline_config_corstone310, *pipeline_config_toolchain]
+         APP: [blinky, keyword-detection, speech-recognition]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
-       -
-         << : *pipeline_config_corstone310
-         APP: [keyword-detection]
-         INFERENCE: [ETHOS, SOFTWARE]
-         AUDIO: [ROM, VSI]
-       -
-         << : *pipeline_config_corstone310
-         APP: [speech-recognition]
-         INFERENCE: [ETHOS]
-         AUDIO: [ROM, VSI]
-
   artifacts:
     paths:
       - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
@@ -167,34 +110,51 @@ build-applications-corstone310:
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
 
-# Build Corstone310 applications which later are tested.
+# Build Corstone300 applications which later are tested.
 build-applications-corstone300:
   stage: build
   extends: .build_job
   parallel:
     matrix:
        -
-         << : *pipeline_config_corstone300
-         APP: [blinky]
+         << : [*pipeline_config_corstone300, *pipeline_config_toolchain]
+         APP: [blinky, keyword-detection, speech-recognition]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
-       -
-         << : *pipeline_config_corstone300
-         APP: [keyword-detection]
-         INFERENCE: [ETHOS, SOFTWARE]
-         AUDIO: [ROM, VSI]
-       -
-         << : *pipeline_config_corstone300
-         APP: [speech-recognition]
-         INFERENCE: [ETHOS]
-         AUDIO: [ROM, VSI]
-
   artifacts:
     paths:
       - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
     expire_in: 1 week
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
+
+# The test job extends .basejob. It add rules to map targets to FVP binaries,
+# require the application to be built and retrieve the artifacts.
+.test_job:
+  tags:
+    - iotmsw-amd64
+  extends: .base-job-rules
+  before_script:
+    - python -m pip install pyelftools
+    - |
+      if [ $TARGET == "corstone300" ];then
+        FVP_BIN=FVP_Corstone_SSE-300_Ethos-U55
+      fi
+    - |
+      if [ $TARGET == "corstone310" ];then
+        FVP_BIN=FVP_Corstone_SSE-310
+      fi
+    - |
+      if [ $TARGET == "corstone315" ];then
+        FVP_BIN=FVP_Corstone_SSE-315
+      fi
+  parallel:
+    matrix:
+      - *pipeline_config_corstone315
+      - *pipeline_config_corstone310
+      - *pipeline_config_corstone300
+  variables:
+    PYTHONUNBUFFERED: 1
 
 test-blinky-output:
   extends: .test_job
@@ -218,34 +178,28 @@ test-blinky-output:
   parallel:
     matrix:
        -
-         << : *pipeline_config_corstone315
+         << : [*pipeline_config_corstone315, *pipeline_config_toolchain]
          APP: [blinky]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
        -
-         << : *pipeline_config_corstone310
+         << : [*pipeline_config_corstone310, *pipeline_config_toolchain]
          APP: [blinky]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
        -
-         << : *pipeline_config_corstone300
+         << : [*pipeline_config_corstone300, *pipeline_config_toolchain]
          APP: [blinky]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
 
-# The test-applications job should wait for build-applications job to finish as
-# test-applications job uses the output build artifacts from build-applications job.
-test-applications:
+.test-applications_base:
   extends: .test_job
-  needs:
-    - job: build-applications-corstone315
-      artifacts: true
-    - job: build-applications-corstone310
-      artifacts: true
-    - job: build-applications-corstone300
-      artifacts: true
   script:
-    - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
+    - |
+      if [[ -f "${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz" ]]; then
+        tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
+      fi
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - |
       if [[ $AUDIO == "VSI" ]]; then
@@ -282,47 +236,42 @@ test-applications:
         --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
         --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
       fi
+
+# The test-ml-applications-output job should wait for build-applications-corstone3xx jobs to finish as
+# this test job uses the output build artifacts from build-applications-corstone3xx jobs.
+test-ml-applications-output:
+  extends: .test-applications_base
+  needs:
+  - job: build-applications-corstone315
+    artifacts: true
+  - job: build-applications-corstone310
+    artifacts: true
+  - job: build-applications-corstone300
+    artifacts: true
   parallel:
     matrix:
        -
          << : *pipeline_config_corstone315
-         APP: [keyword-detection]
-         INFERENCE: [ETHOS, SOFTWARE]
-         AUDIO: [ROM, VSI]
-       -
-         << : *pipeline_config_corstone315
-         APP: [speech-recognition]
+         APP: [keyword-detection, speech-recognition, object-detection]
          INFERENCE: [ETHOS]
-         AUDIO: [ROM, VSI]
-       -
-         << : *pipeline_config_corstone315
-         APP: [object-detection]
-         INFERENCE: [ETHOS, SOFTWARE]
          AUDIO: [ROM]
+         TOOLCHAIN: [ARMCLANG]
        -
          << : *pipeline_config_corstone310
-         APP: [keyword-detection]
-         INFERENCE: [ETHOS, SOFTWARE]
-         AUDIO: [ROM, VSI]
-       -
-         << : *pipeline_config_corstone310
-         APP: [speech-recognition]
+         APP: [keyword-detection, speech-recognition]
          INFERENCE: [ETHOS]
-         AUDIO: [ROM, VSI]
+         AUDIO: [ROM]
+         TOOLCHAIN: [ARMCLANG]
        -
          << : *pipeline_config_corstone300
-         APP: [keyword-detection]
-         INFERENCE: [ETHOS, SOFTWARE]
-         AUDIO: [ROM, VSI]
-       -
-         << : *pipeline_config_corstone300
-         APP: [speech-recognition]
+         APP: [keyword-detection, speech-recognition]
          INFERENCE: [ETHOS]
-         AUDIO: [ROM, VSI]
+         AUDIO: [ROM]
+         TOOLCHAIN: [ARMCLANG]
 
 integration-tests:
+  extends: .test_job
   stage: test
-  extends: .base_job
   rules:
     - if: ( $SCHEDULED_JOB_TO_RUN == "integration-tests" )
   script:
@@ -347,14 +296,132 @@ integration-tests:
   parallel:
     matrix:
       -
-        << : *pipeline_config_corstone315
+        << : [*pipeline_config_corstone315, *pipeline_config_toolchain]
         APP: [freertos-iot-libraries-tests]
       -
-        << : *pipeline_config_corstone310
+        << : [*pipeline_config_corstone310, *pipeline_config_toolchain]
         APP: [freertos-iot-libraries-tests]
       -
-        << : *pipeline_config_corstone300
+        << : [*pipeline_config_corstone300, *pipeline_config_toolchain]
         APP: [freertos-iot-libraries-tests]
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+
+sw-vsi-configs-test:
+  extends:
+  - .build_job
+  rules:
+  - if: ( $SCHEDULED_JOB_TO_RUN == "sw-vsi-configs-test" )
+  after_script:
+    # test_job's `before_script` section is referenced in the `after_script` section to set the correct value for FVP_BIN variable used in testing.
+    # test-applications_base job's `script` section is referenced in the `after_script` section of
+    # this job to do the testing part after the build stage is done where the build stage is inherited
+    # from `.build_job`
+    - !reference [.test_job, before_script]
+    - !reference [.test-applications_base, script]
+  parallel:
+    matrix:
+       -
+         << : *pipeline_config_corstone315
+         APP: [keyword-detection, speech-recognition]
+         INFERENCE: [ETHOS]
+         AUDIO: [VSI]
+         TOOLCHAIN: [ARMCLANG]
+       -
+         << : *pipeline_config_corstone315
+         APP: [keyword-detection]
+         INFERENCE: [SOFTWARE]
+         AUDIO: [ROM, VSI]
+         TOOLCHAIN: [ARMCLANG]
+       -
+         << : *pipeline_config_corstone315
+         APP: [object-detection]
+         INFERENCE: [SOFTWARE]
+         AUDIO: [ROM]
+         TOOLCHAIN: [ARMCLANG]
+       -
+         << : *pipeline_config_corstone310
+         APP: [keyword-detection, speech-recognition]
+         INFERENCE: [ETHOS]
+         AUDIO: [VSI]
+         TOOLCHAIN: [ARMCLANG]
+       -
+         << : *pipeline_config_corstone310
+         APP: [keyword-detection]
+         INFERENCE: [SOFTWARE]
+         AUDIO: [ROM, VSI]
+         TOOLCHAIN: [ARMCLANG]
+       -
+         << : *pipeline_config_corstone300
+         APP: [keyword-detection, speech-recognition]
+         INFERENCE: [ETHOS]
+         AUDIO: [VSI]
+         TOOLCHAIN: [ARMCLANG]
+       -
+         << : *pipeline_config_corstone300
+         APP: [keyword-detection]
+         INFERENCE: [SOFTWARE]
+         AUDIO: [ROM, VSI]
+         TOOLCHAIN: [ARMCLANG]
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+
+gnu-toolchain-test:
+  extends:
+  - .build_job
+  rules:
+  - if: ( $SCHEDULED_JOB_TO_RUN == "gnu-toolchain-test" )
+  after_script:
+    # test_job's `before_script` section is referenced in the `after_script` section to set the correct value for FVP_BIN variable used in testing.
+    # test-applications_base job's `script` section is referenced in the `after_script` section of
+    # this job to do the testing part after the build stage is done where the build stage is inherited
+    # from `.build_job`
+    - !reference [.test_job, before_script]
+    - !reference [.test-applications_base, script]
+  parallel:
+    matrix:
+       -
+         << : *pipeline_config_corstone315
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS, SOFTWARE]
+         AUDIO: [ROM,VSI]
+         TOOLCHAIN: [GNU]
+       -
+         << : *pipeline_config_corstone315
+         APP: [speech-recognition]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM,VSI]
+         TOOLCHAIN: [GNU]
+       -
+         << : *pipeline_config_corstone315
+         APP: [object-detection]
+         INFERENCE: [ETHOS, SOFTWARE]
+         AUDIO: [ROM]
+         TOOLCHAIN: [GNU]
+       -
+         << : *pipeline_config_corstone310
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS, SOFTWARE]
+         AUDIO: [ROM,VSI]
+         TOOLCHAIN: [GNU]
+       -
+         << : *pipeline_config_corstone310
+         APP: [speech-recognition]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM,VSI]
+         TOOLCHAIN: [GNU]
+       -
+         << : *pipeline_config_corstone300
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS, SOFTWARE]
+         AUDIO: [ROM,VSI]
+         TOOLCHAIN: [GNU]
+       -
+         << : *pipeline_config_corstone300
+         APP: [speech-recognition]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM,VSI]
+         TOOLCHAIN: [GNU]
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
 
