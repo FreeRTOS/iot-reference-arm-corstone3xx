@@ -19,21 +19,15 @@ variables:
 
 # Those fragments contain base variables required by pipelines for applications.
 # They can be used to set matrix parameters and extended using << : .anchor syntax
-.pipeline_config_non_ml_applications: &pipeline_config_non_ml_applications
-  TARGET: [corstone315, corstone310, corstone300]
-  TOOLCHAIN: [ARMCLANG, GNU]
-  INFERENCE: [ETHOS]
-  AUDIO: [ROM]
-.pipeline_config_ml_applications: &pipeline_config_ml_applications
-  TARGET: [corstone315, corstone310, corstone300]
-  TOOLCHAIN: [ARMCLANG, GNU]
-  AUDIO: [ROM, VSI]
-.pipeline_config_object_detection_applications: &pipeline_config_object_detection_applications
+.pipeline_config_corstone315: &pipeline_config_corstone315
   TARGET: [corstone315]
   TOOLCHAIN: [ARMCLANG, GNU]
-  INFERENCE: [ETHOS, SOFTWARE]
-  AUDIO: [ROM]
-  APP: [object-detection]
+.pipeline_config_corstone310: &pipeline_config_corstone310
+  TARGET: [corstone310]
+  TOOLCHAIN: [ARMCLANG, GNU]
+.pipeline_config_corstone300: &pipeline_config_corstone300
+  TARGET: [corstone300]
+  TOOLCHAIN: [ARMCLANG, GNU]
 
 stages:
   - quality-check
@@ -70,24 +64,14 @@ workflow:
       fi
   parallel:
     matrix:
-      - *pipeline_config_non_ml_applications
-      - *pipeline_config_ml_applications
-      - *pipeline_config_object_detection_applications
+      - *pipeline_config_corstone315
+      - *pipeline_config_corstone310
+      - *pipeline_config_corstone300
   variables:
     PYTHONUNBUFFERED: 1
 
-# The test job extends .basejob. It add rules to map targets to FVP binaries,
-# require the application to be built and retrieve the artifacts.
-.test_job:
-  stage: test
-  extends: .base_job
-  needs:
-    - job: build-applications
-      artifacts: true
-
-# Build all the applications which later are tested.
-build-applications:
-  stage: build
+# This build job is used as a template for building the available platforms' applications
+.build_job:
   extends: .base_job
   script:
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
@@ -113,21 +97,97 @@ build-applications:
           build/update-signature.txt \
           applications/${APP_UNDERSCORED}/configs/aws_configs
       fi
+
+# The test job extends .basejob. It add rules to map targets to FVP binaries,
+# require the application to be built and retrieve the artifacts.
+.test_job:
+  stage: test
+  extends: .base_job
+
+# Build Corstone315 applications which later are tested.
+build-applications-corstone315:
+  stage: build
+  extends: .build_job
   parallel:
     matrix:
        -
-         << : *pipeline_config_non_ml_applications
+         << : *pipeline_config_corstone315
          APP: [blinky]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
        -
-         << : *pipeline_config_ml_applications
+         << : *pipeline_config_corstone315
          APP: [keyword-detection]
          INFERENCE: [ETHOS, SOFTWARE]
+         AUDIO: [ROM, VSI]
        -
-         << : *pipeline_config_ml_applications
+         << : *pipeline_config_corstone315
          APP: [speech-recognition]
          INFERENCE: [ETHOS]
+         AUDIO: [ROM, VSI]
        -
-         << : *pipeline_config_object_detection_applications
+         << : *pipeline_config_corstone315
+         APP: [object-detection]
+         INFERENCE: [ETHOS, SOFTWARE]
+         AUDIO: [ROM]
+
+  artifacts:
+    paths:
+      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
+    expire_in: 1 week
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+
+# Build Corstone310 applications which later are tested.
+build-applications-corstone310:
+  stage: build
+  extends: .build_job
+  parallel:
+    matrix:
+       -
+         << : *pipeline_config_corstone310
+         APP: [blinky]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+       -
+         << : *pipeline_config_corstone310
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS, SOFTWARE]
+         AUDIO: [ROM, VSI]
+       -
+         << : *pipeline_config_corstone310
+         APP: [speech-recognition]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM, VSI]
+
+  artifacts:
+    paths:
+      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
+    expire_in: 1 week
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+
+# Build Corstone310 applications which later are tested.
+build-applications-corstone300:
+  stage: build
+  extends: .build_job
+  parallel:
+    matrix:
+       -
+         << : *pipeline_config_corstone300
+         APP: [blinky]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+       -
+         << : *pipeline_config_corstone300
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS, SOFTWARE]
+         AUDIO: [ROM, VSI]
+       -
+         << : *pipeline_config_corstone300
+         APP: [speech-recognition]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM, VSI]
 
   artifacts:
     paths:
@@ -138,6 +198,13 @@ build-applications:
 
 test-blinky-output:
   extends: .test_job
+  needs:
+    - job: build-applications-corstone315
+      artifacts: true
+    - job: build-applications-corstone310
+      artifacts: true
+    - job: build-applications-corstone300
+      artifacts: true
   script:
     - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
     - |
@@ -151,15 +218,31 @@ test-blinky-output:
   parallel:
     matrix:
        -
-         << : *pipeline_config_non_ml_applications
+         << : *pipeline_config_corstone315
          APP: [blinky]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+       -
+         << : *pipeline_config_corstone310
+         APP: [blinky]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+       -
+         << : *pipeline_config_corstone300
+         APP: [blinky]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
 
 # The test-applications job should wait for build-applications job to finish as
 # test-applications job uses the output build artifacts from build-applications job.
 test-applications:
   extends: .test_job
   needs:
-    - job: build-applications
+    - job: build-applications-corstone315
+      artifacts: true
+    - job: build-applications-corstone310
+      artifacts: true
+    - job: build-applications-corstone300
       artifacts: true
   script:
     - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
@@ -202,15 +285,40 @@ test-applications:
   parallel:
     matrix:
        -
-         << : *pipeline_config_ml_applications
+         << : *pipeline_config_corstone315
          APP: [keyword-detection]
          INFERENCE: [ETHOS, SOFTWARE]
+         AUDIO: [ROM, VSI]
        -
-         << : *pipeline_config_ml_applications
+         << : *pipeline_config_corstone315
          APP: [speech-recognition]
          INFERENCE: [ETHOS]
+         AUDIO: [ROM, VSI]
        -
-         << : *pipeline_config_object_detection_applications
+         << : *pipeline_config_corstone315
+         APP: [object-detection]
+         INFERENCE: [ETHOS, SOFTWARE]
+         AUDIO: [ROM]
+       -
+         << : *pipeline_config_corstone310
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS, SOFTWARE]
+         AUDIO: [ROM, VSI]
+       -
+         << : *pipeline_config_corstone310
+         APP: [speech-recognition]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM, VSI]
+       -
+         << : *pipeline_config_corstone300
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS, SOFTWARE]
+         AUDIO: [ROM, VSI]
+       -
+         << : *pipeline_config_corstone300
+         APP: [speech-recognition]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM, VSI]
 
 integration-tests:
   stage: test
@@ -239,7 +347,13 @@ integration-tests:
   parallel:
     matrix:
       -
-        << : *pipeline_config_non_ml_applications
+        << : *pipeline_config_corstone315
+        APP: [freertos-iot-libraries-tests]
+      -
+        << : *pipeline_config_corstone310
+        APP: [freertos-iot-libraries-tests]
+      -
+        << : *pipeline_config_corstone300
         APP: [freertos-iot-libraries-tests]
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
