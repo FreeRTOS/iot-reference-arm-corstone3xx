@@ -329,7 +329,7 @@ sw-vsi-configs-test:
          TOOLCHAIN: [ARMCLANG]
        -
          << : *pipeline_config_corstone315
-         APP: [keyword-detection]
+         APP: [keyword-detection, speech-recognition]
          INFERENCE: [SOFTWARE]
          AUDIO: [ROM, VSI]
          TOOLCHAIN: [ARMCLANG]
@@ -347,7 +347,7 @@ sw-vsi-configs-test:
          TOOLCHAIN: [ARMCLANG]
        -
          << : *pipeline_config_corstone310
-         APP: [keyword-detection]
+         APP: [keyword-detection, speech-recognition]
          INFERENCE: [SOFTWARE]
          AUDIO: [ROM, VSI]
          TOOLCHAIN: [ARMCLANG]
@@ -359,7 +359,7 @@ sw-vsi-configs-test:
          TOOLCHAIN: [ARMCLANG]
        -
          << : *pipeline_config_corstone300
-         APP: [keyword-detection]
+         APP: [keyword-detection, speech-recognition]
          INFERENCE: [SOFTWARE]
          AUDIO: [ROM, VSI]
          TOOLCHAIN: [ARMCLANG]
@@ -382,14 +382,8 @@ gnu-toolchain-test:
     matrix:
        -
          << : *pipeline_config_corstone315
-         APP: [keyword-detection]
+         APP: [keyword-detection, speech-recognition]
          INFERENCE: [ETHOS, SOFTWARE]
-         AUDIO: [ROM,VSI]
-         TOOLCHAIN: [GNU]
-       -
-         << : *pipeline_config_corstone315
-         APP: [speech-recognition]
-         INFERENCE: [ETHOS]
          AUDIO: [ROM,VSI]
          TOOLCHAIN: [GNU]
        -
@@ -400,26 +394,14 @@ gnu-toolchain-test:
          TOOLCHAIN: [GNU]
        -
          << : *pipeline_config_corstone310
-         APP: [keyword-detection]
-         INFERENCE: [ETHOS, SOFTWARE]
-         AUDIO: [ROM,VSI]
-         TOOLCHAIN: [GNU]
-       -
-         << : *pipeline_config_corstone310
-         APP: [speech-recognition]
-         INFERENCE: [ETHOS]
-         AUDIO: [ROM,VSI]
-         TOOLCHAIN: [GNU]
-       -
-         << : *pipeline_config_corstone300
-         APP: [keyword-detection]
+         APP: [keyword-detection, speech-recognition]
          INFERENCE: [ETHOS, SOFTWARE]
          AUDIO: [ROM,VSI]
          TOOLCHAIN: [GNU]
        -
          << : *pipeline_config_corstone300
-         APP: [speech-recognition]
-         INFERENCE: [ETHOS]
+         APP: [keyword-detection, speech-recognition]
+         INFERENCE: [ETHOS, SOFTWARE]
          AUDIO: [ROM,VSI]
          TOOLCHAIN: [GNU]
   variables:
