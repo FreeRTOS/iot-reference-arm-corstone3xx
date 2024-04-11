@@ -8,15 +8,6 @@ set(freertos_plus_tcp_SOURCE_DIR
     "Path to FreeRTOS-Plus-TCP source code"
 )
 
-include(ApplyPatches)
-
-set(PATCH_FILES_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/patches")
-set(PATCH_FILES
-    "${PATCH_FILES_DIRECTORY}/0001-platform-Add-Corstone-315-support.patch"
-)
-iot_reference_arm_corstone3xx_apply_patches("${freertos_plus_tcp_SOURCE_DIR}" "${PATCH_FILES}")
-
-
 if (${ARM_CORSTONE_BSP_TARGET_PLATFORM} STREQUAL "corstone300" OR ${ARM_CORSTONE_BSP_TARGET_PLATFORM} STREQUAL "corstone310")
     set(FREERTOS_PLUS_TCP_NETWORK_IF "MPS3_AN552" CACHE STRING "FreeRTOS Plus TCP Network Interface selection")
 elseif (${ARM_CORSTONE_BSP_TARGET_PLATFORM} STREQUAL "corstone315")

@@ -138,7 +138,7 @@ dependencies:
       path: "components/tools/unity/library"
   - name: "FreeRTOS-Plus-TCP"
     license: "MIT"
-    version: "3d5ee0e821cab38cb6e6265fcf1ce7552a54519d"
+    version: "7b68a91f0870f9bcff444bb14e441d6a08658377"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/FreeRTOS-Plus-TCP.git"

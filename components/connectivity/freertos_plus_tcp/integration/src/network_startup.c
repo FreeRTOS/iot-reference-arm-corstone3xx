@@ -93,7 +93,7 @@ int32_t network_startup( void )
         }
         #endif /* ( ipconfigUSE_DHCP != 0 ) */
 
-        memcpy( ipLOCAL_MAC_ADDRESS, ucMACAddress, sizeof( ucMACAddress ) );
+        memcpy( xEndPoints[ 0 ].xMACAddress.ucBytes, ucMACAddress, sizeof( ucMACAddress ) );
 
         FreeRTOS_IPInit_Multi();
     #else /* if defined( ipconfigIPv4_BACKWARD_COMPATIBLE ) && ( ipconfigIPv4_BACKWARD_COMPATIBLE == 0 ) */
