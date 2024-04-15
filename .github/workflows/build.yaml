@@ -26,8 +26,6 @@ jobs:
         audio: [ROM, VSI]
         inference: [ETHOS, SOFTWARE]
         exclude:
-          - application: speech-recognition
-            inference: SOFTWARE
           - application: object-detection
             audio: VSI
     steps:
