@@ -19,7 +19,7 @@ dependencies:
       path: "bsp/library"
   - name: "trusted-firmware-m"
     license: "BSD-3-Clause"
-    version: "689dfc1ea7e1e66f26159a24d489261ae2029103"
+    version: "TF-Mv2.1.0"
     repository:
       type: "git"
       url: "https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git"

@@ -30,4 +30,5 @@ target_link_libraries(coremqtt-agent
         freertos_kernel
         helpers-events
         helpers-logging
+        tfm-ns-interface-mbedtls-config
 )

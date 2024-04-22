@@ -20,6 +20,8 @@ cmake_minimum_required(VERSION 3.21.0 FATAL_ERROR)
 set(MCUBOOT_IMAGE_VERSION_NS "0.0.1+10")
 set(MCUBOOT_IMAGE_VERSION_NS_UPDATE "0.0.1+20")
 
+set(APPLICATION_PATH "${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/freertos_iot_libraries_tests" CACHE STRING "Path to the application folder")
+
 # Trusted Firmware-M setup
 set(TFM_CMAKE_APP_ARGS
     -DPROJECT_CONFIG_HEADER_FILE=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/freertos_iot_libraries_tests/configs/tfm_config/project_config.h

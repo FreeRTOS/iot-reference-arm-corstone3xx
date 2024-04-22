@@ -4,6 +4,8 @@
 
 cmake_minimum_required(VERSION 3.21.0 FATAL_ERROR)
 
+set(APPLICATION_PATH "${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/blinky" CACHE STRING "Path to the application folder")
+
 # Trusted Firmware-M setup
 set(TFM_CMAKE_APP_ARGS
     -DPROJECT_CONFIG_HEADER_FILE=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/blinky/configs/tfm_config/project_config.h

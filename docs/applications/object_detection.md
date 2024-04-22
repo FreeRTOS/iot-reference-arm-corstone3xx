@@ -62,7 +62,7 @@ Check [Device Provisioning](./device_provisioning/device_provisioning.md) for de
 [INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
 [INF] Jumping to the first image slot
-Booting TF-M v2.0.0
+Booting TF-M v2.1.0
 <NUL>[Sec Thread] Secure image initializing!
 <NUL>[INF][Crypto] Provisioning entropy seed... complete.
 0 0 [None] [INFO] PSA Framework version is: 257
@@ -373,7 +373,7 @@ Follow the instructions described in the [Firmware update with AWS](./aws_iot/aw
 [INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
 [INF] Jumping to the first image slot
-Booting TF-M v2.0.0
+Booting TF-M v2.1.0
 <NUL>[Sec Thread] Secure image initializing!
 <NUL>Creating an empty ITS flash layout.
 Creating an empty PS flash layout.

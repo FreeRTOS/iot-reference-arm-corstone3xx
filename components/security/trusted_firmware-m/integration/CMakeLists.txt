@@ -16,11 +16,13 @@ add_dependencies(tfm-ns-interface trusted_firmware-m-build)
 target_include_directories(tfm-ns-interface
     PUBLIC
         ${BINARY_DIR}/api_ns/interface/include
+        ${BINARY_DIR}/api_ns/platform/include
 )
 
 target_link_libraries(tfm-ns-interface
     PRIVATE
         ${s_veneers_generated}
+        tfm-ns-interface-mbedtls-config
 )
 
 target_compile_definitions(tfm-ns-interface
@@ -31,3 +33,26 @@ target_compile_definitions(tfm-ns-interface
         $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone310>:PLATFORM_DEFAULT_CRYPTO_KEYS>
         MCUBOOT_IMAGE_NUMBER=2
 )
+
+add_library(tfm-ns-interface-mbedtls-config INTERFACE)
+
+if(APPLICATION_PATH MATCHES ".*blinky")
+    # TODO: These compile definitions shouldn't be defined explicitly for `blinky` application as
+    # they should have been defined by `psa_crypto_config` library which should be linked
+    # to `tfm-ns-interface-mbedtls-config` library. However, since we are not using TF-M split-build feature,
+    # the exported library `psa_crypto_config` is not used by the non-secure side and these definitions are missing.
+    target_compile_definitions(tfm-ns-interface-mbedtls-config
+        INTERFACE
+            MBEDTLS_CONFIG_FILE="${trusted_firmware-m_SOURCE_DIR}/lib/ext/mbedcrypto/mbedcrypto_config/tfm_mbedcrypto_config_default_client.h"
+            MBEDTLS_PSA_CRYPTO_CONFIG_FILE="${trusted_firmware-m_SOURCE_DIR}/lib/ext/mbedcrypto/mbedcrypto_config/crypto_config_default.h"
+    )
+else()
+    target_link_libraries(tfm-ns-interface-mbedtls-config
+        INTERFACE
+            app-config
+    )
+    target_compile_definitions(tfm-ns-interface-mbedtls-config
+        INTERFACE
+            MBEDTLS_CONFIG_FILE="${APPLICATION_PATH}/configs/mbedtls_config/aws_mbedtls_config.h"
+    )
+endif()
