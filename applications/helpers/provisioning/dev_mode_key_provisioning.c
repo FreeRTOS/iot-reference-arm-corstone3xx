@@ -1376,8 +1376,10 @@ int xOtaProvisionCodeSigningKey( psa_key_handle_t * pxKeyHandle,
     size_t xPubKeyDerLength = DER_FORMAT_BUFFER_LENGTH;
     size_t xPubKeyPemLength = strlen( ( const char * ) pxProvisioningParamsBundle->codeSigningPublicKey );
     int result = 0;
-    psa_status_t status = PSA_SUCCESS;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
+    mbedtls_pk_context xMbedPkContext = { 0 };
+
+    mbedtls_pk_init( &xMbedPkContext );
 
     result = convert_pem_to_der( ( const unsigned char * ) pxProvisioningParamsBundle->codeSigningPublicKey,
                                  xPubKeyPemLength,
@@ -1386,22 +1388,55 @@ int xOtaProvisionCodeSigningKey( psa_key_handle_t * pxKeyHandle,
 
     if( result != 0 )
     {
-        return result;
+        goto exit;
     }
 
-    psa_set_key_usage_flags( &attributes, PSA_KEY_USAGE_VERIFY_HASH );
-    psa_set_key_algorithm( &attributes, PSA_ALG_RSA_PSS_ANY_SALT( PSA_ALG_SHA_256 ) );
-    psa_set_key_type( &attributes, PSA_KEY_TYPE_RSA_PUBLIC_KEY );
-    psa_set_key_bits( &attributes, keyBits );
-    status = psa_import_key( &attributes, ( const uint8_t * ) pucPubKeyDerFormatBuffer,
-                             xPubKeyDerLength, pxKeyHandle );
+    /*
+     * From mbedtls 3.6.0 release note:
+     *
+     * Default behavior changes
+     * psa_import_key() now only accepts RSA keys in the PSA standard formats.
+     * The undocumented ability to import other formats (PKCS#8, SubjectPublicKey,
+     * PEM) accepted by the pkparse module has been removed. Applications that
+     * need these formats can call mbedtls_pk_parse_{public,}key() followed by
+     * mbedtls_pk_import_into_psa().
+     */
 
-    if( status != PSA_SUCCESS )
+    result = mbedtls_pk_parse_public_key( &xMbedPkContext,
+                                          ( const unsigned char * ) pucPubKeyDerFormatBuffer,
+                                          xPubKeyDerLength );
+
+    if( result != 0 )
+    {
+        goto exit;
+    }
+
+    result = mbedtls_pk_get_psa_attributes( &xMbedPkContext,
+                                            PSA_KEY_USAGE_VERIFY_HASH,
+                                            &attributes );
+
+    if( result != 0 )
+    {
+        goto exit;
+    }
+
+    psa_set_key_algorithm( &attributes, PSA_ALG_RSA_PSS_ANY_SALT( PSA_ALG_SHA_256 ) );
+    psa_set_key_bits( &attributes, keyBits );
+
+    result = mbedtls_pk_import_into_psa( &xMbedPkContext,
+                                         &attributes,
+                                         pxKeyHandle );
+
+    if( result != 0 )
     {
         *pxKeyHandle = NULL;
+        goto exit;
     }
 
-    return status;
+exit:
+    mbedtls_pk_free( &xMbedPkContext );
+
+    return result;
 }
 
 /*-----------------------------------------------------------*/
