@@ -63,13 +63,14 @@ workflow:
         --toolchain $TOOLCHAIN \
         --certificate_path $PWD/certificate.pem \
         --private_key_path $PWD/private_key.pem \
-        --conn-stack $CONN_STACK
+        --conn-stack $CONN_STACK \
+        --psa-crypto-implementation $PSA_CRYPTO_IMPLEMENTATION
     - |
       if [ $APP == "blinky" ];then
-        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz \
+        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz \
           build/${APP}_merged.elf
       else
-        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz \
+        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz \
           build/${APP}_merged.elf \
           build/${APP}-update_signed.bin \
           build/update-signature.txt \
@@ -88,9 +89,10 @@ build-applications-corstone315:
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
   artifacts:
     paths:
-      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz
+      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz
     expire_in: 1 week
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -107,9 +109,10 @@ build-applications-corstone310:
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
   artifacts:
     paths:
-      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz
+      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz
     expire_in: 1 week
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -126,9 +129,10 @@ build-applications-corstone300:
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
   artifacts:
     paths:
-      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz
+      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz
     expire_in: 1 week
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -171,7 +175,7 @@ test-blinky-output:
     - job: build-applications-corstone300
       artifacts: true
   script:
-    - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz
+    - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz
     - |
         pytest -s tools/tests/test_blinky_output.py \
         --build-artefacts-path "build" \
@@ -188,25 +192,28 @@ test-blinky-output:
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : [*pipeline_config_corstone310, *pipeline_config_toolchain]
          APP: [blinky]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : [*pipeline_config_corstone300, *pipeline_config_toolchain]
          APP: [blinky]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
 
 .test-applications_base:
   extends: .test_job
   script:
     - |
-      if [[ -f "${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz" ]]; then
-        tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz
+      if [[ -f "${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz" ]]; then
+        tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz
       fi
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - |
@@ -265,6 +272,7 @@ test-ml-applications-output:
          AUDIO: [ROM]
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : *pipeline_config_corstone310
          APP: [keyword-detection, speech-recognition]
@@ -272,6 +280,7 @@ test-ml-applications-output:
          AUDIO: [ROM]
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : *pipeline_config_corstone300
          APP: [keyword-detection, speech-recognition]
@@ -279,6 +288,7 @@ test-ml-applications-output:
          AUDIO: [ROM]
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
 
 unit-tests:
   extends: .base-job-rules
@@ -316,7 +326,7 @@ integration-tests:
     # communicate with the server.
     - host_ip_address=`ifconfig eth0 | grep -w 'inet' | awk '{print $2}'`
     - sed -i "s/#define ECHO_SERVER_ENDPOINT .*$/#define ECHO_SERVER_ENDPOINT \"$host_ip_address\"/g" applications/freertos_iot_libraries_tests/test_param_config.h
-    - ./tools/scripts/build.sh ${APP} --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem --conn-stack $CONN_STACK
+    - ./tools/scripts/build.sh ${APP} --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem --conn-stack $CONN_STACK --psa-crypto-implementation $PSA_CRYPTO_IMPLEMENTATION
     - pushd components/tools/freertos_libraries_integration_tests/library/tools/echo_server
     - go run echo_server.go&
     - popd
@@ -335,14 +345,17 @@ integration-tests:
         << : [*pipeline_config_corstone315, *pipeline_config_toolchain]
         APP: [freertos-iot-libraries-tests]
         CONN_STACK: [FREERTOS_PLUS_TCP, IOT_VSOCKET]
+        PSA_CRYPTO_IMPLEMENTATION: [TF-M]
       -
         << : [*pipeline_config_corstone310, *pipeline_config_toolchain]
         APP: [freertos-iot-libraries-tests]
         CONN_STACK: [FREERTOS_PLUS_TCP, IOT_VSOCKET]
+        PSA_CRYPTO_IMPLEMENTATION: [TF-M]
       -
         << : [*pipeline_config_corstone300, *pipeline_config_toolchain]
         APP: [freertos-iot-libraries-tests]
         CONN_STACK: [FREERTOS_PLUS_TCP, IOT_VSOCKET]
+        PSA_CRYPTO_IMPLEMENTATION: [TF-M]
   retry:
     max: 2
     when:
@@ -377,6 +390,7 @@ sw-vsi-configs-test:
          AUDIO: [VSI]
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : *pipeline_config_corstone315
          APP: [keyword-detection, speech-recognition]
@@ -384,6 +398,7 @@ sw-vsi-configs-test:
          AUDIO: [ROM, VSI]
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : *pipeline_config_corstone315
          APP: [object-detection]
@@ -391,6 +406,7 @@ sw-vsi-configs-test:
          AUDIO: [ROM]
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : *pipeline_config_corstone310
          APP: [keyword-detection, speech-recognition]
@@ -398,6 +414,7 @@ sw-vsi-configs-test:
          AUDIO: [VSI]
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : *pipeline_config_corstone310
          APP: [keyword-detection, speech-recognition]
@@ -405,6 +422,7 @@ sw-vsi-configs-test:
          AUDIO: [ROM, VSI]
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : *pipeline_config_corstone300
          APP: [keyword-detection, speech-recognition]
@@ -412,6 +430,7 @@ sw-vsi-configs-test:
          AUDIO: [VSI]
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : *pipeline_config_corstone300
          APP: [keyword-detection, speech-recognition]
@@ -419,6 +438,7 @@ sw-vsi-configs-test:
          AUDIO: [ROM, VSI]
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
   retry:
     max: 2
     when:
@@ -453,6 +473,7 @@ gnu-toolchain-test:
          AUDIO: [ROM,VSI]
          TOOLCHAIN: [GNU]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : *pipeline_config_corstone315
          APP: [object-detection]
@@ -460,6 +481,7 @@ gnu-toolchain-test:
          AUDIO: [ROM]
          TOOLCHAIN: [GNU]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : *pipeline_config_corstone310
          APP: [keyword-detection, speech-recognition]
@@ -467,6 +489,7 @@ gnu-toolchain-test:
          AUDIO: [ROM,VSI]
          TOOLCHAIN: [GNU]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : *pipeline_config_corstone300
          APP: [keyword-detection, speech-recognition]
@@ -474,6 +497,7 @@ gnu-toolchain-test:
          AUDIO: [ROM,VSI]
          TOOLCHAIN: [GNU]
          CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
   retry:
     max: 2
     when:
@@ -483,12 +507,12 @@ gnu-toolchain-test:
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
 
-iot-vsocket-test:
+iot-vsocket-psa-crypto-mbedtls-test:
   tags:
     - iotmsw-amd64
   extends: .base-job-rules
   rules:
-  - if: ( $SCHEDULED_JOB_TO_RUN == "iot-vsocket-test" )
+  - if: ( $SCHEDULED_JOB_TO_RUN == "iot-vsocket-psa-crypto-mbedtls-test" )
   before_script:
     - !reference [.build_job, before_script]
     - !reference [.build_job, script]
@@ -503,18 +527,12 @@ iot-vsocket-test:
     matrix:
        -
          << : *pipeline_config_corstone315
-         APP: [keyword-detection, speech-recognition]
+         APP: [keyword-detection, speech-recognition, object-detection]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
          TOOLCHAIN: [GNU, ARMCLANG]
          CONN_STACK: [IOT_VSOCKET]
-       -
-         << : *pipeline_config_corstone315
-         APP: [object-detection]
-         INFERENCE: [ETHOS]
-         AUDIO: [ROM]
-         TOOLCHAIN: [GNU, ARMCLANG]
-         CONN_STACK: [IOT_VSOCKET]
+         PSA_CRYPTO_IMPLEMENTATION: [MBEDTLS]
        -
          << : *pipeline_config_corstone310
          APP: [keyword-detection, speech-recognition]
@@ -522,6 +540,7 @@ iot-vsocket-test:
          AUDIO: [ROM]
          TOOLCHAIN: [GNU, ARMCLANG]
          CONN_STACK: [IOT_VSOCKET]
+         PSA_CRYPTO_IMPLEMENTATION: [MBEDTLS]
        -
          << : *pipeline_config_corstone300
          APP: [keyword-detection, speech-recognition]
@@ -529,6 +548,7 @@ iot-vsocket-test:
          AUDIO: [ROM]
          TOOLCHAIN: [GNU, ARMCLANG]
          CONN_STACK: [IOT_VSOCKET]
+         PSA_CRYPTO_IMPLEMENTATION: [MBEDTLS]
   retry:
     max: 2
     when:
