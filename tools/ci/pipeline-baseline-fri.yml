@@ -1,4 +1,4 @@
-# Copyright 2021-2023 Arm Limited and/or its affiliates
+# Copyright 2021-2024 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -103,3 +103,29 @@ tpip-check:
       --private-token "${AUTOBOT_GITLAB_TOKEN}"
       --project-id "${CI_PROJECT_ID}"
       --merge-req-id "${CI_MERGE_REQUEST_IID}"
+
+########################
+# Spell Checker Job    #
+########################
+spell-check:
+  tags:
+    - iotmsw-amd64
+  stage: quality-check
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+  script:
+    # Install the Dependencies we need to run the spell-checker
+    - apt-get update -y
+    - |
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+      [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+    - nvm install node
+    - apt-get install fd-find -y
+    - npm install -g cspell
+      # Find files with `.c`, `.h`, `.md`, `.txt`, `.change`, and `.yml` extensions in one patch.
+      # Then, run `cspell` on the collected files using `cspell.config.yaml` configuration file.
+    - |
+      fdfind -e c -e h -e md -e txt -e change -e yml --exec-batch \
+      cspell lint --language-id C --color --show-context --show-suggestions --no-must-find-files -c cspell.config.yaml
