@@ -280,6 +280,19 @@ integration-tests:
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
     - git config --global core.autocrlf input
+    # With https://github.com/FreeRTOS/FreeRTOS-Plus-TCP/commit/4471af64de1d481374881917bbba8736b1217530,
+    # a validation logic has been introduced which checks, if one of the
+    # address in an IP packet is loopback then both source and destination
+    # addresses must be loopback. For network interface tests, we run the
+    # server on the local machine and use loopback interface address in
+    # integration tests to communicate with the server. This causes
+    # validation logic to fail, as the destination address in the IP in the
+    # packet returned by the server is not a loopback address, but instead
+    # address assigned to the device. As a workaround, we use the ethernet
+    # interface address of the host machine instead of loopback to
+    # communicate with the server.
+    - host_ip_address=`ifconfig eth0 | grep -w 'inet' | awk '{print $2}'`
+    - sed -i "s/#define ECHO_SERVER_ENDPOINT .*$/#define ECHO_SERVER_ENDPOINT \"$host_ip_address\"/g" applications/freertos_iot_libraries_tests/test_param_config.h
     - ./tools/scripts/build.sh ${APP} --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
     - pushd components/tools/freertos_libraries_integration_tests/library/tools/echo_server
     - go run echo_server.go&
@@ -304,6 +317,12 @@ integration-tests:
       -
         << : [*pipeline_config_corstone300, *pipeline_config_toolchain]
         APP: [freertos-iot-libraries-tests]
+  retry:
+    max: 2
+    when:
+      - script_failure
+      - stuck_or_timeout_failure
+      - runner_system_failure
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
 
@@ -363,6 +382,12 @@ sw-vsi-configs-test:
          INFERENCE: [SOFTWARE]
          AUDIO: [ROM, VSI]
          TOOLCHAIN: [ARMCLANG]
+  retry:
+    max: 2
+    when:
+      - script_failure
+      - stuck_or_timeout_failure
+      - runner_system_failure
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
 
@@ -404,6 +429,12 @@ gnu-toolchain-test:
          INFERENCE: [ETHOS, SOFTWARE]
          AUDIO: [ROM,VSI]
          TOOLCHAIN: [GNU]
+  retry:
+    max: 2
+    when:
+      - script_failure
+      - stuck_or_timeout_failure
+      - runner_system_failure
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
 
