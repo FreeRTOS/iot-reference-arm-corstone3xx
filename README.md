@@ -106,6 +106,10 @@ of the verification fails, then MCUBoot stops the booting process.
 
 ## Software Components
 
+### Fetching
+
+Generally all the components used within the FRI project are fetched using `git submodules` from their official repositories into `components/` directory. Exact location and the version are recorded in the [manifest.yml](manifest.yml).
+
 ### Trusted Firmware M
 
 Trusted Firmware-M (TF-M) implements the Secure Processing Environment (SPE)
