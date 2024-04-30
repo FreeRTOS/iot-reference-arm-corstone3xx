@@ -16,5 +16,4 @@ target_link_libraries(freertos_config
     INTERFACE
         tfm-ns-interface
         app-config
-        fri-bsp
 )

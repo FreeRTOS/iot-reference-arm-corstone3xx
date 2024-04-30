@@ -38,7 +38,7 @@ add_library(isp_platform_driver_system)
 target_link_libraries(isp_platform_driver_system
     PUBLIC
         isp_driver
-        freertos_kernel_include
+        freertos_kernel
 )
 target_include_directories(isp_platform_driver_system
     PUBLIC
@@ -87,5 +87,5 @@ target_sources(isp_control
 
 target_link_libraries(isp_control
     isp_driver
-    freertos_kernel_include
+    freertos_kernel
 )
