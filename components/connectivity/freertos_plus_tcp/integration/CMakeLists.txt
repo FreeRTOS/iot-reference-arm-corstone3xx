@@ -14,6 +14,12 @@ target_include_directories(freertos_plus_tcp SYSTEM
 )
 
 target_link_libraries(freertos_plus_tcp
+    PUBLIC
+        # TODO: The CS315 network interface layer inside the FreeRTOS TCP/IP stack
+        # https://github.com/FreeRTOS/FreeRTOS-Plus-TCP/blob/main/source/portable/NetworkInterface/MPS4_CS315/Device/Include/SSE315.h#L62
+        # is done in such a way that it depends on fri-bsp. This dependency
+        # should be removed.
+        fri-bsp
     PRIVATE
         coremqtt
         helpers-events

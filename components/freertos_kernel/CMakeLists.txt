@@ -18,4 +18,10 @@ endif()
 
 # FreeRTOS requires the freertos_config library to exist first
 add_library(freertos_config INTERFACE)
+target_include_directories(freertos_config
+    INTERFACE
+        $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone300>:${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone300/include>
+        $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone310>:${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone310/include>
+        $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone315>:${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone315/include>
+)
 add_subdirectory(library)
