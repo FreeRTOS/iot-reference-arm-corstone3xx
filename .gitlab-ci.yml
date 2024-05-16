@@ -328,13 +328,17 @@ integration-tests:
     GIT_SUBMODULE_STRATEGY: recursive
 
 sw-vsi-configs-test:
-  extends:
-  - .build_job
+  tags:
+    - iotmsw-amd64
+  extends: .base-job-rules
   rules:
   - if: ( $SCHEDULED_JOB_TO_RUN == "sw-vsi-configs-test" )
-  after_script:
-    # test_job's `before_script` section is referenced in the `after_script` section to set the correct value for FVP_BIN variable used in testing.
-    # test-applications_base job's `script` section is referenced in the `after_script` section of
+  before_script:
+    - !reference [.build_job, before_script]
+    - !reference [.build_job, script]
+  script:
+    # test_job's `before_script` section is referenced in the `script` section to set the correct value for FVP_BIN variable used in testing.
+    # test-applications_base job's `script` section is referenced in the `script` section of
     # this job to do the testing part after the build stage is done where the build stage is inherited
     # from `.build_job`
     - !reference [.test_job, before_script]
@@ -393,13 +397,17 @@ sw-vsi-configs-test:
     GIT_SUBMODULE_STRATEGY: recursive
 
 gnu-toolchain-test:
-  extends:
-  - .build_job
+  tags:
+    - iotmsw-amd64
+  extends: .base-job-rules
   rules:
   - if: ( $SCHEDULED_JOB_TO_RUN == "gnu-toolchain-test" )
-  after_script:
-    # test_job's `before_script` section is referenced in the `after_script` section to set the correct value for FVP_BIN variable used in testing.
-    # test-applications_base job's `script` section is referenced in the `after_script` section of
+  before_script:
+    - !reference [.build_job, before_script]
+    - !reference [.build_job, script]
+  script:
+    # test_job's `before_script` section is referenced in the `script` section to set the correct value for FVP_BIN variable used in testing.
+    # test-applications_base job's `script` section is referenced in the `script` section of
     # this job to do the testing part after the build stage is done where the build stage is inherited
     # from `.build_job`
     - !reference [.test_job, before_script]
