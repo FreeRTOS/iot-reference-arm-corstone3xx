@@ -200,7 +200,7 @@ uint32_t ulScheduler(
 
        // Add delay to allow some time for the connectivity task
        // to send and receive messages to and from the cloud.
-       vTaskDelay(120);
+       vTaskDelay(140);
     }
     *error=sdfError;
     return(nbSchedule);
