@@ -54,6 +54,7 @@ workflow:
     - ./tools/ci/generate_credentials.sh -f -p applications/${APP_UNDERSCORED}/configs/aws_configs
     - git config --global user.email "ci@example.com"
     - git config --global user.name "ci"
+    - git config --global core.autocrlf input
     - |
       ./tools/scripts/build.sh ${APP} \
         --target $TARGET \
