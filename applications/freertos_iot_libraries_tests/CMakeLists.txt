@@ -61,10 +61,6 @@ add_subdirectory(../helpers ${CMAKE_BINARY_DIR}/helpers)
 
 # Configure FreeRTOS Libraries Integration Tests component
 add_dependencies(freertos-libraries-integration-tests-config provisioning_data_bin)
-target_sources(freertos-libraries-integration-tests-config
-    INTERFACE
-        integration_tests_platform_function.c
-)
 target_include_directories(freertos-libraries-integration-tests-config
     INTERFACE
         ${CMAKE_CURRENT_LIST_DIR}
@@ -88,6 +84,7 @@ target_link_libraries(freertos-libraries-integration-tests-config
 
 add_executable(${CMAKE_PROJECT_NAME}
     main.c
+    integration_tests_platform_function.c
 )
 
 # Trusted Firmware-M must be built before the application, because
