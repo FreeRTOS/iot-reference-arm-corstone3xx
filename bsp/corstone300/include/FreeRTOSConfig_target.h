@@ -18,13 +18,13 @@
  *
  * As described above, FVPs sacrifice timing accuracy to achieve fast
  * simulation execution speeds. Therefore, we need this work around of setting
- * `configTICK_RATE_HZ` to `300` to simulate scheduler polling rate of
+ * `configTICK_RATE_HZ` to `200` to simulate scheduler polling rate of
  * `1000 Hz` or 1 tick per millisecond.
  *
  * In addition, the macro `pdMS_TO_TICKS` is defined here to match the 1 tick
  * per millisecond instead of using the macro defined in
  * `FreeRTOS-kernel/include/projdefs.h`
  */
-#define configTICK_RATE_HZ    ( ( uint32_t ) 300 )
+#define configTICK_RATE_HZ    ( ( uint32_t ) 200 )
 #define pdMS_TO_TICKS( xTimeInMs )    ( ( TickType_t ) xTimeInMs )
 #define TICKS_TO_pdMS( xTicks )       ( ( uint32_t ) xTicks )
