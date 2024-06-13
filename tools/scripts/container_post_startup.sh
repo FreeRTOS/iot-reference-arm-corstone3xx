@@ -14,5 +14,12 @@ if [ $ERROR_CODE == 0 ]; then
     git submodule update --init --recursive
 fi
 
+# Install the pre-commit hooks.
+rm -rf /tmp/build
+pip install . -t /tmp/build
+sudo cp /tmp/build/bin/banned-api-hook /usr/local/bin/banned-api-hook
+rm -rf iot_reference_arm_corstone3xx.egg-info
+pre-commit install
+
 # Return success
 exit 0;

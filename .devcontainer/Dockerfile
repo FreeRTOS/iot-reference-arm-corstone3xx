@@ -19,7 +19,9 @@ RUN apt-get update && \
     apt-get -y install \
     bash-completion \
     build-essential \
+    cppcheck \
     curl \
+    fd-find \
     gdb \
     lcov \
     libbz2-dev \
@@ -92,11 +94,13 @@ RUN pip3 install \
     intelhex \
     jinja2 \
     ninja \
-    PyYaml \
+    pre-commit \
     pyelftools \
+    pyhsslms \
+    PyYaml \
     setuptools \
-    wheel \
-    pyhsslms
+    towncrier \
+    wheel
 
 # Create the user
 RUN groupadd --gid $USER_GID $USERNAME \
