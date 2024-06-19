@@ -1,4 +1,4 @@
-/* Copyright 2023 Arm Limited and/or its affiliates
+/* Copyright 2023-2024 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  * SPDX-License-Identifier: MIT
  */
@@ -75,6 +75,9 @@ const uint8_t ucMACAddress[ 6 ] =
 
 /* It will have several end-points. */
     static NetworkEndPoint_t xEndPoints[ 4 ];
+
+    extern NetworkInterface_t * pxLAN91C111_FillInterfaceDescriptor( BaseType_t xEMACIndex,
+                                                                     NetworkInterface_t * pxInterface );
 
 #endif /* defined( ipconfigIPv4_BACKWARD_COMPATIBLE ) && ( ipconfigIPv4_BACKWARD_COMPATIBLE == 0 ) */
 
