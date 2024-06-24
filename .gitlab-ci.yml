@@ -62,13 +62,14 @@ workflow:
         --audio $AUDIO \
         --toolchain $TOOLCHAIN \
         --certificate_path $PWD/certificate.pem \
-        --private_key_path $PWD/private_key.pem
+        --private_key_path $PWD/private_key.pem \
+        --conn-stack $CONN_STACK
     - |
       if [ $APP == "blinky" ];then
-        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz \
+        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz \
           build/${APP}_merged.elf
       else
-        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz \
+        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz \
           build/${APP}_merged.elf \
           build/${APP}-update_signed.bin \
           build/update-signature.txt \
@@ -86,9 +87,10 @@ build-applications-corstone315:
          APP: [blinky, keyword-detection, speech-recognition, object-detection]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
   artifacts:
     paths:
-      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
+      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz
     expire_in: 1 week
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -104,9 +106,10 @@ build-applications-corstone310:
          APP: [blinky, keyword-detection, speech-recognition]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
   artifacts:
     paths:
-      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
+      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz
     expire_in: 1 week
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -122,9 +125,10 @@ build-applications-corstone300:
          APP: [blinky, keyword-detection, speech-recognition]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
   artifacts:
     paths:
-      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
+      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz
     expire_in: 1 week
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -167,7 +171,7 @@ test-blinky-output:
     - job: build-applications-corstone300
       artifacts: true
   script:
-    - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
+    - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz
     - |
         pytest -s tools/tests/test_blinky_output.py \
         --build-artefacts-path "build" \
@@ -183,23 +187,26 @@ test-blinky-output:
          APP: [blinky]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
        -
          << : [*pipeline_config_corstone310, *pipeline_config_toolchain]
          APP: [blinky]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
        -
          << : [*pipeline_config_corstone300, *pipeline_config_toolchain]
          APP: [blinky]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
 
 .test-applications_base:
   extends: .test_job
   script:
     - |
-      if [[ -f "${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz" ]]; then
-        tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_build.tar.gz
+      if [[ -f "${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz" ]]; then
+        tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_build.tar.gz
       fi
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - |
@@ -257,18 +264,21 @@ test-ml-applications-output:
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
          TOOLCHAIN: [ARMCLANG]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
        -
          << : *pipeline_config_corstone310
          APP: [keyword-detection, speech-recognition]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
          TOOLCHAIN: [ARMCLANG]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
        -
          << : *pipeline_config_corstone300
          APP: [keyword-detection, speech-recognition]
          INFERENCE: [ETHOS]
          AUDIO: [ROM]
          TOOLCHAIN: [ARMCLANG]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
 
 integration-tests:
   extends: .test_job
@@ -294,7 +304,7 @@ integration-tests:
     # communicate with the server.
     - host_ip_address=`ifconfig eth0 | grep -w 'inet' | awk '{print $2}'`
     - sed -i "s/#define ECHO_SERVER_ENDPOINT .*$/#define ECHO_SERVER_ENDPOINT \"$host_ip_address\"/g" applications/freertos_iot_libraries_tests/test_param_config.h
-    - ./tools/scripts/build.sh ${APP} --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem
+    - ./tools/scripts/build.sh ${APP} --target $TARGET --toolchain $TOOLCHAIN --certificate_path $PWD/certificate.pem  --private_key_path $PWD/private_key.pem --conn-stack $CONN_STACK
     - pushd components/tools/freertos_libraries_integration_tests/library/tools/echo_server
     - go run echo_server.go&
     - popd
@@ -312,12 +322,15 @@ integration-tests:
       -
         << : [*pipeline_config_corstone315, *pipeline_config_toolchain]
         APP: [freertos-iot-libraries-tests]
+        CONN_STACK: [FREERTOS_PLUS_TCP, IOT_VSOCKET]
       -
         << : [*pipeline_config_corstone310, *pipeline_config_toolchain]
         APP: [freertos-iot-libraries-tests]
+        CONN_STACK: [FREERTOS_PLUS_TCP, IOT_VSOCKET]
       -
         << : [*pipeline_config_corstone300, *pipeline_config_toolchain]
         APP: [freertos-iot-libraries-tests]
+        CONN_STACK: [FREERTOS_PLUS_TCP, IOT_VSOCKET]
   retry:
     max: 2
     when:
@@ -351,42 +364,49 @@ sw-vsi-configs-test:
          INFERENCE: [ETHOS]
          AUDIO: [VSI]
          TOOLCHAIN: [ARMCLANG]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
        -
          << : *pipeline_config_corstone315
          APP: [keyword-detection, speech-recognition]
          INFERENCE: [SOFTWARE]
          AUDIO: [ROM, VSI]
          TOOLCHAIN: [ARMCLANG]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
        -
          << : *pipeline_config_corstone315
          APP: [object-detection]
          INFERENCE: [SOFTWARE]
          AUDIO: [ROM]
          TOOLCHAIN: [ARMCLANG]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
        -
          << : *pipeline_config_corstone310
          APP: [keyword-detection, speech-recognition]
          INFERENCE: [ETHOS]
          AUDIO: [VSI]
          TOOLCHAIN: [ARMCLANG]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
        -
          << : *pipeline_config_corstone310
          APP: [keyword-detection, speech-recognition]
          INFERENCE: [SOFTWARE]
          AUDIO: [ROM, VSI]
          TOOLCHAIN: [ARMCLANG]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
        -
          << : *pipeline_config_corstone300
          APP: [keyword-detection, speech-recognition]
          INFERENCE: [ETHOS]
          AUDIO: [VSI]
          TOOLCHAIN: [ARMCLANG]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
        -
          << : *pipeline_config_corstone300
          APP: [keyword-detection, speech-recognition]
          INFERENCE: [SOFTWARE]
          AUDIO: [ROM, VSI]
          TOOLCHAIN: [ARMCLANG]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
   retry:
     max: 2
     when:
@@ -420,24 +440,83 @@ gnu-toolchain-test:
          INFERENCE: [ETHOS, SOFTWARE]
          AUDIO: [ROM,VSI]
          TOOLCHAIN: [GNU]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
        -
          << : *pipeline_config_corstone315
          APP: [object-detection]
          INFERENCE: [ETHOS, SOFTWARE]
          AUDIO: [ROM]
          TOOLCHAIN: [GNU]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
        -
          << : *pipeline_config_corstone310
          APP: [keyword-detection, speech-recognition]
          INFERENCE: [ETHOS, SOFTWARE]
          AUDIO: [ROM,VSI]
          TOOLCHAIN: [GNU]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
        -
          << : *pipeline_config_corstone300
          APP: [keyword-detection, speech-recognition]
          INFERENCE: [ETHOS, SOFTWARE]
          AUDIO: [ROM,VSI]
          TOOLCHAIN: [GNU]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+  retry:
+    max: 2
+    when:
+      - script_failure
+      - stuck_or_timeout_failure
+      - runner_system_failure
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+
+iot-vsocket-test:
+  tags:
+    - iotmsw-amd64
+  extends: .base-job-rules
+  rules:
+  - if: ( $SCHEDULED_JOB_TO_RUN == "iot-vsocket-test" )
+  before_script:
+    - !reference [.build_job, before_script]
+    - !reference [.build_job, script]
+  script:
+    # test_job's `before_script` section is referenced in the `script` section to set the correct value for FVP_BIN variable used in testing.
+    # test-applications_base job's `script` section is referenced in the `script` section of
+    # this job to do the testing part after the build stage is done where the build stage is inherited
+    # from `.build_job`
+    - !reference [.test_job, before_script]
+    - !reference [.test-applications_base, script]
+  parallel:
+    matrix:
+       -
+         << : *pipeline_config_corstone315
+         APP: [keyword-detection, speech-recognition]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         TOOLCHAIN: [GNU, ARMCLANG]
+         CONN_STACK: [IOT_VSOCKET]
+       -
+         << : *pipeline_config_corstone315
+         APP: [object-detection]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         TOOLCHAIN: [GNU, ARMCLANG]
+         CONN_STACK: [IOT_VSOCKET]
+       -
+         << : *pipeline_config_corstone310
+         APP: [keyword-detection, speech-recognition]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         TOOLCHAIN: [GNU, ARMCLANG]
+         CONN_STACK: [IOT_VSOCKET]
+       -
+         << : *pipeline_config_corstone300
+         APP: [keyword-detection, speech-recognition]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         TOOLCHAIN: [GNU, ARMCLANG]
+         CONN_STACK: [IOT_VSOCKET]
   retry:
     max: 2
     when:
