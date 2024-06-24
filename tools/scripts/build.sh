@@ -23,6 +23,7 @@ TOOLCHAIN_FILE=""
 BUILD=1
 CERTIFICATE_PATH=""
 PRIVATE_KEY_PATH=""
+CONNECTIVITY_STACK="FREERTOS_PLUS_TCP"
 
 set -e
 
@@ -55,6 +56,7 @@ function build_with_cmake {
         cmake_args+=(-DIOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR=$ROOT)
         cmake_args+=(-DML_INFERENCE_ENGINE=$ML_INFERENCE_ENGINE)
         cmake_args+=(-DAUDIO_SOURCE=$AUDIO_SOURCE)
+        cmake_args+=(-DCONNECTIVITY_STACK=$CONNECTIVITY_STACK)
         if [ ! -z "$ETHOS_U_NPU_ID" ]; then
           cmake_args+=(-DETHOS_U_NPU_ID=$ETHOS_U_NPU_ID)
         else
@@ -91,6 +93,7 @@ Options:
     -T,--toolchain                 Compiler (GNU or ARMCLANG)
     -C,--certificate_path          Path to the AWS device certificate
     -P,--private_key_path          Path to the AWS device private key
+    --conn-stack                   Connectivity stack selection (FREERTOS_PLUS_TCP | IOT_VSOCKET)
 Examples:
     blinky, freertos-iot-libraries-tests, keyword-detection, object-detection, speech-recognition
 EOF
@@ -102,7 +105,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 SHORT=t:,i:,T:,s:,c,h,C:,P:p:,n:
-LONG=target:,inference:,toolchain:,audio:,clean,help,configure-only,certificate_path:,private_key_path:,path:,npu-id:,npu-mac:
+LONG=target:,inference:,toolchain:,audio:,clean,help,configure-only,certificate_path:,private_key_path:,path:,npu-id:,npu-mac:,conn-stack:
 OPTS=$(getopt -n build --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -152,6 +155,10 @@ do
       ;;
     -P | --private_key_path )
       PRIVATE_KEY_PATH=$(realpath "$2")
+      shift 2
+      ;;
+    --conn-stack )
+      CONNECTIVITY_STACK=$2
       shift 2
       ;;
     --)
@@ -262,6 +269,18 @@ case "$TOOLCHAIN" in
       show_usage
       exit 2
       ;;
+esac
+
+case "$CONNECTIVITY_STACK" in
+    FREERTOS_PLUS_TCP )
+        ;;
+    IOT_VSOCKET )
+        ;;
+    *)
+        echo "Invalid connectivity stack selection <FREERTOS_PLUS_TCP | IOT_VSOCKET>"
+        show_usage
+        exit 2
+        ;;
 esac
 
 if [ "$EXAMPLE" != "blinky" ] && [ ! -f "$CERTIFICATE_PATH" ]; then
