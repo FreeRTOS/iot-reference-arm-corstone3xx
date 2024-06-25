@@ -136,13 +136,11 @@ target_link_libraries(keyword-detection
         coremqtt
         coremqtt-agent
         corepkcs11
-        coresntp
         freertos_kernel
         freertos-ota-pal-psa
         fri-bsp
         helpers-device-advisor
         helpers-events
-        helpers-sntp
         mbedtls
         ota-for-aws-iot-embedded-sdk
         provisioning-lib
@@ -151,6 +149,17 @@ target_link_libraries(keyword-detection
         kws_api
         kws_model
 )
+
+# sntp helper library depends on FreeRTOS-Plus-TCP connectivity stack as it
+# includes `FreeRTOS_IP.h` header file in one of its source files (sntp_client_task.c),
+# thus this library is only added in case of using FREERTOS_PLUS_TCP connectivity stack.
+if(CONNECTIVITY_STACK STREQUAL "FREERTOS_PLUS_TCP")
+    target_link_libraries(keyword-detection
+        PRIVATE
+            coresntp
+            helpers-sntp
+    )
+endif()
 
 include(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/cmake/SetLinkerOptions.cmake)
 set_linker_script(keyword-detection)
