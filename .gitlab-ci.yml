@@ -174,7 +174,7 @@ test-blinky-output:
         --fvp $FVP_BIN \
         --merged-elf-name "${APP}_merged.elf" \
         --timeout-seconds 900 \
-        --pass-output-file "applications/${APP}/tests/pass_output.log" \
+        --pass-output-file "applications/${APP}/tests/${TARGET}_pass_output.log" \
         --fail-output-file "applications/${APP}/tests/fail_output.log"
   parallel:
     matrix:
@@ -212,7 +212,7 @@ test-blinky-output:
         --merged-elf-name "${APP}_merged.elf" \
         --signed-update-bin-name "${APP}-update_signed.bin" \
         --timeout-seconds 2700 \
-        --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
+        --pass-output-file "applications/${APP_UNDERSCORED}/tests/${TARGET}_pass_output.log" \
         --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log" \
         --pythonhome-path "/opt/python/3.9.18"
       elif [[ $APP == "object-detection" ]]; then
@@ -224,7 +224,7 @@ test-blinky-output:
         --merged-elf-name "${APP}_merged.elf" \
         --signed-update-bin-name "${APP}-update_signed.bin" \
         --timeout-seconds 1800 \
-        --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
+        --pass-output-file "applications/${APP_UNDERSCORED}/tests/${TARGET}_pass_output.log" \
         --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
       else
         pytest -s tools/tests/test_applications.py \
@@ -234,7 +234,7 @@ test-blinky-output:
         --merged-elf-name "${APP}_merged.elf" \
         --signed-update-bin-name "${APP}-update_signed.bin" \
         --timeout-seconds 2700 \
-        --pass-output-file "applications/${APP_UNDERSCORED}/tests/pass_output.log" \
+        --pass-output-file "applications/${APP_UNDERSCORED}/tests/${TARGET}_pass_output.log" \
         --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
       fi
 
