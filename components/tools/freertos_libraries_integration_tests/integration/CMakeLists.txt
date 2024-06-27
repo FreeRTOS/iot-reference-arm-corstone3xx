@@ -56,6 +56,11 @@ target_link_libraries(freertos-libraries-integration-tests-pkcs11
         unity
 )
 
+target_compile_definitions(freertos-libraries-integration-tests-pkcs11
+    PRIVATE
+        -DMBEDTLS_ALLOW_PRIVATE_ACCESS
+)
+
 add_library(freertos-libraries-integration-tests-qualification
     ${QUALIFICATION_TEST_SOURCES}
 )
