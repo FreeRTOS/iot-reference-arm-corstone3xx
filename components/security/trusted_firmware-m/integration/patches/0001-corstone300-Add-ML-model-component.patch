@@ -1,0 +1,507 @@
+From 6128f015c59483f6c6e02b8c62df0f8fb00a3995 Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Thu, 5 Dec 2024 10:56:59 +0000
+Subject: [PATCH 1/3] corstone300: Add ML model component
+
+As the TF-M is currently configured to enable a 2 image operation (for
+the Secure and Non-Secure components), an update is required to enable
+an ML-model-only OTA update, with the use of a new, third TF-M
+component.
+
+Enable a 3-component TF-M setup. Apart from the standard Secure and
+Non-Secure images, a third, Non-Secure ML model image is added to the
+mix. To keep changes minimal, the NS partition is re-sized from 0x340000
+B to 0x240000 B, and the remaining 0x100000 B are used for the ML model.
+
+- Enable MCUBoot to support a 3 image setup.
+- Add signing layout for the ML model image.
+- Add provisioning data and SPE config for the ML model image.
+- Add a custom, 3-image flash map, where the ML model image partition is
+created at the cost of reduced NS partition size.
+- Keep addresses of the Secure, Non-Secure and Scratch partitions
+unchanged.
+- Keep sizes of the Secure and Scratch partitions unchanged.
+
+Signed-off-by: Filip Jagodzinski <filip.jagodzinski@arm.com>
+Signed-off-by: Ahmed Ismail <Ahmed.Ismail@arm.com>
+---
+ bl2/ext/mcuboot/CMakeLists.txt                |  24 +++
+ bl2/ext/mcuboot/include/sysflash/sysflash.h   |   9 ++
+ cmake/install.cmake                           |   5 +
+ config/spe_config.cmake.in                    |   5 +
+ interface/include/psa/fwu_config.h.in         |   1 +
+ .../common/provisioning_bundle/CMakeLists.txt |   1 +
+ .../arm/mps3/corstone300/an552/config.cmake   |   1 +
+ .../corstone300/common/bl2/flash_map_bl2.c    | 144 ++++++++++++++++++
+ .../arm/mps3/corstone300/common/common.cmake  |  16 +-
+ .../arm/mps3/corstone300/common/config.cmake  |   3 +-
+ .../common/partition/flash_layout.h           |  86 ++++++++++-
+ .../common/partition/region_defs.h            |  10 +-
+ 12 files changed, 300 insertions(+), 5 deletions(-)
+ create mode 100644 platform/ext/target/arm/mps3/corstone300/common/bl2/flash_map_bl2.c
+
+diff --git a/bl2/ext/mcuboot/CMakeLists.txt b/bl2/ext/mcuboot/CMakeLists.txt
+index 795bfc618..deb733935 100644
+--- a/bl2/ext/mcuboot/CMakeLists.txt
++++ b/bl2/ext/mcuboot/CMakeLists.txt
+@@ -234,6 +234,30 @@ if (PLATFORM_DEFAULT_IMAGE_SIGNING)
+             platform_bl2
+     )
+ 
++    if(MCUBOOT_IMAGE_NUMBER GREATER 2)
++        set(IMAGE_TYPE "NS_ML_MODEL_IMAGE")
++        set(FLASH_AREA_NUM ${MCUBOOT_NS_ML_MODEL_IMAGE_FLASH_AREA_NUM})
++        configure_file(signing_layout.c.in signing_layout_ns_ml_model.c @ONLY)
++
++        add_library(signing_layout_ns_ml_model OBJECT ${CMAKE_CURRENT_BINARY_DIR}/signing_layout_ns_ml_model.c)
++        target_compile_options(signing_layout_ns_ml_model
++            PRIVATE
++                $<$<C_COMPILER_ID:GNU>:-E\;-xc>
++                $<$<C_COMPILER_ID:ARMClang>:-E\;-xc>
++                $<$<C_COMPILER_ID:IAR>:--preprocess=ns\;$<TARGET_OBJECTS:signing_layout_ns_ml_model>>
++        )
++        target_compile_definitions(signing_layout_ns_ml_model
++            PRIVATE
++                $<$<BOOL:${BL2}>:BL2>
++                $<$<BOOL:${MCUBOOT_IMAGE_NUMBER}>:MCUBOOT_IMAGE_NUMBER=${MCUBOOT_IMAGE_NUMBER}>
++                $<$<STREQUAL:${MCUBOOT_UPGRADE_STRATEGY},DIRECT_XIP>:IMAGE_ROM_FIXED>
++        )
++        target_link_libraries(signing_layout_ns_ml_model
++            PRIVATE
++                platform_bl2
++        )
++    endif()
++
+     add_custom_target(signed_images
+         ALL
+         DEPENDS tfm_s_signed_bin
+diff --git a/bl2/ext/mcuboot/include/sysflash/sysflash.h b/bl2/ext/mcuboot/include/sysflash/sysflash.h
+index b5d166dc4..af13275bd 100644
+--- a/bl2/ext/mcuboot/include/sysflash/sysflash.h
++++ b/bl2/ext/mcuboot/include/sysflash/sysflash.h
+@@ -39,6 +39,15 @@ extern "C" {
+ #define FLASH_AREA_IMAGE_SECONDARY(x)   (((x) == 0) ? FLASH_AREA_2_ID : \
+                                          ((x) == 1) ? FLASH_AREA_3_ID : \
+                                                       255 )
++#elif (MCUBOOT_IMAGE_NUMBER == 3)
++#define FLASH_AREA_IMAGE_PRIMARY(x)     (((x) == 0) ? FLASH_AREA_0_ID : \
++                                         ((x) == 1) ? FLASH_AREA_1_ID : \
++                                         ((x) == 2) ? FLASH_AREA_1_0_ID : \
++                                                      255 )
++#define FLASH_AREA_IMAGE_SECONDARY(x)   (((x) == 0) ? FLASH_AREA_2_ID : \
++                                         ((x) == 1) ? FLASH_AREA_3_ID : \
++                                         ((x) == 2) ? FLASH_AREA_3_0_ID : \
++                                                      255 )
+ #else
+ #error "Image slot and flash area mapping is not defined"
+ #endif
+diff --git a/cmake/install.cmake b/cmake/install.cmake
+index d98bef1a7..6fcd11b9b 100644
+--- a/cmake/install.cmake
++++ b/cmake/install.cmake
+@@ -223,6 +223,11 @@ if(BL2 AND PLATFORM_DEFAULT_IMAGE_SIGNING)
+         install(FILES $<TARGET_FILE_DIR:bl2>/image_ns_signing_public_key.pem
+                 DESTINATION ${INSTALL_IMAGE_SIGNING_DIR}/keys)
+     endif()
++
++    if(MCUBOOT_IMAGE_NUMBER GREATER 2)
++        install(FILES $<TARGET_OBJECTS:signing_layout_ns_ml_model>
++                DESTINATION ${INSTALL_IMAGE_SIGNING_DIR}/layout_files)
++    endif()
+ endif()
+ 
+ if(TFM_PARTITION_FIRMWARE_UPDATE)
+diff --git a/config/spe_config.cmake.in b/config/spe_config.cmake.in
+index 5ca964003..3731facd9 100644
+--- a/config/spe_config.cmake.in
++++ b/config/spe_config.cmake.in
+@@ -43,6 +43,11 @@ set(MCUBOOT_KEY_S                          @MCUBOOT_INSTALL_KEY_S@)
+ set(MCUBOOT_SECURITY_COUNTER_NS            @MCUBOOT_SECURITY_COUNTER_NS@)
+ set(MCUBOOT_IMAGE_VERSION_NS               @MCUBOOT_IMAGE_VERSION_NS@)
+ set(MCUBOOT_KEY_NS                         @MCUBOOT_INSTALL_KEY_NS@)
++
++set(MCUBOOT_SECURITY_COUNTER_NS_ML_MODEL   @MCUBOOT_SECURITY_COUNTER_NS_ML_MODEL@)
++set(MCUBOOT_IMAGE_VERSION_NS_ML_MODEL      @MCUBOOT_IMAGE_VERSION_NS_ML_MODEL@)
++set(MCUBOOT_KEY_NS_ML_MODEL                @MCUBOOT_INSTALL_KEY_NS_ML_MODEL@)
++
+ set(PLATFORM_DEFAULT_IMAGE_SIGNING         @PLATFORM_DEFAULT_IMAGE_SIGNING@)
+ 
+ # The common options describing a platform configuration
+diff --git a/interface/include/psa/fwu_config.h.in b/interface/include/psa/fwu_config.h.in
+index 1e3eca65b..81ac9f2e8 100644
+--- a/interface/include/psa/fwu_config.h.in
++++ b/interface/include/psa/fwu_config.h.in
+@@ -20,6 +20,7 @@
+ #if FWU_COMPONENT_NUMBER > 1
+ #define FWU_COMPONENT_ID_SECURE           0x00U
+ #define FWU_COMPONENT_ID_NONSECURE        0x01U
++#define FWU_COMPONENT_ID_ML_MODEL         0x02U
+ #else
+ #define FWU_COMPONENT_ID_FULL             0x00U
+ #endif
+diff --git a/platform/ext/common/provisioning_bundle/CMakeLists.txt b/platform/ext/common/provisioning_bundle/CMakeLists.txt
+index 915b99238..39364218d 100644
+--- a/platform/ext/common/provisioning_bundle/CMakeLists.txt
++++ b/platform/ext/common/provisioning_bundle/CMakeLists.txt
+@@ -124,6 +124,7 @@ add_custom_command(OUTPUT provisioning_data.c
+         ${CMAKE_CURRENT_BINARY_DIR}/provisioning_data.c
+         --bl2_rot_priv_key_0=${MCUBOOT_KEY_S}
+         --bl2_rot_priv_key_1=${MCUBOOT_KEY_NS}
++        --bl2_rot_priv_key_2=${MCUBOOT_KEY_NS}
+         --bl2_mcuboot_hw_key=${MCUBOOT_HW_KEY}
+         --template_path=${CMAKE_CURRENT_SOURCE_DIR}
+         --secure_debug_pk=${SECURE_DEBUG_PK}
+diff --git a/platform/ext/target/arm/mps3/corstone300/an552/config.cmake b/platform/ext/target/arm/mps3/corstone300/an552/config.cmake
+index bfad1ed35..14aa0c97c 100644
+--- a/platform/ext/target/arm/mps3/corstone300/an552/config.cmake
++++ b/platform/ext/target/arm/mps3/corstone300/an552/config.cmake
+@@ -12,3 +12,4 @@ include(${CORSTONE300_COMMON_DIR}/config.cmake)
+ set(PROVISIONING_CODE_PADDED_SIZE       "0x2400"  CACHE STRING    "")
+ set(PROVISIONING_VALUES_PADDED_SIZE     "0x400"   CACHE STRING    "")
+ set(PROVISIONING_DATA_PADDED_SIZE       "0x400"   CACHE STRING    "")
++set(DEFAULT_MCUBOOT_FLASH_MAP           OFF       CACHE BOOL     "Whether to use the default flash map defined by TF-M project")
+diff --git a/platform/ext/target/arm/mps3/corstone300/common/bl2/flash_map_bl2.c b/platform/ext/target/arm/mps3/corstone300/common/bl2/flash_map_bl2.c
+new file mode 100644
+index 000000000..398222b26
+--- /dev/null
++++ b/platform/ext/target/arm/mps3/corstone300/common/bl2/flash_map_bl2.c
+@@ -0,0 +1,144 @@
++/*
++ * Copyright (c) 2021, 2024, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#include <stdbool.h>
++#include "flash_map/flash_map.h"
++#include "target.h"
++#include "Driver_Flash.h"
++
++/* When undefined FLASH_DEV_NAME_0 or FLASH_DEVICE_ID_0 , default */
++#if !defined(FLASH_DEV_NAME_0) || !defined(FLASH_DEVICE_ID_0)
++#define FLASH_DEV_NAME_0  FLASH_DEV_NAME
++#define FLASH_DEVICE_ID_0 FLASH_DEVICE_ID
++#endif
++
++/* When undefined FLASH_DEV_NAME_1 or FLASH_DEVICE_ID_1 , default */
++#if !defined(FLASH_DEV_NAME_1) || !defined(FLASH_DEVICE_ID_1)
++#define FLASH_DEV_NAME_1  FLASH_DEV_NAME
++#define FLASH_DEVICE_ID_1 FLASH_DEVICE_ID
++#endif
++
++/* When undefined FLASH_DEV_NAME_2 or FLASH_DEVICE_ID_2 , default */
++#if !defined(FLASH_DEV_NAME_2) || !defined(FLASH_DEVICE_ID_2)
++#define FLASH_DEV_NAME_2  FLASH_DEV_NAME
++#define FLASH_DEVICE_ID_2 FLASH_DEVICE_ID
++#endif
++
++/* When undefined FLASH_DEV_NAME_3 or FLASH_DEVICE_ID_3 , default */
++#if !defined(FLASH_DEV_NAME_3) || !defined(FLASH_DEVICE_ID_3)
++#define FLASH_DEV_NAME_3  FLASH_DEV_NAME
++#define FLASH_DEVICE_ID_3 FLASH_DEVICE_ID
++#endif
++
++#if defined(MCUBOOT_SWAP_USING_SCRATCH)
++/* When undefined FLASH_DEV_NAME_SCRATCH or FLASH_DEVICE_ID_SCRATCH , default */
++#if !defined(FLASH_DEV_NAME_SCRATCH) || !defined(FLASH_DEVICE_ID_SCRATCH)
++#define FLASH_DEV_NAME_SCRATCH  FLASH_DEV_NAME
++#define FLASH_DEVICE_ID_SCRATCH FLASH_DEVICE_ID
++#endif
++#endif  /* defined(MCUBOOT_SWAP_USING_SCRATCH) */
++
++#define ARRAY_SIZE(arr) (sizeof(arr)/sizeof((arr)[0]))
++
++/* Flash device names must be specified by target */
++extern ARM_DRIVER_FLASH FLASH_DEV_NAME_0;
++extern ARM_DRIVER_FLASH FLASH_DEV_NAME_1;
++extern ARM_DRIVER_FLASH FLASH_DEV_NAME_2;
++extern ARM_DRIVER_FLASH FLASH_DEV_NAME_3;
++extern ARM_DRIVER_FLASH FLASH_DEV_NAME_SCRATCH;
++
++#if !defined(FLASH_DRIVER_LIST)
++/* Default Drivers list */
++const ARM_DRIVER_FLASH *flash_driver[] = {
++    &FLASH_DEV_NAME,
++#if FLASH_DEV_NAME_0 != FLASH_DEV_NAME
++    &FLASH_DEV_NAME_0,
++#endif
++#if FLASH_DEV_NAME_1 != FLASH_DEV_NAME
++    &FLASH_DEV_NAME_1,
++#endif
++#if FLASH_DEV_NAME_2 != FLASH_DEV_NAME
++    &FLASH_DEV_NAME_2,
++#endif
++#if (MCUBOOT_IMAGE_NUMBER == 2)
++#if FLASH_DEV_NAME_1 != FLASH_DEV_NAME
++    &FLASH_DEV_NAME_1,
++#endif
++#if FLASH_DEV_NAME_3 != FLASH_DEV_NAME
++    &FLASH_DEV_NAME_3,
++#endif
++#endif /* (MCUBOOT_IMAGE_NUMBER == 2) */
++#if defined(MCUBOOT_SWAP_USING_SCRATCH) && \
++    defined(FLASH_DEV_NAME_SCRATCH) && FLASH_DEV_NAME_SCRATCH != FLASH_DEV_NAME
++    &FLASH_DEV_NAME_SCRATCH
++#endif
++};
++#else
++/* Platform driver list */
++const ARM_DRIVER_FLASH *flash_driver[] = FLASH_DRIVER_LIST;
++#endif /* !defined(FLASH_DRIVER_LIST) */
++const int flash_driver_entry_num = ARRAY_SIZE(flash_driver);
++
++const struct flash_area flash_map[] = {
++    {
++        .fa_id = FLASH_AREA_0_ID,
++        .fa_device_id = FLASH_DEVICE_ID_0,
++        .fa_driver = &FLASH_DEV_NAME_0,
++        .fa_off = FLASH_AREA_0_OFFSET,
++        .fa_size = FLASH_AREA_0_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_2_ID,
++        .fa_device_id = FLASH_DEVICE_ID_2,
++        .fa_driver = &FLASH_DEV_NAME_2,
++        .fa_off = FLASH_AREA_2_OFFSET,
++        .fa_size = FLASH_AREA_2_SIZE,
++    },
++#if (MCUBOOT_IMAGE_NUMBER >= 2)
++    {
++        .fa_id = FLASH_AREA_1_ID,
++        .fa_device_id = FLASH_DEVICE_ID_1,
++        .fa_driver = &FLASH_DEV_NAME_1,
++        .fa_off = FLASH_AREA_1_OFFSET,
++        .fa_size = FLASH_AREA_1_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_3_ID,
++        .fa_device_id = FLASH_DEVICE_ID_3,
++        .fa_driver = &FLASH_DEV_NAME_3,
++        .fa_off = FLASH_AREA_3_OFFSET,
++        .fa_size = FLASH_AREA_3_SIZE,
++    },
++#endif
++#if (MCUBOOT_IMAGE_NUMBER >= 3)
++    {
++        .fa_id = FLASH_AREA_1_0_ID,
++        .fa_device_id = FLASH_DEVICE_ID_1,
++        .fa_driver = &FLASH_DEV_NAME_1,
++        .fa_off = FLASH_AREA_1_0_OFFSET,
++        .fa_size = FLASH_AREA_1_0_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_3_0_ID,
++        .fa_device_id = FLASH_DEVICE_ID_3,
++        .fa_driver = &FLASH_DEV_NAME_3,
++        .fa_off = FLASH_AREA_3_0_OFFSET,
++        .fa_size = FLASH_AREA_3_0_SIZE,
++    },
++#endif
++#if defined(MCUBOOT_SWAP_USING_SCRATCH)
++    {
++        .fa_id = FLASH_AREA_SCRATCH_ID,
++        .fa_device_id = FLASH_DEVICE_ID_SCRATCH,
++        .fa_driver = &FLASH_DEV_NAME_SCRATCH,
++        .fa_off = FLASH_AREA_SCRATCH_OFFSET,
++        .fa_size = FLASH_AREA_SCRATCH_SIZE,
++    },
++#endif /* defined(MCUBOOT_SWAP_USING_SCRATCH) */
++};
++
++const int flash_map_entry_num = ARRAY_SIZE(flash_map);
+diff --git a/platform/ext/target/arm/mps3/corstone300/common/common.cmake b/platform/ext/target/arm/mps3/corstone300/common/common.cmake
+index e6a3a53a2..f7779fe3b 100644
+--- a/platform/ext/target/arm/mps3/corstone300/common/common.cmake
++++ b/platform/ext/target/arm/mps3/corstone300/common/common.cmake
+@@ -152,6 +152,13 @@ if(BL2)
+             ${CORSTONE300_COMMON_DIR}/bl2/boot_hal_bl2.c
+     )
+ 
++    if(MCUBOOT_IMAGE_NUMBER GREATER 2)
++        target_sources(bl2
++            PRIVATE
++                ${CORSTONE300_COMMON_DIR}/bl2/flash_map_bl2.c
++        )
++    endif()
++
+     target_compile_options(bl2
+         PUBLIC
+             ${BL2_COMPILER_CP_FLAG}
+@@ -205,7 +212,12 @@ if(BL2)
+             $<$<AND:$<BOOL:${CONFIG_TFM_BOOT_STORE_MEASUREMENTS}>,$<BOOL:${TFM_PARTITION_MEASURED_BOOT}>>:tfm_boot_status>
+             device_definition
+     )
+-
++    if(MCUBOOT_IMAGE_NUMBER GREATER 2)
++        target_sources(tfm_fwu_mcuboot_util
++            INTERFACE
++                ${CORSTONE300_COMMON_DIR}/bl2/flash_map_bl2.c
++        )
++    endif()
+ endif()
+ 
+ #========================= tfm_spm ============================================#
+@@ -233,6 +245,7 @@ target_compile_definitions(platform_region_defs
+         S_DATA_OVERALL_SIZE=${S_DATA_OVERALL_SIZE}
+         FLASH_S_PARTITION_SIZE=${FLASH_S_PARTITION_SIZE}
+         FLASH_NS_PARTITION_SIZE=${FLASH_NS_PARTITION_SIZE}
++        FLASH_NS_ML_MODEL_PARTITION_SIZE=${FLASH_NS_ML_MODEL_PARTITION_SIZE}
+         PROVISIONING_CODE_PADDED_SIZE=${PROVISIONING_CODE_PADDED_SIZE}
+         PROVISIONING_VALUES_PADDED_SIZE=${PROVISIONING_VALUES_PADDED_SIZE}
+         PROVISIONING_DATA_PADDED_SIZE=${PROVISIONING_DATA_PADDED_SIZE}
+@@ -249,6 +262,7 @@ target_compile_definitions(tfm_config
+         S_DATA_OVERALL_SIZE=${S_DATA_OVERALL_SIZE}
+         FLASH_S_PARTITION_SIZE=${FLASH_S_PARTITION_SIZE}
+         FLASH_NS_PARTITION_SIZE=${FLASH_NS_PARTITION_SIZE}
++        FLASH_NS_ML_MODEL_PARTITION_SIZE=${FLASH_NS_ML_MODEL_PARTITION_SIZE}
+         PROVISIONING_CODE_PADDED_SIZE=${PROVISIONING_CODE_PADDED_SIZE}
+         PROVISIONING_VALUES_PADDED_SIZE=${PROVISIONING_VALUES_PADDED_SIZE}
+         PROVISIONING_DATA_PADDED_SIZE=${PROVISIONING_DATA_PADDED_SIZE}
+diff --git a/platform/ext/target/arm/mps3/corstone300/common/config.cmake b/platform/ext/target/arm/mps3/corstone300/common/config.cmake
+index 027e64c71..328965b21 100644
+--- a/platform/ext/target/arm/mps3/corstone300/common/config.cmake
++++ b/platform/ext/target/arm/mps3/corstone300/common/config.cmake
+@@ -13,7 +13,8 @@ set(PROVISIONING_KEYS_CONFIG      ""        CACHE FILEPATH  "The config file whi
+ 
+ set(S_DATA_OVERALL_SIZE      "0x20000"    CACHE STRING    "Secure data size")
+ set(FLASH_S_PARTITION_SIZE   "0x80000"    CACHE STRING    "Secure code size")
+-set(FLASH_NS_PARTITION_SIZE  "0x300000"   CACHE STRING    "Non-secure code size")
++set(FLASH_NS_PARTITION_SIZE  "0x240000"   CACHE STRING    "Non-secure code size")
++set(FLASH_NS_ML_MODEL_PARTITION_SIZE  "0x100000"   CACHE STRING    "Non-secure ML model size")
+ 
+ if(BL2)
+     set(BL2_TRAILER_SIZE 0x800 CACHE STRING "Trailer size")
+diff --git a/platform/ext/target/arm/mps3/corstone300/common/partition/flash_layout.h b/platform/ext/target/arm/mps3/corstone300/common/partition/flash_layout.h
+index 1923f91bb..fc1e589bd 100644
+--- a/platform/ext/target/arm/mps3/corstone300/common/partition/flash_layout.h
++++ b/platform/ext/target/arm/mps3/corstone300/common/partition/flash_layout.h
+@@ -143,8 +143,53 @@
+ /* Maximum number of image sectors supported by the bootloader. */
+ #define MCUBOOT_MAX_IMG_SECTORS    (FLASH_MAX_PARTITION_SIZE / \
+                                     FLASH_AREA_IMAGE_SECTOR_SIZE)
+-#else /* MCUBOOT_IMAGE_NUMBER > 2 */
+-#error "Only MCUBOOT_IMAGE_NUMBER 1 and 2 are supported!"
++#elif (MCUBOOT_IMAGE_NUMBER == 3)
++
++/* Secure image primary slot */
++#define FLASH_AREA_0_ID            (1)
++#define FLASH_AREA_0_OFFSET        (0)
++#define FLASH_AREA_0_SIZE          (FLASH_S_PARTITION_SIZE)
++
++/* Non-secure image primary slot */
++#define FLASH_AREA_1_ID            (FLASH_AREA_0_ID + 1)
++#define FLASH_AREA_1_OFFSET        (FLASH_AREA_0_OFFSET + FLASH_AREA_0_SIZE)
++#define FLASH_AREA_1_SIZE          (FLASH_NS_PARTITION_SIZE)
++
++/* Non-secure ML model image primary slot */ /* Use a _0 suffix to keep other slot names unchanged. */
++#define FLASH_AREA_1_0_ID          (FLASH_AREA_1_ID + 1)
++#define FLASH_AREA_1_0_OFFSET      (FLASH_AREA_1_OFFSET + FLASH_AREA_1_SIZE)
++#define FLASH_AREA_1_0_SIZE        (FLASH_NS_ML_MODEL_PARTITION_SIZE)
++
++/* Secure image secondary slot */
++#define FLASH_AREA_2_ID            (FLASH_AREA_1_0_ID + 1)
++#define FLASH_AREA_2_OFFSET        (FLASH_AREA_1_0_OFFSET + FLASH_AREA_1_0_SIZE)
++#define FLASH_AREA_2_SIZE          (FLASH_S_PARTITION_SIZE)
++
++/* Non-secure image secondary slot */
++#define FLASH_AREA_3_ID            (FLASH_AREA_2_ID + 1)
++#define FLASH_AREA_3_OFFSET        (FLASH_AREA_2_OFFSET + FLASH_AREA_2_SIZE)
++#define FLASH_AREA_3_SIZE          (FLASH_NS_PARTITION_SIZE)
++
++/* Non-secure ML model image secondary slot */ /* Use a _0 suffix to keep other slot names unchanged. */
++#define FLASH_AREA_3_0_ID          (FLASH_AREA_3_ID + 1)
++#define FLASH_AREA_3_0_OFFSET      (FLASH_AREA_3_OFFSET + FLASH_AREA_3_SIZE)
++#define FLASH_AREA_3_0_SIZE        (FLASH_NS_ML_MODEL_PARTITION_SIZE)
++
++/* Scratch area */
++#define FLASH_AREA_SCRATCH_ID      (FLASH_AREA_3_0_ID + 1)
++#define FLASH_AREA_SCRATCH_OFFSET  (FLASH_AREA_3_0_OFFSET + FLASH_AREA_3_0_SIZE)
++#define FLASH_AREA_SCRATCH_SIZE    (0x80000) /* 512 kB */
++
++/* The maximum number of status entries supported by the bootloader. */
++#define MCUBOOT_STATUS_MAX_ENTRIES (FLASH_MAX_PARTITION_SIZE / \
++                                    FLASH_AREA_SCRATCH_SIZE)
++
++/* Maximum number of image sectors supported by the bootloader. */
++#define MCUBOOT_MAX_IMG_SECTORS    (FLASH_MAX_PARTITION_SIZE / \
++                                    FLASH_AREA_IMAGE_SECTOR_SIZE)
++
++#else /* MCUBOOT_IMAGE_NUMBER > 3 */
++#error "Only MCUBOOT_IMAGE_NUMBER 1, 2 and 3 are supported!"
+ #endif /* MCUBOOT_IMAGE_NUMBER */
+ 
+ /* Protected Storage (PS) Service definitions */
+@@ -254,4 +299,41 @@
+ #define TFM_OTP_NV_COUNTERS_BACKUP_AREA_ADDR (TFM_OTP_NV_COUNTERS_AREA_ADDR + \
+                                               TFM_OTP_NV_COUNTERS_AREA_SIZE)
+ 
++
++#if (MCUBOOT_IMAGE_NUMBER == 1)
++/*
++ * NOTE: the definition below returns the same values for true/false on
++ * purpose, to avoid having to mark x as non-used by all callers when
++ * running in single image mode.
++ */
++#define FLASH_AREA_IMAGE_PRIMARY(x)     (((x) == 0) ? FLASH_AREA_0_ID : \
++                                                      FLASH_AREA_0_ID)
++#define FLASH_AREA_IMAGE_SECONDARY(x)   (((x) == 0) ? FLASH_AREA_2_ID : \
++                                                      FLASH_AREA_2_ID)
++#elif (MCUBOOT_IMAGE_NUMBER == 2)
++/* MCUBoot currently supports only up to 2 updatable firmware images.
++ * If the number of the current image is greater than MCUBOOT_IMAGE_NUMBER - 1
++ * then a dummy value will be assigned to the flash area macros.
++ */
++#define FLASH_AREA_IMAGE_PRIMARY(x)     (((x) == 0) ? FLASH_AREA_0_ID : \
++                                         ((x) == 1) ? FLASH_AREA_1_ID : \
++                                                      255 )
++#define FLASH_AREA_IMAGE_SECONDARY(x)   (((x) == 0) ? FLASH_AREA_2_ID : \
++                                         ((x) == 1) ? FLASH_AREA_3_ID : \
++                                                      255 )
++#elif (MCUBOOT_IMAGE_NUMBER == 3)
++#define FLASH_AREA_IMAGE_PRIMARY(x)     (((x) == 0) ? FLASH_AREA_0_ID : \
++                                         ((x) == 1) ? FLASH_AREA_1_ID : \
++                                         ((x) == 2) ? FLASH_AREA_1_0_ID : \
++                                                      255 )
++#define FLASH_AREA_IMAGE_SECONDARY(x)   (((x) == 0) ? FLASH_AREA_2_ID : \
++                                         ((x) == 1) ? FLASH_AREA_3_ID : \
++                                         ((x) == 2) ? FLASH_AREA_3_0_ID : \
++                                                      255 )
++#else
++#error "Image slot and flash area mapping is not defined"
++#endif
++
++#define FLASH_AREA_IMAGE_SCRATCH        FLASH_AREA_SCRATCH_ID
++
+ #endif /* __FLASH_LAYOUT_H__ */
+diff --git a/platform/ext/target/arm/mps3/corstone300/common/partition/region_defs.h b/platform/ext/target/arm/mps3/corstone300/common/partition/region_defs.h
+index 643e5bd3d..f799a85ec 100644
+--- a/platform/ext/target/arm/mps3/corstone300/common/partition/region_defs.h
++++ b/platform/ext/target/arm/mps3/corstone300/common/partition/region_defs.h
+@@ -79,6 +79,9 @@
+ #define IMAGE_NS_CODE_SIZE \
+             (FLASH_NS_PARTITION_SIZE - BL2_HEADER_SIZE - BL2_TRAILER_SIZE)
+ 
++#define IMAGE_NS_ML_MODEL_CODE_SIZE \
++            (FLASH_NS_ML_MODEL_PARTITION_SIZE - BL2_HEADER_SIZE - BL2_TRAILER_SIZE)
++
+ /* Secure regions */
+ #define S_IMAGE_PRIMARY_AREA_OFFSET \
+              (S_IMAGE_PRIMARY_PARTITION_OFFSET + BL2_HEADER_SIZE)
+@@ -120,7 +123,12 @@
+ /* NS partition information is used for MPC and SAU configuration */
+ #define NS_PARTITION_START \
+             ((QSPI_SRAM_BASE_NS) + (NS_IMAGE_PRIMARY_PARTITION_OFFSET))
+-#define NS_PARTITION_SIZE (FLASH_NS_PARTITION_SIZE)
++
++#if (MCUBOOT_IMAGE_NUMBER >= 3)
++    #define NS_PARTITION_SIZE (FLASH_NS_PARTITION_SIZE + FLASH_NS_ML_MODEL_PARTITION_SIZE)
++#else
++    #define NS_PARTITION_SIZE (FLASH_NS_PARTITION_SIZE)
++#endif
+ 
+ /* Secondary partition for new images in case of firmware upgrade */
+ #define SECONDARY_PARTITION_START \
+-- 
+2.34.1
+

@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Arm Limited and/or its affiliates
+# Copyright 2023-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: Apache-2.0
 
@@ -45,14 +45,25 @@ target_compile_definitions(arm-corstone-platform-bsp
 if(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone300")
     set(TFM_PLATFORM_LOCAL_PATH "arm/mps3/corstone300/fvp" CACHE STRING "TFM Platform local path")
     set(TFM_FLASH_S_PARTITION_SIZE "0x40000")
-    set(TFM_FLASH_NS_PARTITION_SIZE "0x340000")
-
+    # These variables are only defined in case of building keyword_detection application with GNU toolchain
+    # as it is currently the only application that utilises the ML Model component OTA update feature
+    # where these variables are needed.
+    if((${APPLICATION_PATH} MATCHES ".*keyword_detection") AND (${CMAKE_C_COMPILER_ID} STREQUAL "GNU"))
+        set(TFM_FLASH_NS_PARTITION_SIZE "0x240000")
+        set(TFM_FLASH_NS_ML_MODEL_PARTITION_SIZE "0x100000")
+        set(NS_DDR4_IMAGE_LOAD_ADDRESS 0x60100000 CACHE STRING "Non-Secure Double Data Rate RAM image loading address")
+        set(NS_ML_MODEL_IMAGE_LOAD_ADDRESS 0x28280000 CACHE STRING "Non-Secure ML model image loading address")
+        set(NS_ML_MODEL_IMAGE_EXECUTION_ADDRESS 0x60000000 CACHE STRING "Non-Secure ML model image runtime address")
+        set(NS_ML_MODEL_IMAGE_SIZE 0x100000 CACHE STRING "Non-Secure ML model image size")
+    else()
+        set(TFM_FLASH_NS_PARTITION_SIZE "0x340000")
+        set(NS_DDR4_IMAGE_LOAD_ADDRESS 0x60000000 CACHE STRING "Non-Secure Double Data Rate RAM image loading address")
+    endif()
     set(BL2_IMAGE_LOAD_ADDRESS 0x00000000 CACHE STRING "Bootload image loading address")
     set(S_IMAGE_LOAD_ADDRESS 0x38000000 CACHE STRING "Secure TF-M firmware loading address")
     set(NS_IMAGE_LOAD_ADDRESS 0x28040000 CACHE STRING "Non-secure user application loading address")
     set(S_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x10022000 CACHE STRING "Secure provisioning bundle loading address")
     set(NS_PROVISIONING_BUNDLE_LOAD_ADDRESS 0x211FF000 CACHE STRING "Non-Secure provisioning bundle loading address")
-    set(NS_DDR4_IMAGE_LOAD_ADDRESS 0x60000000 CACHE STRING "Non-Secure Double Data Rate RAM image loading address")
 
     set(ETHOS_U_BASE_ADDR "0x48102000" CACHE STRING "Ethos-U NPU base address" FORCE)
     set(ETHOS_U_IRQN "56" CACHE STRING "Ethos-U NPU Interrupt" FORCE)
@@ -196,6 +207,7 @@ set(ARM_CORSTONE_BSP_TARGET_PLATFORM_TFM_CMAKE_ARGS
     -DTFM_PLATFORM=${TFM_PLATFORM_LOCAL_PATH}
     -DFLASH_S_PARTITION_SIZE=${TFM_FLASH_S_PARTITION_SIZE}
     -DFLASH_NS_PARTITION_SIZE=${TFM_FLASH_NS_PARTITION_SIZE}
+    -DFLASH_NS_ML_MODEL_PARTITION_SIZE=${TFM_FLASH_NS_ML_MODEL_PARTITION_SIZE}
     ${TFM_CMAKE_APP_ARGS}
     CACHE STRING "TFM CMake arguments" FORCE
 )
