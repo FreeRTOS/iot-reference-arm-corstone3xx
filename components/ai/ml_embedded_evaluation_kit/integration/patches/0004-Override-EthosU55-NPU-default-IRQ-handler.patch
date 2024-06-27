@@ -1,0 +1,69 @@
+From 1a047cff83badc2f6a95e3e78af735abef51ef8a Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Thu, 28 Nov 2024 16:14:38 +0000
+Subject: [PATCH 4/4] Override EthosU55 NPU default IRQ handler
+
+This change is done to avoid modifying the
+vector table by setting the Ethos U55 IRQ handler
+to `arm_ethosu_npu_irq_handler` in the run-time
+using the `NVIC_SetVector()` function where in this
+case, the checksum of the non-secure image
+is altered which result into failure of MCUBoot non-secure
+image validation after ML Model OTA update.
+
+Now, we are using the default IRQ handler name
+`ETHOS_U55_Handler` which is defined as weak inside
+the startup file for the platform. This way the vector table
+is not altered because we are setting the same IRQ handler function
+in the `NVIC_SetVector()` so techincally it has no effect.
+
+Signed-off-by: Ahmed Ismail <Ahmed.Ismail@arm.com>
+---
+ source/hal/source/components/npu/ethosu_npu_init.c         | 6 +++---
+ source/hal/source/components/npu/include/ethosu_npu_init.h | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/source/hal/source/components/npu/ethosu_npu_init.c b/source/hal/source/components/npu/ethosu_npu_init.c
+index 2cbdb1e..1c8b4f6 100644
+--- a/source/hal/source/components/npu/ethosu_npu_init.c
++++ b/source/hal/source/components/npu/ethosu_npu_init.c
+@@ -71,20 +71,20 @@ static void arm_ethosu_npu_irq_init(void)
+ 
+     /* Register the EthosU IRQ handler in our vector table.
+      * Note, this handler comes from the EthosU driver */
+-    NVIC_SetVector(ethosu_irqnum, (uint32_t)arm_ethosu_npu_irq_handler);
++    NVIC_SetVector(ethosu_irqnum, (uint32_t)ETHOS_U55_Handler);
+ 
+     /* Enable the IRQ */
+     NVIC_EnableIRQ(ethosu_irqnum);
+ 
+     debug("EthosU IRQ#: %u, Handler: 0x%p\n",
+-          ethosu_irqnum, arm_ethosu_npu_irq_handler);
++          ethosu_irqnum, ETHOS_U55_Handler);
+ }
+ 
+ /**
+  * @brief   Defines the Ethos-U interrupt handler: just a wrapper around the default
+  *          implementation.
+  **/
+-void arm_ethosu_npu_irq_handler(void)
++void ETHOS_U55_Handler(void)
+ {
+     /* Call the default interrupt handler from the NPU driver */
+     ethosu_irq_handler(&ethosu_drv);
+diff --git a/source/hal/source/components/npu/include/ethosu_npu_init.h b/source/hal/source/components/npu/include/ethosu_npu_init.h
+index b82386f..243c4a0 100644
+--- a/source/hal/source/components/npu/include/ethosu_npu_init.h
++++ b/source/hal/source/components/npu/include/ethosu_npu_init.h
+@@ -29,7 +29,7 @@ int arm_ethosu_npu_init(void);
+  * @brief   Defines the Arm Ethos-U NPU interrupt handler: just a wrapper
+  *          around the default implementation.
+  **/
+-void arm_ethosu_npu_irq_handler(void);
++void ETHOS_U55_Handler(void);
+ 
+ #endif /* ARM_NPU */
+ 
+-- 
+2.34.1
+

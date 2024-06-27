@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Arm Limited and/or its affiliates
+# Copyright 2023-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -10,6 +10,8 @@ set(APPLICATION_PATH "${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/b
 set(TFM_CMAKE_APP_ARGS
     -DPROJECT_CONFIG_HEADER_FILE=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/blinky/configs/tfm_config/project_config.h
 )
+set(MCUBOOT_IMAGE_NUMBER 2 CACHE STRING "Total number of firmware images")
+set(DEFAULT_MCUBOOT_FLASH_MAP ON)
 
 project(blinky-example LANGUAGES C)
 

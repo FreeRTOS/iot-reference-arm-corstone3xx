@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. and its affiliates. All Rights Reserved.
- * Copyright 2023-2024 Arm Limited and/or its affiliates
+ * Copyright 2023-2025 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: MIT
@@ -21,6 +21,7 @@
 
 #include "demo_config.h"
 #include "MQTTFileDownloader_config.h"
+#include "psa/update.h"
 
 /**
  * @brief The maximum time for which OTA demo waits for an MQTT operation to be complete.
@@ -148,5 +149,28 @@ typedef struct OtaEventMsg
     OtaJobEventData_t * jobEvent; /*!< Job Event message. */
     OtaEvent_t eventId;           /*!< Identifier for the event. */
 } OtaEventMsg_t;
+
+static struct
+{
+    psa_fwu_component_t id;
+    char * name;
+}
+xFwComponents[ FWU_COMPONENT_NUMBER ] =
+{
+    {
+        .id = FWU_COMPONENT_ID_SECURE,
+        .name = "Secure"
+    },
+    {
+        .id = FWU_COMPONENT_ID_NONSECURE,
+        .name = "Non-Secure"
+    }
+    #if ( MCUBOOT_IMAGE_NUMBER == 3 )
+    ,{
+        .id = FWU_COMPONENT_ID_ML_MODEL,
+        .name = "ML Model"
+    }
+    #endif
+};
 
 #endif /* OTA_TYPES_DEFINITIONS_H */

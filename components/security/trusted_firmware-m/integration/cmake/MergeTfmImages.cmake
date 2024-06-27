@@ -29,6 +29,11 @@ function(iot_reference_arm_corstone3xx_tf_m_merge_images target)
     else()
         set(ddr_binary_param "")
     endif()
+    if(DEFINED ARGV5 AND DEFINED ARGV6)
+        set(model_binary_param ${ARGV6} -Binary -offset ${ARGV5})
+    else()
+        set(model_binary_param "")
+    endif()
     find_program(srec_cat NAMES srec_cat REQUIRED)
     find_program(objcopy NAMES arm-none-eabi-objcopy objcopy REQUIRED)
     if(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone300" OR ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone310")
@@ -44,6 +49,7 @@ function(iot_reference_arm_corstone3xx_tf_m_merge_images target)
                     $<TARGET_FILE_DIR:${target}>/${target}_signed.bin -Binary -offset ${NS_IMAGE_LOAD_ADDRESS}
                     ${ddr_binary_param}
                     ${ns_provisioning_data_param}
+                    ${model_binary_param}
                     ${BINARY_DIR}/api_ns/bin/provisioning_bundle.bin -Binary -offset ${S_PROVISIONING_BUNDLE_LOAD_ADDRESS}
                     -o $<TARGET_FILE_DIR:${target}>/${target}_merged.hex
             COMMAND

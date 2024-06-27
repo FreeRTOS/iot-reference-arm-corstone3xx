@@ -1,4 +1,4 @@
-# Copyright 2024 Arm Limited and/or its affiliates
+# Copyright 2024-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -15,6 +15,11 @@ else()
     target_include_directories(ota-update
         PUBLIC
             inc/
+    )
+
+    target_compile_definitions(ota-update
+        PRIVATE
+            -DMCUBOOT_IMAGE_NUMBER=${MCUBOOT_IMAGE_NUMBER}
     )
 
     target_link_libraries(ota-update

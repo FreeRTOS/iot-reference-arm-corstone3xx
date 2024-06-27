@@ -243,10 +243,20 @@ set(ARM_CORSTONE_BSP_TARGET_PLATFORM_TFM_CMAKE_ARGS
     -DTFM_PLATFORM=${TFM_PLATFORM_LOCAL_PATH}
     -DFLASH_S_PARTITION_SIZE=${TFM_FLASH_S_PARTITION_SIZE}
     -DFLASH_NS_PARTITION_SIZE=${TFM_FLASH_NS_PARTITION_SIZE}
-    -DFLASH_NS_ML_MODEL_PARTITION_SIZE=${TFM_FLASH_NS_ML_MODEL_PARTITION_SIZE}
+    -DMCUBOOT_IMAGE_NUMBER=${MCUBOOT_IMAGE_NUMBER}
+    -DDEFAULT_MCUBOOT_FLASH_MAP=${DEFAULT_MCUBOOT_FLASH_MAP}
     ${TFM_CMAKE_APP_ARGS}
     CACHE STRING "TFM CMake arguments" FORCE
 )
+
+# This variable is only defined in case of building keyword_detection application with GNU toolchain
+# as it is currently the only application that utilises the ML Model component OTA update feature
+# where this variable is needed.
+if((${APPLICATION_PATH} MATCHES ".*keyword_detection") AND (${CMAKE_C_COMPILER_ID} STREQUAL "GNU"))
+    list(APPEND ARM_CORSTONE_BSP_TARGET_PLATFORM_TFM_CMAKE_ARGS
+    -DFLASH_NS_ML_MODEL_PARTITION_SIZE=${TFM_FLASH_NS_ML_MODEL_PARTITION_SIZE}
+    )
+endif()
 
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
     # Execute the command as CMAKE_C_COMPILER_VERSION is not guaranteed to be defined.

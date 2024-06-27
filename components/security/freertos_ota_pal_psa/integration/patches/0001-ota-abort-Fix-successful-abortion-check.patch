@@ -1,7 +1,7 @@
-From 70721e0c00a9e698df467e81e1ad3b54cf76edf4 Mon Sep 17 00:00:00 2001
+From 2afe0bd72fc141a4122647e94ae73b8465b6da0e Mon Sep 17 00:00:00 2001
 From: Ahmed Ismail <Ahmed.Ismail@arm.com>
-Date: Wed, 17 Jan 2024 11:00:09 +0000
-Subject: [PATCH] ota-abort: Fix successful abortion check
+Date: Tue, 14 Jan 2025 17:14:24 +0000
+Subject: [PATCH 1/5] ota-abort: Fix successful abortion check
 
 PsaStatus variable should be initialized before
 being accessed as in the happy path scenario the

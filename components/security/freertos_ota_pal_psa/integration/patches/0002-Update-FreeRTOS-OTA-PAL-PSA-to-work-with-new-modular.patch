@@ -1,7 +1,7 @@
-From 45ee1cd5754d0c445bc500ed137adb896e33497a Mon Sep 17 00:00:00 2001
-From: Chuyue Luo <Chuyue.Luo@arm.com>
-Date: Thu, 5 Dec 2024 10:53:50 +0000
-Subject: [PATCH 2/2] Update FreeRTOS OTA PAL PSA to work with new modular OTA
+From e18baace8db06e3c74373dd7efe09f85f41a6770 Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Tue, 14 Jan 2025 17:19:43 +0000
+Subject: [PATCH 2/5] Update FreeRTOS OTA PAL PSA to work with new modular OTA
 
 This patch is taken from
 https://github.com/Linaro/freertos-ota-pal-psa/commit/bfef9705b92badfa5bcb388f4d1cf512b27c5a5f.patch
@@ -17,11 +17,9 @@ Jobs-for-AWS-IoT-embedded-sdk library.
 
 Signed-off-by: Chuyue Luo <Chuyue.Luo@arm.com>
 ---
- ota_pal.c                     | 172 +++++++++++++++++-----------------
- ota_pal.h                     |  77 +++++++++++++--
- version/application_version.c |  38 +++++++-
- version/application_version.h |   3 +-
- 4 files changed, 192 insertions(+), 98 deletions(-)
+ ota_pal.c | 172 +++++++++++++++++++++++++++---------------------------
+ ota_pal.h |  77 ++++++++++++++++++++----
+ 2 files changed, 154 insertions(+), 95 deletions(-)
 
 diff --git a/ota_pal.c b/ota_pal.c
 index 165c146..9b7e6f4 100644
@@ -688,79 +686,6 @@ index c530620..4c95bda 100644
 -OtaPalStatus_t otaPal_ResetDevice( OtaFileContext_t * const pFileContext );
 +bool otaPal_ResetDevice( AfrOtaJobDocumentFields_t * const pFileContext );
  #endif /* ifndef OTA_PAL_H_ */
-diff --git a/version/application_version.c b/version/application_version.c
-index 7b38c6a..68c715f 100644
---- a/version/application_version.c
-+++ b/version/application_version.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (c) 2020-2022 Arm Limited. All rights reserved.
-+ * Copyright (c) 2020-2024 Arm Limited. All rights reserved.
-  *
-  * Permission is hereby granted, free of charge, to any person obtaining a copy of
-  * this software and associated documentation files (the "Software"), to deal in
-@@ -33,6 +33,42 @@
- #include "FreeRTOS.h"
- #include "application_version.h"
- 
-+/**
-+ * @ingroup ota_struct_types
-+ * @brief Application version structure.
-+ *
-+ */
-+typedef struct
-+{
-+    /* MISRA Ref 19.2.1 [Unions] */
-+    /* More details at: https://github.com/aws/ota-for-aws-iot-embedded-sdk/blob/main/MISRA.md#rule-192 */
-+    /* coverity[misra_c_2012_rule_19_2_violation] */
-+    union
-+    {
-+        #if ( defined( __BYTE_ORDER__ ) && defined( __ORDER_LITTLE_ENDIAN__ ) && ( __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ ) ) || ( __little_endian__ == 1 ) || WIN32 || ( __BYTE_ORDER == __LITTLE_ENDIAN )
-+            struct version
-+            {
-+                uint16_t build; /*!< @brief Build of the firmware (Z in firmware version Z.Y.X). */
-+                uint8_t minor;  /*!< @brief Minor version number of the firmware (Y in firmware version Z.Y.X). */
-+
-+                uint8_t major;  /*!< @brief Major version number of the firmware (X in firmware version Z.Y.X). */
-+            } x;                /*!< @brief Version number of the firmware. */
-+        #elif ( defined( __BYTE_ORDER__ ) && defined( __ORDER_BIG_ENDIAN__ ) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ) || ( __big_endian__ == 1 ) || ( __BYTE_ORDER == __BIG_ENDIAN )
-+            struct version
-+            {
-+                uint8_t major;  /*!< @brief Major version number of the firmware (X in firmware version X.Y.Z). */
-+                uint8_t minor;  /*!< @brief Minor version number of the firmware (Y in firmware version X.Y.Z). */
-+
-+                uint16_t build; /*!< @brief Build of the firmware (Z in firmware version X.Y.Z). */
-+            } x;                /*!< @brief Version number of the firmware. */
-+        #else /* if ( defined( __BYTE_ORDER__ ) && defined( __ORDER_LITTLE_ENDIAN__ ) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ ) || ( __little_endian__ == 1 ) || WIN32 || ( __BYTE_ORDER == __LITTLE_ENDIAN ) */
-+        #error "Unable to determine byte order!"
-+        #endif /* if ( defined( __BYTE_ORDER__ ) && defined( __ORDER_LITTLE_ENDIAN__ ) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ ) || ( __little_endian__ == 1 ) || WIN32 || ( __BYTE_ORDER == __LITTLE_ENDIAN ) */
-+        uint32_t unsignedVersion32;
-+        int32_t signedVersion32;
-+    } u; /*!< @brief Version based on configuration in big endian or little endian. */
-+} AppVersion32_t;
-+
- AppVersion32_t appFirmwareVersion;
- 
- int GetImageVersionPSA( psa_fwu_component_t uxComponent )
-diff --git a/version/application_version.h b/version/application_version.h
-index 7775910..a790df7 100644
---- a/version/application_version.h
-+++ b/version/application_version.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (c) 2020-2022 Arm Limited. All rights reserved.
-+ * Copyright (c) 2020-2024 Arm Limited. All rights reserved.
-  *
-  * Permission is hereby granted, free of charge, to any person obtaining a copy of
-  * this software and associated documentation files (the "Software"), to deal in
-@@ -24,7 +24,6 @@
- #define APPLICATION_VERSION_H_
- 
- #include "ota_config.h"
--#include "ota_appversion32.h"
- #include "psa/update.h"
- 
- /**
 -- 
-2.47.0
+2.34.1
 

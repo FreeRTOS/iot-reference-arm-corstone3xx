@@ -17,6 +17,10 @@ FreeRTOS kernel and libraries based software stack on top of Arm Cortex-M based
 platforms. All the components are put together in a modular manner to make
 porting of this integration across platforms easy.
 
+## ML model update
+
+For details about the ML model update, see [the feature-specific readme file](docs/applications/ml_model_update/ml-model-update.md)
+
 ## Supported Targets
 
 Arm Corstone-3xx targets includes an example subsystem based on the Cortex-M
