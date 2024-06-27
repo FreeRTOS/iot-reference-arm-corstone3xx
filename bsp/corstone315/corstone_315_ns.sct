@@ -74,7 +74,7 @@ LOAD_REGION_1       0x60000000                   0x10000000
         *.o (.bss.NoInit.activation_buf_sram)
 
         ; activation buffers a.k.a tensor arena when memory mode dedicated sram
-        *.o (.bss.NoInit.activation_buf_dram)
+        *.o (activation_buf_dram)
 
         ; Buffer for transferring VSI audio data from S to NS
         *.o (.bss.NoInit.vsi_audio_buffer)

@@ -1,7 +1,7 @@
-From d0f5349dcdaba01a656f421adf2c21596290a9c8 Mon Sep 17 00:00:00 2001
-From: Gabor Abonyi <gabor.abonyi@arm.com>
-Date: Tue, 16 Jan 2024 14:48:44 +0100
-Subject: [PATCH 2/4] Use CMSIS_device_header instead of RTE_Components.h
+From 6d9a4a9faac936d197a0e2dcb6bf4743acd3d28b Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Fri, 28 Jun 2024 15:49:47 +0100
+Subject: [PATCH 2/2] Use CMSIS_device_header instead of RTE_Components.h
 
 Signed-off-by: Gabor Abonyi <gabor.abonyi@arm.com>
 ---
@@ -23,7 +23,7 @@ index d5f5e47..42fedba 100644
  #include "log_macros.h"             /* Logging macros */
  
 diff --git a/source/hal/source/components/npu/ethosu_npu_init.c b/source/hal/source/components/npu/ethosu_npu_init.c
-index dbee2ff..0bce70e 100644
+index b7ed9c7..2cbdb1e 100644
 --- a/source/hal/source/components/npu/ethosu_npu_init.c
 +++ b/source/hal/source/components/npu/ethosu_npu_init.c
 @@ -17,7 +17,7 @@
@@ -36,5 +36,5 @@ index dbee2ff..0bce70e 100644
  
  #include "ethosu_mem_config.h"      /* Arm Ethos-U memory config */
 -- 
-2.40.1
+2.34.1
 

@@ -18,13 +18,13 @@ set(CMSIS_NN_SRC_PATH           "${ml_embedded_evaluation_kit_SOURCE_DIR}/depend
 set(TENSORFLOW_SRC_PATH         "${ml_embedded_evaluation_kit_SOURCE_DIR}/dependencies/tensorflow")
 set(ETHOS_U_NPU_DRIVER_SRC_PATH "${ml_embedded_evaluation_kit_SOURCE_DIR}/dependencies/core-driver")
 
-set(RESOURCES_DIR       ${CMAKE_CURRENT_BINARY_DIR}/mlek_resources_downloaded)
+set(MLEK_RESOURCES_DIR       ${CMAKE_CURRENT_BINARY_DIR}/mlek_resources_downloaded)
 
 # Extra arguments for setting up default resources (for vela optimizer)
 set(ML_RESOURCES_SET_UP_ARGS
     "--additional-ethos-u-config-name=${ETHOSU_TARGET_NPU_CONFIG}"
     "--use-case-resources-file=${ML_USE_CASE_RESOURCES_FILE}"
-    "--downloaded-model-resources-path=${RESOURCES_DIR}"
+    "--downloaded-model-resources-path=${MLEK_RESOURCES_DIR}"
 )
 
 # Tensorflow settings
@@ -36,7 +36,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tensorflow-microlite)
 # Set up default resources. This downloads the TF-Lite models and optimizes them for the target
 # Note: This step is using pip install in its venv setup, which involves installing Vela compiler.
 #       If it is not already installed, it will use CC to compile it to the host machine, but the toolchain file overwrites the CC env.
-set(RESOURCES_OUTFILE "${RESOURCES_DIR}/resources_downloaded_metadata.json")
+set(RESOURCES_OUTFILE "${MLEK_RESOURCES_DIR}/resources_downloaded_metadata.json")
 
 # Do not re-download the resources if they have already been downloaded
 if(NOT EXISTS "${RESOURCES_OUTFILE}")
@@ -56,10 +56,10 @@ endif()
 # Setup virtualenv (done by setup_source_generator())
 set(CMAKE_SCRIPTS_DIR   ${ml_embedded_evaluation_kit_SOURCE_DIR}/scripts/cmake)
 include(${CMAKE_SCRIPTS_DIR}/source_gen_utils.cmake)
-set(SCRIPTS_DIR         ${ml_embedded_evaluation_kit_SOURCE_DIR}/scripts)
+set(MLEK_SCRIPTS_DIR         ${ml_embedded_evaluation_kit_SOURCE_DIR}/scripts)
 setup_source_generator()
 
-# Used by tensorflow.cmake
+# Used by tensorflow_lite_micro.cmake
 # Function to check if a variable is defined, and throw
 # an error if it is not.
 function(assert_defined var_name)
@@ -68,10 +68,11 @@ function(assert_defined var_name)
     endif()
 endfunction()
 
-include(${CMAKE_SCRIPTS_DIR}/tensorflow.cmake)
+include(${CMAKE_SCRIPTS_DIR}/tensorflow_lite_micro.cmake)
 
 # Manually add libs
 add_subdirectory(${ml_embedded_evaluation_kit_SOURCE_DIR}/source/log ${CMAKE_BINARY_DIR}/log)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SCRIPTS_DIR})
 add_subdirectory(${ml_embedded_evaluation_kit_SOURCE_DIR}/source/math ${CMAKE_BINARY_DIR}/math)
 target_include_directories(arm_math PUBLIC
     ${CMSIS_DSP_INC_DIR}
@@ -100,7 +101,7 @@ target_include_directories(${ML_USE_CASE}_api PUBLIC
 
 # Generate use case C model from optimized tflite file
 # Generate tflite model code
-set(DEFAULT_MODEL_DIR ${RESOURCES_DIR}/${ML_USE_CASE})
+set(DEFAULT_MODEL_DIR ${MLEK_RESOURCES_DIR}/${ML_USE_CASE})
 set(SRC_GEN_DIR ${CMAKE_BINARY_DIR}/generated/${ML_USE_CASE}/src)
 set(INC_GEN_DIR ${CMAKE_BINARY_DIR}/generated/${ML_USE_CASE}/include)
 
