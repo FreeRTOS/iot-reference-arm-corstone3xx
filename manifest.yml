@@ -145,7 +145,7 @@ dependencies:
       path: "components/connectivity/freertos_plus_tcp/library"
   - name: "ml-embedded-evaluation-kit"
     license: "Apache-2.0"
-    version: "23.11"
+    version: "24.05"
     repository:
       type: "git"
       url: "https://review.mlplatform.org/ml/ethos-u/ml-embedded-evaluation-kit.git"

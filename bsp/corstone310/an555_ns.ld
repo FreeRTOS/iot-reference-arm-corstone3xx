@@ -217,7 +217,7 @@ SECTIONS
     *(labels)
     . = ALIGN (16);
     *(.bss.NoInit.activation_buf_sram)
-    *(.bss.NoInit.activation_buf_dram)
+    *(activation_buf_dram)
     . = ALIGN (4);
     /* Buffer for transferring VSI audio data from S to NS */
     *(.bss.NoInit.vsi_audio_buffer)

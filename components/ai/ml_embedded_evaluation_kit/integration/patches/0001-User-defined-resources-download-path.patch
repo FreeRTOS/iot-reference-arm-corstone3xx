@@ -1,0 +1,105 @@
+From a7ad534ccceb84df589417feb5272b9f4cd3aeaa Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Fri, 28 Jun 2024 15:49:31 +0100
+Subject: [PATCH 1/2] User defined resources download path
+
+The location of the downloaded resources can be specified
+to allow users to place them wherever they require. Such location
+can be a build directory so they can be deleted whenever a clean build
+is required if different model resources need to be downloaded.
+
+Signed-off-by: Ahmed Ismail <Ahmed.Ismail@arm.com>
+---
+ set_up_default_resources.py | 21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
+
+diff --git a/set_up_default_resources.py b/set_up_default_resources.py
+index bf3aba3..efc8621 100755
+--- a/set_up_default_resources.py
++++ b/set_up_default_resources.py
+@@ -121,6 +121,7 @@ class SetupArgs:
+                                                 installed.
+         use_case_resources_file (str)       :   Path to a JSON file containing the use case
+                                                 metadata resources.
++        downloaded_model_resources_path (str): Path to store model resources files.
+     """
+     run_vela_on_models: bool = False
+     additional_npu_config_names: typing.List[str] = ()
+@@ -129,6 +130,7 @@ class SetupArgs:
+     check_clean_folder: bool = False
+     additional_requirements_file: Path = ""
+     use_case_resources_file: Path = ""
++    downloaded_model_resources_path: Path = ""
+ 
+ 
+ def load_use_case_resources(
+@@ -646,8 +648,7 @@ def set_up_resources(args: SetupArgs) -> Path:
+     """
+     # Paths.
+     current_file_dir = Path(__file__).parent.resolve()
+-    download_dir = current_file_dir / "resources_downloaded"
+-    metadata_file_path = download_dir / "resources_downloaded_metadata.json"
++    metadata_file_path = args.downloaded_model_resources_path / "resources_downloaded_metadata.json"
+ 
+     # Is Python minimum requirement matched?
+     if sys.version_info < py3_version_minimum:
+@@ -664,14 +665,14 @@ def set_up_resources(args: SetupArgs) -> Path:
+     setup_script_hash = get_md5sum_for_file(Path(__file__).resolve())
+ 
+     metadata_dict, setup_script_hash_verified = initialize_resources_directory(
+-        download_dir,
++        args.downloaded_model_resources_path,
+         args.check_clean_folder,
+         metadata_file_path,
+         setup_script_hash
+     )
+ 
+     env_path, env_activate = set_up_python_venv(
+-        download_dir,
++        args.downloaded_model_resources_path,
+         args.additional_requirements_file
+     )
+ 
+@@ -681,7 +682,7 @@ def set_up_resources(args: SetupArgs) -> Path:
+         download_resources(
+             use_case,
+             metadata_dict,
+-            download_dir,
++            args.downloaded_model_resources_path,
+             args.check_clean_folder,
+             setup_script_hash_verified
+         )
+@@ -698,7 +699,7 @@ def set_up_resources(args: SetupArgs) -> Path:
+         # Consolidate all config names while discarding duplicates:
+         run_vela_on_all_models(
+             current_file_dir,
+-            download_dir,
++            args.downloaded_model_resources_path,
+             env_activate,
+             args.arena_cache_size,
+             npu_config_names=list(
+@@ -763,7 +764,12 @@ if __name__ == "__main__":
+         type=str,
+         default=default_use_case_resources_path
+     )
+-
++    parser.add_argument(
++         "--downloaded-model-resources-path",
++        help="Path to downloaded model resources",
++        type=Path,
++        default=Path(__file__).parent.resolve() / 'resources_downloaded'
++    )
+     parsed_args = parser.parse_args()
+ 
+     if parsed_args.arena_cache_size < 0:
+@@ -783,6 +789,7 @@ if __name__ == "__main__":
+         check_clean_folder=parsed_args.clean,
+         additional_requirements_file=parsed_args.requirements_file,
+         use_case_resources_file=parsed_args.use_case_resources_file,
++        downloaded_model_resources_path= parsed_args.downloaded_model_resources_path,
+     )
+ 
+     set_up_resources(setup_args)
+-- 
+2.34.1
+
