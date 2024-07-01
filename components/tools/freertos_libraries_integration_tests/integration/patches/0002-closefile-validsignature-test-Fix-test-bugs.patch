@@ -1,7 +1,7 @@
-From f3c76fa6f2d8756c5dc822a1354774336f562a8e Mon Sep 17 00:00:00 2001
+From 0481e0a7ce10440bcdc699903889c16b227e479d Mon Sep 17 00:00:00 2001
 From: Ahmed Ismail <Ahmed.Ismail@arm.com>
-Date: Mon, 5 Feb 2024 16:22:49 +0000
-Subject: [PATCH 2/2] closefile-validsignature-test: Fix test bugs
+Date: Mon, 1 Jul 2024 14:49:50 +0100
+Subject: [PATCH 2/3] closefile-validsignature-test: Fix test bugs
 
 This test has two main issues:
 

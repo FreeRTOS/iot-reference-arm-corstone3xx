@@ -1,0 +1,36 @@
+From 4578e741befdc8a0bdbc4dd20964ae790e11b589 Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Mon, 1 Jul 2024 14:50:11 +0100
+Subject: [PATCH 3/3] Introduce user defined MQTT keep alive value
+
+`MQTT_KEEP_ALIVE_INTERVAL_SECONDS` macro value
+depends on the responsiveness of the target
+running the tests because some targets might
+be faster or slower than others. Hence, it
+would be useful to have a default value for
+this macro (5) and the integration code can
+provide other value if needed.
+
+Signed-off-by: Ahmed Ismail <Ahmed.Ismail@arm.com
+---
+ src/mqtt/mqtt_test.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/mqtt/mqtt_test.c b/src/mqtt/mqtt_test.c
+index eadc176..a7d14be 100644
+--- a/src/mqtt/mqtt_test.c
++++ b/src/mqtt/mqtt_test.c
+@@ -170,7 +170,9 @@
+  * @brief Time interval in seconds at which an MQTT PINGREQ need to be sent to
+  * broker.
+  */
+-#define MQTT_KEEP_ALIVE_INTERVAL_SECONDS    ( 5U )
++#ifndef MQTT_KEEP_ALIVE_INTERVAL_SECONDS
++    #define MQTT_KEEP_ALIVE_INTERVAL_SECONDS    ( 5U )
++#endif
+ 
+ /**
+  * @brief The MQTT message published in this example.
+-- 
+2.34.1
+
