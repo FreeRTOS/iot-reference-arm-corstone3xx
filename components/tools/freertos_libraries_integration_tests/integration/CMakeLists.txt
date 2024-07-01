@@ -23,7 +23,14 @@ target_link_libraries(freertos-libraries-integration-tests-mqtt
         freertos-libraries-integration-tests-config
         unity
 )
-
+# The MQTT server resets connection if the device doesn't send keep alive
+# packets within keep-alive interval, which is configured to 5 seconds by
+# default. Increase the keep-alive interval to 60 seconds to avoid connection
+# reset request when the device is busy.
+target_compile_definitions(freertos-libraries-integration-tests-mqtt
+    PRIVATE
+        MQTT_KEEP_ALIVE_INTERVAL_SECONDS=60
+)
 add_library(freertos-libraries-integration-tests-ota-pal
     ${OTA_PAL_TEST_SOURCES}
 )

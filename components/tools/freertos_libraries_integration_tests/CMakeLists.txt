@@ -14,7 +14,7 @@ set(PATCH_FILES_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/integration/patches")
 set(PATCH_FILES
     "${PATCH_FILES_DIRECTORY}/0001-Reduce-the-TRANSPORT_TEST_BUFFER_WRITABLE_LENGTH.patch"
     "${PATCH_FILES_DIRECTORY}/0002-closefile-validsignature-test-Fix-test-bugs.patch"
-    "${PATCH_FILES_DIRECTORY}/0003-Increase-keep-alive-interval.patch"
+    "${PATCH_FILES_DIRECTORY}/0003-Introduce-user-defined-MQTT-keep-alive-value.patch"
 )
 iot_reference_arm_corstone3xx_apply_patches("${freertos_libraries_integration_tests_SOURCE_DIR}" "${PATCH_FILES}")
 
