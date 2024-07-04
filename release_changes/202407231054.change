@@ -1,0 +1,2 @@
+docs: document createIoTThings.py usage in aws_tools.md.
+tools: Add createIoTThings.py script for setting up OTA updates.
