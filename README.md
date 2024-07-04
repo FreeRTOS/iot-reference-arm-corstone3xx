@@ -158,6 +158,12 @@ image are protected by the PSA secure services.
 Implementation of [Arm® Mali™-C55 bare-metal driver](https://gitlab.arm.com/iot/m-class/drivers/isp_mali-c55),
 that demonstrates the usage of the Mali-C55 ISP with the Corstone M85 processor.
 
+## Tools
+
+### Python script for automating AWS interactions
+
+A python script that automates creation, deletion, and listing of AWS Things, Policies, Jobs, Roles, and Buckets is documented [here](docs/components/aws_iot/aws_tool.md).
+
 ## Contributing
 
 See [CONTRIBUTING](CONTRIBUTING.md) for more information.

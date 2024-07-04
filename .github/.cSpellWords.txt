@@ -13,6 +13,7 @@ ASYM
 BBOOL
 blinky
 Blinky
+boto
 buildx
 BWCAP
 CALIB
