@@ -54,5 +54,16 @@ else()
     target_compile_definitions(tfm-ns-interface-mbedtls-config
         INTERFACE
             MBEDTLS_CONFIG_FILE="${APPLICATION_PATH}/configs/mbedtls_config/aws_mbedtls_config.h"
+            -DPSA_CRYPTO_IMPLEMENTATION_TFM
     )
+    # In case of using Mbed TLS library to provide the PSA Crypto APIs
+    # implementation, the PSA Crypto APIs implemented and provided by
+    # TF-M shall be renamed to start with a prefix of tfm_crypto__
+    # to avoid multiple definitions for PSA Crypto APIs.
+    if(PSA_CRYPTO_IMPLEMENTATION STREQUAL "MBEDTLS")
+        target_compile_definitions(tfm-ns-interface-mbedtls-config
+            INTERFACE
+                -DCONFIG_TFM_CRYPTO_API_RENAME=1
+        )
+    endif()
 endif()

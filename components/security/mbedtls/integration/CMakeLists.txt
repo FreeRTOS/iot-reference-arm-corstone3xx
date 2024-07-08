@@ -10,8 +10,23 @@ add_library(mbedtls-config INTERFACE)
 target_link_libraries(mbedtls
     PUBLIC
         mbedtls-config
-        tfm-ns-interface
 )
+
+if(PSA_CRYPTO_IMPLEMENTATION STREQUAL "TF-M")
+    target_link_libraries(mbedtls
+        PRIVATE
+            tfm-ns-interface
+    )
+    target_compile_definitions(mbedtls-config
+        INTERFACE
+            -DPSA_CRYPTO_IMPLEMENTATION_TFM
+    )
+else()
+    target_compile_definitions(mbedtls-config
+        INTERFACE
+            -DPSA_CRYPTO_IMPLEMENTATION_MBEDTLS
+    )
+endif()
 
 add_library(mbedtls-threading-freertos
     src/mbedtls_freertos_port.c
