@@ -1173,7 +1173,9 @@ void mbedtls_platform_free( void * ptr );
  * \warning This interface is experimental and may change or be removed
  * without notice.
  */
-#define MBEDTLS_PSA_CRYPTO_CLIENT
+#ifdef PSA_CRYPTO_IMPLEMENTATION_TFM
+    #define MBEDTLS_PSA_CRYPTO_CLIENT
+#endif
 
 /** \def MBEDTLS_PSA_CRYPTO_DRIVERS
  *
@@ -2628,7 +2630,9 @@ void mbedtls_platform_free( void * ptr );
  *           or MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG.
  *
  */
-/*#define MBEDTLS_PSA_CRYPTO_C */
+#ifdef PSA_CRYPTO_IMPLEMENTATION_MBEDTLS
+    #define MBEDTLS_PSA_CRYPTO_C
+#endif
 
 /**
  * \def MBEDTLS_PSA_CRYPTO_SE_C
