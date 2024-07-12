@@ -7,12 +7,6 @@ if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
 else()
     find_package(Python3)
 
-    #FIXME: This is needed in order to run prepoccessor on the linker script.
-    #       The GCC prepoccessor puts std defines if -g3 is set.
-    if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
-        string(REPLACE "-g3" "" CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
-    endif()
-
     list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
     include(SetProvisioningLinkOptions)
