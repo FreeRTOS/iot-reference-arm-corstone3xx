@@ -20,4 +20,8 @@ elseif(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
     add_subdirectory(freertos_kernel)
 
     add_subdirectory(aws_iot)
+
+    add_subdirectory(connectivity)
+
+    add_subdirectory(security)
 endif()
