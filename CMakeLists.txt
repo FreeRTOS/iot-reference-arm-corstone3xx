@@ -25,6 +25,8 @@ endif()
 if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
     include(AddUnitTest)
+    # Include helpers mocks.
+    add_subdirectory(applications/helpers)
 endif()
 
 

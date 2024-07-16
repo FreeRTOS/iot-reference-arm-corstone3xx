@@ -11,6 +11,11 @@ if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
                 GTest::gtest_main
         )
 
+        target_compile_definitions (${target}
+            PRIVATE
+                UNIT_TESTING
+        )
+
         gtest_discover_tests(${target})
     endfunction()
 endif()

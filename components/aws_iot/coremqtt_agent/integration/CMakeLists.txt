@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
+    add_subdirectory(integration_mocks)
     add_subdirectory(tests)
 else()
     include(${coremqtt_agent_SOURCE_DIR}/mqttAgentFilePaths.cmake)

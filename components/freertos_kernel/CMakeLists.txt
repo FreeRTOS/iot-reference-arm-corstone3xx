@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
-    add_subdirectory(mocks)
+    add_subdirectory(library_mocks)
 else()
     set(freertos_kernel_SOURCE_DIR
         ${CMAKE_CURRENT_LIST_DIR}/library
