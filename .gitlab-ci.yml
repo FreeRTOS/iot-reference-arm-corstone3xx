@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Arm Limited and/or its affiliates
+# Copyright 2023-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -83,10 +83,19 @@ workflow:
         --psa-crypto-implementation $PSA_CRYPTO_IMPLEMENTATION
     - |
       if [ $APP == "blinky" ];then
-        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz \
+        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_${PASS_LOG_FILE}_build.tar.gz \
           build/${APP}_merged.elf
+      elif [[ $APP == "keyword-detection" && $TOOLCHAIN == "GNU" ]]; then
+        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_${PASS_LOG_FILE}_build.tar.gz \
+          build/${APP}_merged.elf \
+          build/${APP}-update_signed.bin \
+          build/${APP}-model-update_signed.bin \
+          build/update-signature.txt \
+          build/CMakeCache.txt \
+          build/model-update-signature.txt \
+          applications/${APP_UNDERSCORED}/configs/aws_configs
       else
-        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz \
+        tar -czf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_${PASS_LOG_FILE}_build.tar.gz \
           build/${APP}_merged.elf \
           build/${APP}-update_signed.bin \
           build/update-signature.txt \
@@ -112,9 +121,19 @@ build-applications-corstone320:
          AUDIO: [ROM]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone320_pass_output]
+       -
+         << : *pipeline_config_corstone320
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         TOOLCHAIN: [GNU]
+         PASS_LOG_FILE: [corstone320_model_pass_output]
   artifacts:
     paths:
-      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz
+      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_${PASS_LOG_FILE}_build.tar.gz
     expire_in: 1 week
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -132,9 +151,19 @@ build-applications-corstone315:
          AUDIO: [ROM]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone315_pass_output]
+       -
+         << : *pipeline_config_corstone315
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         TOOLCHAIN: [GNU]
+         PASS_LOG_FILE: [corstone315_model_pass_output]
   artifacts:
     paths:
-      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz
+      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_${PASS_LOG_FILE}_build.tar.gz
     expire_in: 1 week
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -152,9 +181,19 @@ build-applications-corstone310:
          AUDIO: [ROM]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone310_pass_output]
+       -
+         << : *pipeline_config_corstone310
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         TOOLCHAIN: [GNU]
+         PASS_LOG_FILE: [corstone310_model_pass_output]
   artifacts:
     paths:
-      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz
+      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_${PASS_LOG_FILE}_build.tar.gz
     expire_in: 1 week
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -172,9 +211,19 @@ build-applications-corstone300:
          AUDIO: [ROM]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone300_pass_output]
+       -
+         << : *pipeline_config_corstone300
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         TOOLCHAIN: [GNU]
+         PASS_LOG_FILE: [corstone300_model_pass_output]
   artifacts:
     paths:
-      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz
+      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_${PASS_LOG_FILE}_build.tar.gz
     expire_in: 1 week
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -227,7 +276,7 @@ test-blinky-output:
     - job: build-applications-corstone300
       artifacts: true
   script:
-    - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz
+    - tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_${PASS_LOG_FILE}_build.tar.gz
     - |
         pytest -s tools/tests/test_blinky_output.py \
         --build-artefacts-path "build" \
@@ -245,6 +294,7 @@ test-blinky-output:
          AUDIO: [ROM]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone320_pass_output]
        -
          << : [*pipeline_config_corstone315, *pipeline_config_toolchain]
          APP: [blinky]
@@ -252,6 +302,7 @@ test-blinky-output:
          AUDIO: [ROM]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone315_pass_output]
        -
          << : [*pipeline_config_corstone310, *pipeline_config_toolchain]
          APP: [blinky]
@@ -259,6 +310,7 @@ test-blinky-output:
          AUDIO: [ROM]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone310_pass_output]
        -
          << : [*pipeline_config_corstone300, *pipeline_config_toolchain]
          APP: [blinky]
@@ -266,13 +318,14 @@ test-blinky-output:
          AUDIO: [ROM]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone300_pass_output]
 
 .test-applications_base:
   extends: .test_job
   script:
     - |
-      if [[ -f "${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz" ]]; then
-        tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz
+      if [[ -f "${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_${PASS_LOG_FILE}_build.tar.gz" ]]; then
+        tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_${PASS_LOG_FILE}_build.tar.gz
       fi
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - export SIGNING_ALGO=$(cat build/CMakeCache.txt | grep AWS_OTA_SIGNATURE_TYPE | sed s/.*=// | sed s/-.*//)
@@ -287,7 +340,7 @@ test-blinky-output:
         --signed-update-bin-name "${APP}-update_signed.bin" \
         --signing-algo ${SIGNING_ALGO} \
         --timeout-seconds 2700 \
-        --pass-output-file "applications/${APP_UNDERSCORED}/tests/${TARGET}_pass_output.log" \
+        --pass-output-file "applications/${APP_UNDERSCORED}/tests/${PASS_LOG_FILE}.log" \
         --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log" \
         --pythonhome-path "/opt/python/3.9.18"
       elif [[ $APP == "object-detection" ]]; then
@@ -300,18 +353,21 @@ test-blinky-output:
         --signed-update-bin-name "${APP}-update_signed.bin" \
         --signing-algo ${SIGNING_ALGO} \
         --timeout-seconds 1800 \
-        --pass-output-file "applications/${APP_UNDERSCORED}/tests/${TARGET}_pass_output.log" \
+        --pass-output-file "applications/${APP_UNDERSCORED}/tests/${PASS_LOG_FILE}.log" \
         --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
       else
+        if [[ $SIGNED_UPDATE_BIN_NAME == '' ]]; then
+          export SIGNED_UPDATE_BIN_NAME=${APP}-update_signed
+        fi
         pytest -s tools/tests/test_applications.py \
         --build-artefacts-path "build" \
         --fvp $FVP_BIN \
         --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
         --merged-elf-name "${APP}_merged.elf" \
-        --signed-update-bin-name "${APP}-update_signed.bin" \
+        --signed-update-bin-name "${SIGNED_UPDATE_BIN_NAME}.bin" \
         --signing-algo ${SIGNING_ALGO} \
         --timeout-seconds 2700 \
-        --pass-output-file "applications/${APP_UNDERSCORED}/tests/${TARGET}_pass_output.log" \
+        --pass-output-file "applications/${APP_UNDERSCORED}/tests/${PASS_LOG_FILE}.log" \
         --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
       fi
 
@@ -338,6 +394,7 @@ test-ml-applications-output:
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone320_pass_output]
        -
          << : *pipeline_config_corstone315
          APP: [keyword-detection, speech-recognition, object-detection]
@@ -346,6 +403,7 @@ test-ml-applications-output:
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone315_pass_output]
        -
          << : *pipeline_config_corstone310
          APP: [keyword-detection, speech-recognition]
@@ -354,6 +412,7 @@ test-ml-applications-output:
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone310_pass_output]
        -
          << : *pipeline_config_corstone300
          APP: [keyword-detection, speech-recognition]
@@ -362,6 +421,7 @@ test-ml-applications-output:
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone300_pass_output]
 
 unit-tests:
   extends: .base-job-rules
@@ -486,6 +546,7 @@ sw-vsi-configs-test:
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone320_pass_output]
        -
          << : *pipeline_config_corstone320
          APP: [keyword-detection, speech-recognition]
@@ -494,6 +555,7 @@ sw-vsi-configs-test:
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone320_pass_output]
        -
          << : *pipeline_config_corstone320
          APP: [object-detection]
@@ -502,6 +564,7 @@ sw-vsi-configs-test:
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone320_pass_output]
        -
          << : *pipeline_config_corstone315
          APP: [keyword-detection, speech-recognition]
@@ -510,6 +573,7 @@ sw-vsi-configs-test:
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone315_pass_output]
        -
          << : *pipeline_config_corstone315
          APP: [keyword-detection, speech-recognition]
@@ -518,6 +582,7 @@ sw-vsi-configs-test:
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone315_pass_output]
        -
          << : *pipeline_config_corstone315
          APP: [object-detection]
@@ -526,6 +591,7 @@ sw-vsi-configs-test:
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone315_pass_output]
        -
          << : *pipeline_config_corstone310
          APP: [keyword-detection, speech-recognition]
@@ -534,6 +600,7 @@ sw-vsi-configs-test:
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone310_pass_output]
        -
          << : *pipeline_config_corstone310
          APP: [keyword-detection, speech-recognition]
@@ -542,6 +609,7 @@ sw-vsi-configs-test:
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone310_pass_output]
        -
          << : *pipeline_config_corstone300
          APP: [keyword-detection, speech-recognition]
@@ -550,6 +618,7 @@ sw-vsi-configs-test:
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone300_pass_output]
        -
          << : *pipeline_config_corstone300
          APP: [keyword-detection, speech-recognition]
@@ -558,6 +627,7 @@ sw-vsi-configs-test:
          TOOLCHAIN: [ARMCLANG]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone300_pass_output]
   retry:
     max: 2
     when:
@@ -597,6 +667,7 @@ gnu-toolchain-test:
          TOOLCHAIN: [GNU]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone320_pass_output]
        -
          << : *pipeline_config_corstone320
          APP: [object-detection]
@@ -605,6 +676,7 @@ gnu-toolchain-test:
          TOOLCHAIN: [GNU]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone320_pass_output]
        -
          << : *pipeline_config_corstone315
          APP: [keyword-detection, speech-recognition]
@@ -613,6 +685,7 @@ gnu-toolchain-test:
          TOOLCHAIN: [GNU]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone315_pass_output]
        -
          << : *pipeline_config_corstone315
          APP: [object-detection]
@@ -621,6 +694,7 @@ gnu-toolchain-test:
          TOOLCHAIN: [GNU]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone315_pass_output]
        -
          << : *pipeline_config_corstone310
          APP: [keyword-detection, speech-recognition]
@@ -629,6 +703,7 @@ gnu-toolchain-test:
          TOOLCHAIN: [GNU]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone310_pass_output]
        -
          << : *pipeline_config_corstone300
          APP: [keyword-detection, speech-recognition]
@@ -637,6 +712,7 @@ gnu-toolchain-test:
          TOOLCHAIN: [GNU]
          CONN_STACK: [FREERTOS_PLUS_TCP]
          PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         PASS_LOG_FILE: [corstone300_pass_output]
   retry:
     max: 2
     when:
@@ -675,6 +751,7 @@ iot-vsocket-psa-crypto-mbedtls-test:
          TOOLCHAIN: [GNU, ARMCLANG]
          CONN_STACK: [IOT_VSOCKET]
          PSA_CRYPTO_IMPLEMENTATION: [MBEDTLS]
+         PASS_LOG_FILE: [corstone320_pass_output]
        -
          << : *pipeline_config_corstone315
          APP: [keyword-detection, speech-recognition, object-detection]
@@ -683,6 +760,7 @@ iot-vsocket-psa-crypto-mbedtls-test:
          TOOLCHAIN: [GNU, ARMCLANG]
          CONN_STACK: [IOT_VSOCKET]
          PSA_CRYPTO_IMPLEMENTATION: [MBEDTLS]
+         PASS_LOG_FILE: [corstone315_pass_output]
        -
          << : *pipeline_config_corstone310
          APP: [keyword-detection, speech-recognition]
@@ -691,6 +769,7 @@ iot-vsocket-psa-crypto-mbedtls-test:
          TOOLCHAIN: [GNU, ARMCLANG]
          CONN_STACK: [IOT_VSOCKET]
          PSA_CRYPTO_IMPLEMENTATION: [MBEDTLS]
+         PASS_LOG_FILE: [corstone310_pass_output]
        -
          << : *pipeline_config_corstone300
          APP: [keyword-detection, speech-recognition]
@@ -699,6 +778,77 @@ iot-vsocket-psa-crypto-mbedtls-test:
          TOOLCHAIN: [GNU, ARMCLANG]
          CONN_STACK: [IOT_VSOCKET]
          PSA_CRYPTO_IMPLEMENTATION: [MBEDTLS]
+         PASS_LOG_FILE: [corstone300_pass_output]
+  retry:
+    max: 2
+    when:
+      - script_failure
+      - stuck_or_timeout_failure
+      - runner_system_failure
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+    KUBERNETES_CPU_REQUEST: 16
+    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 10Gi
+    KUBERNETES_MEMORY_REQUEST: 12Gi
+
+test-keyword-ml-model-update:
+  tags:
+    - iotmsw-amd64
+  extends: .base-job-rules
+  rules:
+  - if: ( $SCHEDULED_JOB_TO_RUN == "test-keyword-ml-model-update" )
+  before_script:
+    - !reference [.build_job, before_script]
+    - !reference [.build_job, script]
+  script:
+    # test_job's `before_script` section is referenced in the `script` section to set the correct value for FVP_BIN variable used in testing.
+    # test-applications_base job's `script` section is referenced in the `script` section of
+    # this job to do the testing part after the build stage is done where the build stage is inherited
+    # from `.build_job`
+    - !reference [.test_job, before_script]
+    - !reference [.test-applications_base, script]
+  parallel:
+    matrix:
+       -
+         << : *pipeline_config_corstone320
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         TOOLCHAIN: [GNU]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         SIGNED_UPDATE_BIN_NAME: [keyword-detection-model-update_signed]
+         PASS_LOG_FILE: [corstone320_model_pass_output]
+       -
+         << : *pipeline_config_corstone315
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         TOOLCHAIN: [GNU]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         SIGNED_UPDATE_BIN_NAME: [keyword-detection-model-update_signed]
+         PASS_LOG_FILE: [corstone315_model_pass_output]
+       -
+         << : *pipeline_config_corstone310
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         TOOLCHAIN: [GNU]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         SIGNED_UPDATE_BIN_NAME: [keyword-detection-model-update_signed]
+         PASS_LOG_FILE: [corstone310_model_pass_output]
+       -
+         << : *pipeline_config_corstone300
+         APP: [keyword-detection]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         TOOLCHAIN: [GNU]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+         SIGNED_UPDATE_BIN_NAME: [keyword-detection-model-update_signed]
+         PASS_LOG_FILE: [corstone300_model_pass_output]
   retry:
     max: 2
     when:
