@@ -1,7 +1,7 @@
 /*
  * FreeRTOS V202012.00
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- * Copyright (c) 2022-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -1419,6 +1419,10 @@ int xOtaProvisionCodeSigningKey( psa_key_handle_t * pxKeyHandle,
     {
         goto exit;
     }
+
+    #ifdef PSA_CRYPTO_IMPLEMENTATION_MBEDTLS
+        psa_set_key_lifetime( &attributes, PSA_KEY_LIFETIME_VOLATILE );
+    #endif
 
     psa_set_key_algorithm( &attributes, PSA_ALG_RSA_PSS_ANY_SALT( PSA_ALG_SHA_256 ) );
     psa_set_key_bits( &attributes, keyBits );
