@@ -37,6 +37,8 @@
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
+#include "projdefs.h"
+#include "queue.h"
 
 /* Header include. */
 #include "core_mqtt_agent_message_interface.h"
