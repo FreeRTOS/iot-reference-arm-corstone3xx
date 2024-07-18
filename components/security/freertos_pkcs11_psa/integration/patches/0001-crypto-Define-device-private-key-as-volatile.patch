@@ -1,0 +1,37 @@
+From 62cf09d43fa3662ef13c54a703fd3eca5fa83dac Mon Sep 17 00:00:00 2001
+From: Devaraj Ranganna <devaraj.ranganna@arm.com>
+Date: Thu, 18 Jul 2024 10:08:50 +0000
+Subject: [PATCH] crypto: Define device private key as volatile
+
+FRI supports PSA crypto implementation either using TF-M on the secure
+side or using Mbed TLS on the non-secure side. When using Mbed TLS on
+the non-secure side as PSA crypto implementation, the device and
+provision keys are defined as volatile since we currently don't have
+support for file system.
+
+Signed-off-by: Devaraj Ranganna <devaraj.ranganna@arm.com>
+---
+ iot_pkcs11_psa_object_management.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/iot_pkcs11_psa_object_management.c b/iot_pkcs11_psa_object_management.c
+index ace6dc6..546fc0c 100644
+--- a/iot_pkcs11_psa_object_management.c
++++ b/iot_pkcs11_psa_object_management.c
+@@ -280,9 +280,12 @@ CK_OBJECT_HANDLE PKCS11PSASaveObject( CK_ATTRIBUTE_PTR pxClass,
+             }
+             if ( uxStatus == PSA_SUCCESS )
+             {
+-                /* Device private key is saved as persistent key. */
++                /* Device private key is saved as persistent/volatile key. */
+ #ifndef pkcs11configTFM_VERSION_1_0
+                 psa_set_key_id( &key_attributes, PSA_DEVICE_PRIVATE_KEY_ID );
++#endif
++#if defined PSA_CRYPTO_IMPLEMENTATION_MBEDTLS
++                psa_set_key_lifetime(&key_attributes, PSA_KEY_LIFETIME_VOLATILE);
+ #endif
+                 psa_set_key_usage_flags( &key_attributes, PSA_KEY_USAGE_SIGN_HASH );
+                 psa_set_key_algorithm( &key_attributes, uxAlgorithm );
+-- 
+2.43.2
+
