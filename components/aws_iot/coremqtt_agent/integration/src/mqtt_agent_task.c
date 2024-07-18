@@ -40,14 +40,20 @@
 
 /* includes for TFM */
 #include "psa/crypto.h"
+#include "psa/crypto_types.h"
 #include "psa/error.h"
 
 /* Demo config includes. */
 #include "demo_config.h"
+#include "FreeRTOSConfig.h"
 #include "iot_default_root_certificates.h"
 
 /* MQTT library includes. */
+#include "core_mqtt_agent_message_interface.h"
 #include "core_mqtt_agent.h"
+#include "core_mqtt_config.h"
+#include "core_mqtt.h"
+#include "transport_interface.h"
 
 /* MQTT Agent ports. */
 #include "freertos_agent_message.h"
@@ -73,6 +79,11 @@
     #define LIBRARY_LOG_LEVEL    LOG_INFO
 #endif
 #include "logging_stack.h"
+
+/* Kernel includes */
+#include "event_groups.h"
+#include "queue.h"
+
 
 /**
  * @brief Dimensions the buffer used to serialize and deserialize MQTT packets.
