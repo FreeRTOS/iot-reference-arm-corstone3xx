@@ -11,6 +11,8 @@
 /*
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright 2024 Arm Limited and/or its affiliates
+ *  <open-source-office@arm.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -1122,7 +1124,9 @@ void mbedtls_platform_free( void * ptr );
  *
  * This enables support for RSAES-OAEP and RSASSA-PSS operations.
  */
-/*#define MBEDTLS_PKCS1_V21 */
+#ifdef PSA_CRYPTO_IMPLEMENTATION_MBEDTLS
+    #define MBEDTLS_PKCS1_V21
+#endif
 
 /** \def MBEDTLS_PSA_CRYPTO_BUILTIN_KEYS
  *
@@ -1154,7 +1158,9 @@ void mbedtls_platform_free( void * ptr );
  * \warning This interface is experimental and may change or be removed
  * without notice.
  */
-#define MBEDTLS_PSA_CRYPTO_CLIENT
+#ifdef PSA_CRYPTO_IMPLEMENTATION_TFM
+    #define MBEDTLS_PSA_CRYPTO_CLIENT
+#endif
 
 /** \def MBEDTLS_PSA_CRYPTO_DRIVERS
  *
@@ -1738,7 +1744,7 @@ void mbedtls_platform_free( void * ptr );
  *
  * Uncomment this to enable internal use of PSA Crypto and new associated APIs.
  */
-/*#define MBEDTLS_USE_PSA_CRYPTO */
+#define MBEDTLS_USE_PSA_CRYPTO
 
 /**
  * \def MBEDTLS_PSA_CRYPTO_CONFIG
@@ -2609,7 +2615,9 @@ void mbedtls_platform_free( void * ptr );
  *           or MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG.
  *
  */
-/*#define MBEDTLS_PSA_CRYPTO_C */
+#ifdef PSA_CRYPTO_IMPLEMENTATION_MBEDTLS
+    #define MBEDTLS_PSA_CRYPTO_C
+#endif
 
 /**
  * \def MBEDTLS_PSA_CRYPTO_SE_C
