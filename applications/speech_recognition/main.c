@@ -1,4 +1,4 @@
-/* Copyright 2023 Arm Limited and/or its affiliates
+/* Copyright 2023-2024 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  * SPDX-License-Identifier: MIT
  */
@@ -172,6 +172,15 @@ int main( void )
                                mbedtls_platform_mutex_free,
                                mbedtls_platform_mutex_lock,
                                mbedtls_platform_mutex_unlock );
+
+    #if defined PSA_CRYPTO_IMPLEMENTATION_MBEDTLS
+        psa_status_t xResult = psa_crypto_init();
+
+        if( xResult != PSA_SUCCESS )
+        {
+            printf( "Psa crypto init failed with return code = %d\r\n", xResult );
+        }
+    #endif
 
     UBaseType_t xRetVal = vDevModeKeyProvisioning();
 

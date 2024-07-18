@@ -1,7 +1,7 @@
 /*
  * Amazon FreeRTOS V1.1.4
  * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -147,8 +147,23 @@ extern void vPortFree( void * pv );
  * Define the key ID of the device keys which will be saved as
  * persistent keys in TF-M. The key ID servers as the a name.
  */
-#define PSA_DEVICE_PRIVATE_KEY_ID                          0x01
-#define PSA_DEVICE_PUBLIC_KEY_ID                           0x10
+#ifdef PSA_CRYPTO_IMPLEMENTATION_TFM
+    #define PSA_DEVICE_PRIVATE_KEY_ID    0x01
+    #define PSA_DEVICE_PUBLIC_KEY_ID     0x10
+#elif defined PSA_CRYPTO_IMPLEMENTATION_MBEDTLS
+
+/* The PSA Crypto specification
+ * https://arm-software.github.io/psa-api/crypto/1.1/api/keys/ids.html
+ * defines the volatile key range as PSA_KEY_ID_VENDOR_MIN (0x40000000) to
+ * PSA_KEY_ID_VENDOR_MAX (0x7fffffff). However, in the default PSA Crypto
+ * configuration in Mbed TLS, volatile key range is defined by
+ * PSA_KEY_ID_VOLATILE_MIN and PSA_KEY_ID_VOLATILE_MAX.
+ */
+    #define PSA_DEVICE_PRIVATE_KEY_ID    0x7FFFFFE0
+#else
+    #error "Missing PSA crypto implementation definition. Define either \
+    `PSA_CRYPTO_IMPLEMENTATION_TFM` or `PSA_CRYPTO_IMPLEMENTATION_MBEDTLS`"
+#endif
 
 /* */
 /* FIXME: are these needed? */

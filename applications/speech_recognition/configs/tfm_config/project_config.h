@@ -1,4 +1,4 @@
-/* Copyright 2023 Arm Limited and/or its affiliates
+/* Copyright 2023-2024 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -33,7 +33,7 @@
 
 #define CRYPTO_KEY_DERIVATION_MODULE_ENABLED    1
 
-#define CRYPTO_IOVEC_BUFFER_SIZE                5120
+#define CRYPTO_IOVEC_BUFFER_SIZE                20000
 
 #define CRYPTO_NV_SEED                          1
 
