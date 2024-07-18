@@ -162,6 +162,15 @@ int main( void )
                                mbedtls_platform_mutex_lock,
                                mbedtls_platform_mutex_unlock );
 
+    #if defined PSA_CRYPTO_IMPLEMENTATION_MBEDTLS
+        psa_status_t xResult = psa_crypto_init();
+
+        if( xResult != PSA_SUCCESS )
+        {
+            printf( "Psa crypto init failed with return code = %d\r\n", xResult );
+        }
+    #endif
+
     UBaseType_t xReturnValue = vDevModeKeyProvisioning();
 
     if( xReturnValue != CKR_OK )
