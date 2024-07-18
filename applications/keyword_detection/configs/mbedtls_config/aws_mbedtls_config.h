@@ -1141,7 +1141,9 @@ void mbedtls_platform_free( void * ptr );
  *
  * This enables support for RSAES-OAEP and RSASSA-PSS operations.
  */
-/*#define MBEDTLS_PKCS1_V21 */
+#ifdef PSA_CRYPTO_IMPLEMENTATION_MBEDTLS
+    #define MBEDTLS_PKCS1_V21
+#endif
 
 /** \def MBEDTLS_PSA_CRYPTO_BUILTIN_KEYS
  *
