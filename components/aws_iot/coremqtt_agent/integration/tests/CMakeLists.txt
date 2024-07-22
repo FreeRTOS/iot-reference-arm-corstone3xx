@@ -18,15 +18,13 @@ target_link_libraries(freertos-agent-message-test
     PRIVATE
         fff
         coremqtt-agent-mock
+        coremqtt-agent-integration-mock
+        coremqtt-mock
         freertos-kernel-mock
 )
 iot_reference_arm_corstone3xx_add_test(freertos-agent-message-test)
 
-# Add helpers for testing mqtt_agent_task.c. Helpers are application-specific.
-# E.g. app_config.h is a helper since it varies by application.
-add_subdirectory(helpers)
 
-# Test mqq_agent_task.c
 add_executable(mqtt-agent-task-test
     test_mqtt_agent_task.cpp
     ../src/mqtt_agent_task.c
