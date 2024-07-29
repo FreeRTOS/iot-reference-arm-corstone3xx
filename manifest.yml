@@ -54,7 +54,7 @@ dependencies:
   - name: "freertos-pkcs11-psa"
     license: "MIT"
     tpip-category: "category-2"
-    version: "53fa27b097dd09d07781ab1a22e79273557f22b1"
+    version: "6caaf973920df9ae6823ef9be42f7e86aa91d168"
     repository:
       type: "git"
       url: "https://github.com/Linaro/freertos-pkcs11-psa.git"
