@@ -84,6 +84,12 @@
 #include "event_groups.h"
 #include "queue.h"
 
+/* Provides external linkage only when running unit test */
+#ifdef UNIT_TESTING
+    #define STATIC    /* as nothing */
+#else /* ifdef UNIT_TESTING */
+    #define STATIC    static
+#endif /* UNIT_TESTING */
 
 /**
  * @brief Dimensions the buffer used to serialize and deserialize MQTT packets.
@@ -202,56 +208,7 @@ extern SubscriptionElement_t xGlobalSubscriptionList[ SUBSCRIPTION_MANAGER_MAX_S
 
 /*-----------------------------------------------------------*/
 
-/**
- * @brief Task for MQTT agent.
- * Task runs MQTT agent command loop, which returns only when the user disconnects
- * MQTT, terminates agent, or the mqtt connection is broken. If the mqtt connection is broken, the task
- * tries to reconnect to the broker.
- *
- * @param[in] pParam Can be used to pass down functionality to the agent task
- */
-static void prvMQTTAgentTask( void * pParam );
-
-/**
- * @brief Retry logic to establish a connection to the MQTT broker.
- *
- * If the connection fails, keep retrying with exponentially increasing
- * timeout value, until max retries, max timeout or successful connect.
- *
- * @param[in] pNetworkContext Network context to connect on.
- * @return int pdFALSE if connection failed after retries.
- */
-static BaseType_t prvSocketConnect( NetworkContext_t * pNetworkContext );
-
-/**
- * @brief Disconnects from the MQTT broker.
- * Initiates an MQTT disconnect and then teardown underlying TCP connection.
- *
- */
-static void prvDisconnectFromMQTTBroker( void );
-
-/**
- * @brief Initializes an MQTT context, including transport interface and
- * network buffer.
- *
- * @return `MQTTSuccess` if the initialization succeeds, else `MQTTBadParameter`.
- */
-static MQTTStatus_t prvMqttInit( void );
-
-/**
- * @brief Sends an MQTT Connect packet over the already connected TCP socket.
- *
- * @param[in] pxMQTTContext MQTT context pointer.
- * @param[in] xCleanSession If a clean session should be established.
- *
- * @return `MQTTSuccess` if connection succeeds, else appropriate error code
- * from MQTT_Connect.
- */
-static MQTTStatus_t prvMQTTConnect( void );
-
-/*-----------------------------------------------------------*/
-
-static uint32_t prvGetTimeMs( void )
+STATIC uint32_t prvGetTimeMs( void )
 {
     TickType_t xTickCount = 0;
     uint32_t ulTimeMs = 0UL;
@@ -269,7 +226,7 @@ static uint32_t prvGetTimeMs( void )
     return ulTimeMs;
 }
 
-static UBaseType_t prvGetRandomNumber( void )
+STATIC UBaseType_t prvGetRandomNumber( void )
 {
     psa_status_t xPsaStatus = PSA_ERROR_PROGRAMMER_ERROR;
     UBaseType_t uxRandomValue = 0U;
@@ -289,7 +246,16 @@ static UBaseType_t prvGetRandomNumber( void )
     return uxRandomValue;
 }
 
-static BaseType_t prvSocketConnect( NetworkContext_t * pxNetworkContext )
+/**
+ * @brief Retry logic to establish a connection to the MQTT broker.
+ *
+ * If the connection fails, keep retrying with exponentially increasing
+ * timeout value, until max retries, max timeout or successful connect.
+ *
+ * @param[in] pNetworkContext Network context to connect on.
+ * @return int pdFALSE if connection failed after retries.
+ */
+STATIC BaseType_t prvSocketConnect( NetworkContext_t * pxNetworkContext )
 {
     BaseType_t xConnected = pdFAIL;
 
@@ -352,7 +318,7 @@ static BaseType_t prvSocketConnect( NetworkContext_t * pxNetworkContext )
     return xConnected;
 }
 
-static BaseType_t prvSocketDisconnect( NetworkContext_t * pxNetworkContext )
+STATIC BaseType_t prvSocketDisconnect( NetworkContext_t * pxNetworkContext )
 {
     BaseType_t xDisconnected = pdFAIL;
 
@@ -365,7 +331,7 @@ static BaseType_t prvSocketDisconnect( NetworkContext_t * pxNetworkContext )
     return xDisconnected;
 }
 
-static void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
+STATIC void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
                                         uint16_t packetId,
                                         MQTTPublishInfo_t * pxPublishInfo )
 {
@@ -391,7 +357,7 @@ static void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
     }
 }
 
-static void prvReSubscriptionCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
+STATIC void prvReSubscriptionCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
                                               MQTTAgentReturnInfo_t * pxReturnInfo )
 {
     MQTTAgentSubscribeArgs_t * pxSubscribeArgs = ( MQTTAgentSubscribeArgs_t * ) pxCommandContext;
@@ -423,7 +389,13 @@ static void prvReSubscriptionCommandCallback( MQTTAgentCommandContext_t * pxComm
     }
 }
 
-static MQTTStatus_t prvMQTTInit( void )
+/**
+ * @brief Initializes an MQTT context, including transport interface and
+ * network buffer.
+ *
+ * @return `MQTTSuccess` if the initialization succeeds, else `MQTTBadParameter`.
+ */
+STATIC MQTTStatus_t prvMQTTInit( void )
 {
     TransportInterface_t xTransport = { 0 };
     MQTTStatus_t xReturn;
@@ -476,7 +448,7 @@ static MQTTStatus_t prvMQTTInit( void )
     return xReturn;
 }
 
-static MQTTStatus_t prvHandleResubscribe( void )
+STATIC MQTTStatus_t prvHandleResubscribe( void )
 {
     MQTTStatus_t xResult = MQTTBadParameter;
     uint32_t ulIndex = 0U;
@@ -538,7 +510,16 @@ static MQTTStatus_t prvHandleResubscribe( void )
     return xResult;
 }
 
-static MQTTStatus_t prvMQTTConnect( void )
+/**
+ * @brief Sends an MQTT Connect packet over the already connected TCP socket.
+ *
+ * @param[in] pxMQTTContext MQTT context pointer.
+ * @param[in] xCleanSession If a clean session should be established.
+ *
+ * @return `MQTTSuccess` if connection succeeds, else appropriate error code
+ * from MQTT_Connect.
+ */
+STATIC MQTTStatus_t prvMQTTConnect( void )
 {
     MQTTStatus_t xResult;
     bool xSessionPresent = false;
@@ -599,7 +580,7 @@ static MQTTStatus_t prvMQTTConnect( void )
     return xResult;
 }
 
-static void prvDisconnectCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
+STATIC void prvDisconnectCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
                                           MQTTAgentReturnInfo_t * pxReturnInfo )
 {
     pxCommandContext->xReturnStatus = pxReturnInfo->returnCode;
@@ -610,7 +591,11 @@ static void prvDisconnectCommandCallback( MQTTAgentCommandContext_t * pxCommandC
     }
 }
 
-static void prvDisconnectFromMQTTBroker( void )
+/**
+ * @brief Disconnects from the MQTT broker.
+ * Initiates an MQTT disconnect and then teardown underlying TCP connection.
+ */
+STATIC void prvDisconnectFromMQTTBroker( void )
 {
     static MQTTAgentCommandContext_t xCommandContext = { 0 };
     static MQTTAgentCommandInfo_t xCommandParams = { 0 };
@@ -639,7 +624,15 @@ static void prvDisconnectFromMQTTBroker( void )
     prvSocketDisconnect( &xNetworkContextMqtt );
 }
 
-static void prvMQTTAgentTask( void * pParam )
+/**
+ * @brief Task for MQTT agent.
+ * Task runs MQTT agent command loop, which returns only when the user disconnects
+ * MQTT, terminates agent, or the mqtt connection is broken. If the mqtt connection is broken, the task
+ * tries to reconnect to the broker.
+ *
+ * @param[in] pParam Can be used to pass down functionality to the agent task
+ */
+STATIC void prvMQTTAgentTask( void * pParam )
 {
     BaseType_t xResult;
     MQTTStatus_t xMQTTStatus = MQTTSuccess;
