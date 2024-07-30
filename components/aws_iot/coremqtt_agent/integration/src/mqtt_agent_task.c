@@ -1,7 +1,7 @@
 /*
  * FreeRTOS V202012.00
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- * Copyright 2023 Arm Limited and/or its affiliates
+ * Copyright 2023-2024 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -237,9 +237,6 @@ STATIC UBaseType_t prvGetRandomNumber( void )
     {
         LogError( ( "psa_generate_random failed with %d.", xPsaStatus ) );
         LogError( ( "Using xTaskGetTickCount() as random number generator" ) );
-    }
-    else
-    {
         uxRandomValue = xTaskGetTickCount();
     }
 
@@ -323,10 +320,13 @@ STATIC BaseType_t prvSocketDisconnect( NetworkContext_t * pxNetworkContext )
     BaseType_t xDisconnected = pdFAIL;
 
     LogInfo( ( "Disconnecting TLS connection.\n" ) );
-    Transport_Disconnect( pxNetworkContext );
-    xDisconnected = pdPASS;
+    xDisconnected = pdFAIL;
 
-    ( void ) xEventGroupClearBits( xSystemEvents, EVENT_MASK_MQTT_CONNECTED );
+    if( Transport_Disconnect( pxNetworkContext ) == TRANSPORT_STATUS_SUCCESS )
+    {
+        xDisconnected = pdPASS;
+        ( void ) xEventGroupClearBits( xSystemEvents, EVENT_MASK_MQTT_CONNECTED );
+    }
 
     return xDisconnected;
 }
@@ -351,9 +351,11 @@ STATIC void prvIncomingPublishCallback( MQTTAgentContext_t * pMqttAgentContext,
          * write the message ID, which is restored afterwards. */
         char * pcLocation = ( char * ) &( pxPublishInfo->pTopicName[ pxPublishInfo->topicNameLength ] );
         char cOriginalChar = *pcLocation;
-        *pcLocation = 0x00;
-        LogWarn( ( "Received an unsolicited publish from topic %s", pxPublishInfo->pTopicName ) );
-        *pcLocation = cOriginalChar;
+        /* Copy to safe buffer for printing. */
+        char printBuffer[ pxPublishInfo->topicNameLength + 1 ];
+        memcpy( printBuffer, &( pxPublishInfo->pTopicName ), pxPublishInfo->topicNameLength );
+        printBuffer[ pxPublishInfo->topicNameLength ] = 0x00; /* ends in '\0' */
+        LogWarn( ( "Received an unsolicited publish from topic %s", printBuffer ) );
     }
 }
 
@@ -621,7 +623,10 @@ STATIC void prvDisconnectFromMQTTBroker( void )
                      pdMS_TO_TICKS( MQTT_AGENT_MS_TO_WAIT_FOR_NOTIFICATION ) );
 
     /* End TLS session, then close TCP connection. */
-    prvSocketDisconnect( &xNetworkContextMqtt );
+    if( prvSocketDisconnect( &xNetworkContextMqtt ) != pdPASS )
+    {
+        LogError( ( "Failed to disconnect socket." ) );
+    }
 }
 
 /**
