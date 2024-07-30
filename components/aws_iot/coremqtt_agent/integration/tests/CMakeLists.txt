@@ -51,3 +51,29 @@ target_link_libraries(mqtt-agent-task-test
         trusted-firmware-m-mock
 )
 iot_reference_arm_corstone3xx_add_test(mqtt-agent-task-test)
+
+add_executable(freertos-command-pool-test
+    test_freertos_command_pool.cpp
+    ../src/freertos_command_pool.c
+)
+target_include_directories(freertos-command-pool-test
+    PRIVATE
+        .
+        ../../library_mocks/inc
+
+        ../inc
+)
+target_link_libraries(freertos-command-pool-test
+    PRIVATE
+        fff
+        backoff-algorithm-mock
+        coremqtt-agent-mock
+        coremqtt-agent-test-config-mocks
+        coremqtt-mock
+        freertos-kernel-mock
+        freertos-plus-tcp-mock
+        helpers-logging-mock
+        mbedtls-mock
+        trusted-firmware-m-mock
+)
+iot_reference_arm_corstone3xx_add_test(freertos-command-pool-test)
