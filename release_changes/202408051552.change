@@ -1,0 +1,2 @@
+unit-test: add unit tests for subscription_manager.c.
+coremqtt-agent: fix bug in subscription_manager.c.
