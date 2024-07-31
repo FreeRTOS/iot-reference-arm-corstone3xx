@@ -77,3 +77,23 @@ target_link_libraries(freertos-command-pool-test
         trusted-firmware-m-mock
 )
 iot_reference_arm_corstone3xx_add_test(freertos-command-pool-test)
+
+add_executable(mqtt-subscription-manager-test
+    test_subscription_manager.cpp
+    ../src/subscription_manager.c
+)
+target_include_directories(mqtt-subscription-manager-test
+    PRIVATE
+        .
+        ../../library_mocks/inc
+
+        ../inc
+)
+target_link_libraries(mqtt-subscription-manager-test
+    PRIVATE
+        fff
+        coremqtt-agent-test-config-mocks
+        coremqtt-mock
+        helpers-logging-mock
+)
+iot_reference_arm_corstone3xx_add_test(mqtt-subscription-manager-test)
