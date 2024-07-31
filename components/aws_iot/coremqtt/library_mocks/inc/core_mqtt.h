@@ -51,4 +51,12 @@ DECLARE_FAKE_VALUE_FUNC( MQTTStatus_t,
                          uint32_t,
                          bool * );
 
+DECLARE_FAKE_VALUE_FUNC( MQTTStatus_t,
+                         MQTT_MatchTopic,
+                         const char *,
+                         const uint16_t,
+                         const char *,
+                         const uint16_t,
+                         bool * );
+
 #endif /* CORE_MQTT_H */

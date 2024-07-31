@@ -36,3 +36,11 @@ DEFINE_FAKE_VALUE_FUNC( MQTTStatus_t,
                         const MQTTPublishInfo_t *,
                         uint32_t,
                         bool * );
+
+DEFINE_FAKE_VALUE_FUNC( MQTTStatus_t,
+                        MQTT_MatchTopic,
+                        const char *,
+                        const uint16_t,
+                        const char *,
+                        const uint16_t,
+                        bool * );
