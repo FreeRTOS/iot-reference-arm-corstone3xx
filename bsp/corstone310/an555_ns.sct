@@ -1,6 +1,6 @@
 #! armclang --target=arm-arm-none-eabi -march=armv8.1-m.main+mve.fp+fp.dp -E -x c
 /*
- * Copyright (c) 2021-2024 Arm Limited. All rights reserved.
+ * Copyright (c) 2021-2025 Arm Limited. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@
 
 LOAD_REGION_0 (ROM_START + ((((0) + (FLASH_S_PARTITION_SIZE)) + BL2_HEADER_SIZE)))
 {
-    flash.bin (ROM_START + ((((0) + (FLASH_S_PARTITION_SIZE)) + BL2_HEADER_SIZE))) (((FLASH_NS_PARTITION_SIZE) - BL2_HEADER_SIZE - BL2_TRAILER_SIZE)) {
+    ns_image.bin (ROM_START + ((((0) + (FLASH_S_PARTITION_SIZE)) + BL2_HEADER_SIZE))) (((FLASH_NS_PARTITION_SIZE) - BL2_HEADER_SIZE - BL2_TRAILER_SIZE)) {
         *.o (RESET +First)
         * (+RO)
     }

@@ -56,16 +56,32 @@ You need to link your application against the `tfm-ns-interface` library so that
 
 Your non-secure application image must be signed using the signing script from Trusted Firmware-M. In the signed image, the executable binary is prepended with a header area containing information such as the image size, version, checksum, signature, etc. The bootloader uses this information to validate the image during the boot process.
 
-To sign your application image, you can include the CMake module [`SignTfmImage`](../../../../components/security/trusted_firmware-m/integration/cmake/SignTfmImage.cmake) and call the helper function `iot_reference_arm_corstone3xx_tf_m_sign_image()` in your `CMakeLists.txt`:
+To sign your application image, you need to do the following:
+
+1. Include the CMake modules [`SignTfmImage`](../../../../components/security/trusted_firmware-m/integration/cmake/SignTfmImage.cmake) and [`ConvertElfToBin`](../../../../tools/cmake/ConvertElfToBin.cmake) in your `CMakeLists.txt`.
+2. Extract the sections that won't be signed as part of the image (ex. `ddr.bin`) using the helper function `extract_sections_from_axf()`.
+3. Use the output binary file (i.e. `OUTPUT_BIN_NAME`) to sign the image using the helper function `iot_reference_arm_corstone3xx_tf_m_sign_image()`.
 
 ```cmake
+list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/tools/cmake)
 list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/components/security/trusted_firmware-m/integration/cmake)
+include(ConvertElfToBin)
 include(SignTfmImage)
+include(ExternalProject)
+ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
+
+extract_sections_from_axf(
+    keyword-detection
+    SECTIONS_NAMES   "ddr.bin"
+    OUTPUT_BIN_NAME  "ns_image"
+)
 
 iot_reference_arm_corstone3xx_tf_m_sign_image(
     my_application
+    "ns_image"
     my_application_signed
     ${MCUBOOT_IMAGE_VERSION_NS}
+    "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o"
     TRUE
 )
 ```
@@ -74,7 +90,11 @@ This will generate a signed image, `my_application_signed.bin`, in your build di
 
 > Replace `my_application` with the actual name of your application executable.
 >
+> Replace `ns_image` with the name used as `OUTPUT_BIN_NAME` in `extract_sections_from_axf` function.
+>
 > Replace `MCUBOOT_IMAGE_VERSION_NS` with a version of your choice.
+>
+> Replace `signing_layout_ns.o` with the signature layout file to be used to sign the image.
 
 You can merge the bootloader, the secure image, the non-secure application,image, secure provisioning bundle binary, non-secure provisioning bundle binary, and DDR binary into a single `.elf` image to ease loading of the code onto the target. To do this:
 

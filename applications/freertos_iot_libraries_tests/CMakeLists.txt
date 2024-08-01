@@ -116,11 +116,24 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 
 set_linker_script(${CMAKE_PROJECT_NAME})
 
+list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/tools/cmake)
+include(ConvertElfToBin)
+include(ExternalProject)
+ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
+
+extract_sections_from_axf(
+    ${CMAKE_PROJECT_NAME}
+    SECTIONS_NAMES   "ddr.bin"
+    OUTPUT_BIN_NAME  "ns_image"
+)
+
 # The non-secure application image should be padded while being signed
 iot_reference_arm_corstone3xx_tf_m_sign_image(
     ${CMAKE_PROJECT_NAME}
+    "ns_image"
     ${CMAKE_PROJECT_NAME}_signed
     ${MCUBOOT_IMAGE_VERSION_NS}
+    "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o"
     TRUE
 )
 
@@ -129,8 +142,10 @@ iot_reference_arm_corstone3xx_tf_m_sign_image(
 # 2) the trailer that keeps track of boot and update statuses should not be overwritten
 iot_reference_arm_corstone3xx_tf_m_sign_image(
     ${CMAKE_PROJECT_NAME}
+    "ns_image"
     ${CMAKE_PROJECT_NAME}-update_signed
     ${MCUBOOT_IMAGE_VERSION_NS_UPDATE}
+    "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o"
     FALSE
 )
 

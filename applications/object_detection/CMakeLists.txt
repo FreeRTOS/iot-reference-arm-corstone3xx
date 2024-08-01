@@ -140,12 +140,25 @@ target_link_libraries(object-detection
 include(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/cmake/SetLinkerOptions.cmake)
 set_linker_script(object-detection)
 
+list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/tools/cmake)
+include(ConvertElfToBin)
+include(ExternalProject)
+ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
+
+extract_sections_from_axf(
+    object-detection
+    SECTIONS_NAMES   "ddr.bin"
+    OUTPUT_BIN_NAME  "ns_image"
+)
+
 # The non-secure application image should be padded while being signed
 # Hence, passing "TRUE" as the input parameter to the pad option of sign function.
 iot_reference_arm_corstone3xx_tf_m_sign_image(
     object-detection
+    "ns_image"
     object-detection_signed
     ${MCUBOOT_IMAGE_VERSION_NS}
+    "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o"
     TRUE
 )
 
@@ -155,8 +168,10 @@ iot_reference_arm_corstone3xx_tf_m_sign_image(
 # Hence, passing "FALSE" as the input parameter for the pad option to the sign function.
 iot_reference_arm_corstone3xx_tf_m_sign_image(
     object-detection
+    "ns_image"
     object-detection-update_signed
     ${MCUBOOT_IMAGE_VERSION_NS_UPDATE}
+    "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o"
     FALSE
 )
 
