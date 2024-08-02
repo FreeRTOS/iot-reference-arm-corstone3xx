@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024, Arm Limited. All rights reserved.
+# Copyright (c) 2023-2025, Arm Limited. All rights reserved.
 # SPDX-License-Identifier: MIT
 
 import pytest
@@ -163,8 +163,6 @@ def fvp_process(
             "mps4_board.smsc_91c111.enabled=1",
             "-C",
             "mps4_board.hostbridge.userNetworking=1",
-            "-C",
-            "mps4_board.subsystem.ethosu.extra_args=--fast",
         ]
 
         vsi_options = [
@@ -205,8 +203,6 @@ def fvp_process(
             "mps3_board.hostbridge.userNetworking=1",
             "-C",
             "mps3_board.DISABLE_GATING=1",
-            "-C",
-            "ethosu.extra_args=--fast",
         ]
 
         vsi_options = [
