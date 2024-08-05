@@ -121,9 +121,11 @@ bool addSubscription( const char * pcTopicFilterString,
 
 /*-----------------------------------------------------------*/
 
-void removeSubscription( const char * pcTopicFilterString,
+bool removeSubscription( const char * pcTopicFilterString,
                          uint16_t usTopicFilterLength )
 {
+    bool found = false;
+
     if( ( pcTopicFilterString == NULL ) ||
         ( usTopicFilterLength == 0U ) )
     {
@@ -142,11 +144,14 @@ void removeSubscription( const char * pcTopicFilterString,
             {
                 if( strncmp( xGlobalSubscriptionList[ lIndex ].pcSubscriptionFilterString, pcTopicFilterString, usTopicFilterLength ) == 0 )
                 {
+                    found = true;
                     memset( &( xGlobalSubscriptionList[ lIndex ] ), 0x00, sizeof( SubscriptionElement_t ) );
                 }
             }
         }
     }
+
+    return found;
 }
 
 /*-----------------------------------------------------------*/
