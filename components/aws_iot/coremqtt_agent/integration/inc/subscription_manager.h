@@ -99,8 +99,11 @@ bool addSubscription( const char * pcTopicFilterString,
  * @param[in] pxSubscriptionList  The pointer to the subscription list array.
  * @param[in] pcTopicFilterString Topic filter of subscription.
  * @param[in] usTopicFilterLength Length of topic filter.
+ *
+ * @return `true` if subscription has been removed, `false` if the subscription
+ * does not exist or deletion failed.
  */
-void removeSubscription( const char * pcTopicFilterString,
+bool removeSubscription( const char * pcTopicFilterString,
                          uint16_t usTopicFilterLength );
 
 /**
