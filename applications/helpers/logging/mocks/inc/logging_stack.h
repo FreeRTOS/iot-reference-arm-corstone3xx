@@ -35,7 +35,7 @@ DECLARE_FAKE_VOID_FUNC_VARARG( SdkLogError,
 DECLARE_FAKE_VOID_FUNC_VARARG( SdkLogWarn,
                                const char *,
                                ... );
-#define LogWarn( message )    ( SdkLogError message )
+#define LogWarn( message )    ( SdkLogWarn message )
 DECLARE_FAKE_VOID_FUNC_VARARG( SdkLogInfo,
                                const char *,
                                ... );
