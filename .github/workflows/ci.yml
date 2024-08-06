@@ -79,3 +79,24 @@ jobs:
           sudo apt-get -y update
           sudo apt-get -y install fd-find
           ./tools/scripts/run_uncrustify.sh
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+    # Add submodules including fff and googletest.
+    - name: Checkout project
+      uses: actions/checkout@v3
+      with:
+          path: ${{ github.workspace }}
+          submodules: 'recursive'
+    - name: Install unit test build dependencies
+      shell: bash
+      run: |
+        pip install cmake ninja
+    # Run the unit tests
+    - name: Run unit tests
+      shell: bash
+      run: |
+        cmake -S . -B build_unit_test -GNinja -DOPT_ENABLE_COVERAGE=ON
+        cmake --build build_unit_test
+        ctest --test-dir build_unit_test --output-on-failure
