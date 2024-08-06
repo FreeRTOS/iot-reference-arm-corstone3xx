@@ -1,10 +1,8 @@
 /*
- * FreeRTOS Kernel V11.1.0
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * Copyright 2023-2024 Arm Limited and/or its affiliates
+ * FreeRTOS V202107.00
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright 2024 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
- *
- * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,18 +21,12 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * https://www.FreeRTOS.org
- * https://github.com/FreeRTOS
- *
+ * http://aws.amazon.com/freertos
+ * http://www.FreeRTOS.org
  */
 
-#ifndef PORTMACRO_H
-#define PORTMACRO_H
 
-typedef long             BaseType_t;
-typedef unsigned short   UBaseType_t;
-typedef unsigned long    TickType_t;
+#ifndef OTA_PAL_H_
+#define OTA_PAL_H_
 
-#define portMAX_DELAY    ( TickType_t ) 0xFFFFFFFFUL
-
-#endif /* ifndef PORTMACRO_H */
+#endif /* OTA_PAL_H_ */

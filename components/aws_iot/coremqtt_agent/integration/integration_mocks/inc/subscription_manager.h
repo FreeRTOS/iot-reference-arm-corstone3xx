@@ -44,6 +44,15 @@ typedef struct SubscriptionElement
     #define SUBSCRIPTION_MANAGER_MAX_SUBSCRIPTIONS    10U
 #endif
 
+typedef void (* IncomingPubCallback_t)( void * pvIncomingPublishCallbackContext,
+                                        MQTTPublishInfo_t * pxPublishInfo );
+
+DECLARE_FAKE_VALUE_FUNC( bool,
+                         addSubscription,
+                         const char *,
+                         uint16_t,
+                         IncomingPubCallback_t,
+                         void * );
 DECLARE_FAKE_VOID_FUNC( removeSubscription,
                         const char *,
                         uint16_t );

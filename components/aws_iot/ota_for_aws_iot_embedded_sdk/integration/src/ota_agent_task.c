@@ -38,6 +38,7 @@
 #include "events.h"
 
 /* includes for TFM */
+#include "psa/fwu_config.h"
 #include "psa/update.h"
 
 /* includes for OTA PAL PSA */
@@ -71,6 +72,12 @@
 
 /* Include platform abstraction header. */
 #include "ota_pal.h"
+
+/* Added for implicit inclusions */
+#include "core_mqtt_agent.h"
+#include "logging_stack.h"
+#include "ota_private.h"
+#include "subscription_manager.h"
 
 extern void vOtaNotActiveHook( void );
 extern void vOtaActiveHook( void );

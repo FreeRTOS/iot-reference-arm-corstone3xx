@@ -7,4 +7,8 @@
 
 EventGroupHandle_t xSystemEvents;
 
+DEFINE_FAKE_VALUE_FUNC( bool,
+                        xIsMqttAgentConnected );
 DEFINE_FAKE_VOID_FUNC( vWaitUntilNetworkIsUp );
+DEFINE_FAKE_VOID_FUNC( vWaitUntilMQTTAgentReady );
+DEFINE_FAKE_VOID_FUNC( vWaitUntilMQTTAgentConnected );

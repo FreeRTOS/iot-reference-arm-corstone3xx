@@ -1,10 +1,8 @@
 /*
- * FreeRTOS Kernel V11.1.0
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * FreeRTOS V202012.00
+ * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  * Copyright 2023-2024 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
- *
- * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -28,13 +26,20 @@
  *
  */
 
-#ifndef PORTMACRO_H
-#define PORTMACRO_H
+#ifndef MQTT_AGENT_H
+#define MQTT_AGENT_H
 
-typedef long             BaseType_t;
-typedef unsigned short   UBaseType_t;
-typedef unsigned long    TickType_t;
+#include "core_mqtt.h"
+#include "core_mqtt_agent.h"
+#include "task.h"
 
-#define portMAX_DELAY    ( TickType_t ) 0xFFFFFFFFUL
+struct MQTTAgentCommandContext
+{
+    MQTTStatus_t xReturnStatus;
+    TaskHandle_t xTaskToNotify;
+    void * pArgs;
+};
 
-#endif /* ifndef PORTMACRO_H */
+extern MQTTAgentContext_t xGlobalMqttAgentContext;
+
+#endif /* MQTT_AGENT_H */

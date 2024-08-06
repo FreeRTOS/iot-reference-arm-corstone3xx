@@ -1,10 +1,5 @@
 /*
- * FreeRTOS Kernel V11.1.0
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * Copyright 2023-2024 Arm Limited and/or its affiliates
- * <open-source-office@arm.com>
- *
- * SPDX-License-Identifier: MIT
+ * Copyright (c) 2020-2024 Arm Limited. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,18 +18,33 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * https://www.FreeRTOS.org
- * https://github.com/FreeRTOS
- *
  */
 
-#ifndef PORTMACRO_H
-#define PORTMACRO_H
+#ifndef APPLICATION_VERSION_H_
+#define APPLICATION_VERSION_H_
 
-typedef long             BaseType_t;
-typedef unsigned short   UBaseType_t;
-typedef unsigned long    TickType_t;
+#include "fff.h"
+#include <stdint.h>
+#include <stdlib.h>
 
-#define portMAX_DELAY    ( TickType_t ) 0xFFFFFFFFUL
+typedef struct
+{
+    union
+    {
+        struct version
+        {
+            uint8_t major;
+            uint8_t minor;
 
-#endif /* ifndef PORTMACRO_H */
+            uint16_t build;
+        } x;
+    } u;
+} AppVersion32_t;
+
+DECLARE_FAKE_VALUE_FUNC( int,
+                         GetImageVersionPSA,
+                         uint8_t );
+
+extern const AppVersion32_t appFirmwareVersion;
+
+#endif /* APPLICATION_VERSION_H */

@@ -36,6 +36,8 @@
 #include "projdefs.h"
 #include <stdint.h>
 
+#define tskIDLE_PRIORITY    ( ( UBaseType_t ) 0U )
+
 typedef int * TaskHandle_t;
 
 typedef enum
@@ -68,5 +70,9 @@ DECLARE_FAKE_VALUE_FUNC( BaseType_t,
 
 DECLARE_FAKE_VOID_FUNC( vTaskDelete, TaskHandle_t );
 DECLARE_FAKE_VOID_FUNC( vTaskDelay, const TickType_t );
+
+DECLARE_FAKE_VALUE_FUNC( BaseType_t,
+                         xTaskNotifyStateClear,
+                         TaskHandle_t );
 
 #endif /* INC_TASK_H */
