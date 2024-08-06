@@ -12,7 +12,7 @@ ROOT="$(realpath $HERE/../..)"
 EXAMPLE=""
 CLEAN=0
 BUILD_PATH="$(realpath $ROOT/build)"
-TARGET="corstone315"
+TARGET="corstone320"
 TARGET_PROCESSOR=""
 ML_INFERENCE_ENGINE="ETHOS"
 ETHOS_U_NPU_ID=""
@@ -87,10 +87,10 @@ Options:
     -h,--help                   Show this help
     -p,--path                   Path to the build directory
     -c,--clean                  Clean build
-    -t,--target                 Build target (corstone300 | corstone310 | corstone315)
+    -t,--target                 Build target (corstone300 | corstone310 | corstone315 | corstone320)
     -i,--inference              ML Inference engine selection (ETHOS | SOFTWARE)
     -s,--audio                  Audio source (ROM | VSI)
-    -n | --npu-id               Ethos NPU model identifier (U55 | U65)
+    -n | --npu-id               Ethos NPU model identifier (U55 | U65 | U85)
     --npu-mac                   Number of 8x8 MACs performed per cycle by the NPU (32 | 64 | 128 | 256 | 512)
     -T,--toolchain                 Compiler (GNU or ARMCLANG)
     -C,--certificate_path          Path to the AWS device certificate
@@ -219,10 +219,10 @@ case "$ML_INFERENCE_ENGINE" in
 esac
 
 case "$ETHOS_U_NPU_ID" in
-    U55 | U65 | "" )
+    U55 | U65 | U85 | "" )
         ;;
     *)
-        echo "Invalid NPU type <U55 | U65>"
+        echo "Invalid NPU type <U55 | U65 | U85>"
         show_usage
         exit 2
         ;;
@@ -254,11 +254,11 @@ case "$TARGET" in
     corstone300 )
       TARGET_PROCESSOR="cortex-m55"
       ;;
-    corstone310 | corstone315 )
+    corstone310 | corstone315 | corstone320 )
       TARGET_PROCESSOR="cortex-m85"
       ;;
     *)
-      echo "Invalid target <corstone300 | corstone310 | corstone315>"
+      echo "Invalid target <corstone300 | corstone310 | corstone315 | corstone320>"
       show_usage
       exit 2
       ;;
@@ -314,8 +314,8 @@ if [ "$EXAMPLE" != "blinky" ] && [ ! -f "$PRIVATE_KEY_PATH" ]; then
     exit 2
 fi
 
-if [ "$EXAMPLE" == "object-detection" ] && [ "$TARGET" != "corstone315" ]; then
-    echo "Error: Invalid combination of example and target. object-detection only supports corstone315" >&2
+if [ "$EXAMPLE" == "object-detection" ] && [ "$TARGET" != "corstone315" ] && [ "$TARGET" != "corstone320" ]; then
+    echo "Error: Invalid combination of example and target. object-detection only supports corstone315 and corstone320" >&2
     exit 2
 fi
 

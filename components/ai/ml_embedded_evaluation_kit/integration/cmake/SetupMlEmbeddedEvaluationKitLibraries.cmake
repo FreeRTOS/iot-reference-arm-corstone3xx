@@ -43,7 +43,7 @@ if(NOT EXISTS "${RESOURCES_OUTFILE}")
     execute_process(
         COMMAND
             ${CMAKE_COMMAND}
-                -E env CC=gcc
+                -E env CC=gcc CXX=g++
                 ${PYTHON} ${ml_embedded_evaluation_kit_SOURCE_DIR}/set_up_default_resources.py
                     ${ML_RESOURCES_SET_UP_ARGS}
         RESULT_VARIABLE return_code
@@ -55,6 +55,13 @@ endif()
 
 # Setup virtualenv (done by setup_source_generator())
 set(CMAKE_SCRIPTS_DIR   ${ml_embedded_evaluation_kit_SOURCE_DIR}/scripts/cmake)
+set(MLEK_SCRIPTS_DIR    ${ml_embedded_evaluation_kit_SOURCE_DIR}/scripts)
+
+list(APPEND CMAKE_MODULE_PATH
+    "${MLEK_SCRIPTS_DIR}/cmake"
+    "${MLEK_SCRIPTS_DIR}/cmake/configuration_options"
+    "${MLEK_SCRIPTS_DIR}/cmake/timing_adapter")
+
 include(${CMAKE_SCRIPTS_DIR}/source_gen_utils.cmake)
 set(MLEK_SCRIPTS_DIR         ${ml_embedded_evaluation_kit_SOURCE_DIR}/scripts)
 setup_source_generator()

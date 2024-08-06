@@ -10,6 +10,7 @@ macro(set_linker_script executable_target)
                 $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone300>:-T ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone300/an552_ns.ld>
                 $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone310>:-T ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone310/an555_ns.ld>
                 $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone315>:-T ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone315/corstone_315_ns.ld>
+                $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone320>:-T ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone320/corstone_320_ns.ld>
                 -Wl,--gc-sections,-Map=${executable_target}.map
         )
     else()
@@ -18,6 +19,7 @@ macro(set_linker_script executable_target)
                 $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone300>:--scatter=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone300/an552_ns.sct>
                 $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone310>:--scatter=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone310/an555_ns.sct>
                 $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone315>:--scatter=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone315/corstone_315_ns.sct>
+                $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone320>:--scatter=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone320/corstone_320_ns.sct>
                 --map
         )
     endif()
