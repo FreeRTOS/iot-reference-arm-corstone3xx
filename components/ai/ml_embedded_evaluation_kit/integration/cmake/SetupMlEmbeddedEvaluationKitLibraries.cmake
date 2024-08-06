@@ -9,11 +9,13 @@ include(ExternalProject)
 ###########################
 #set(LOG_LEVEL LOG_LEVEL_TRACE)
 
+set(CMSIS_VER                   5)
+
 # External repositories
-set(CMSIS_SRC_PATH              "${ml_embedded_evaluation_kit_SOURCE_DIR}/dependencies/cmsis")
+set(CMSIS_SRC_PATH              "${ml_embedded_evaluation_kit_SOURCE_DIR}/dependencies/cmsis-${CMSIS_VER}")
 set(CMSIS_DSP_SRC_PATH          "${ml_embedded_evaluation_kit_SOURCE_DIR}/dependencies/cmsis-dsp")
 set(CMSIS_DSP_INC_DIR           "${CMSIS_DSP_SRC_PATH}/Include")
-set(CMSIS_CORE_INC_DIR          "${ml_embedded_evaluation_kit_SOURCE_DIR}/dependencies/CMSIS/Core/Include")
+set(CMSIS_CORE_INC_DIR          "${CMSIS_SRC_PATH}/CMSIS/Core/Include")
 set(CMSIS_NN_SRC_PATH           "${ml_embedded_evaluation_kit_SOURCE_DIR}/dependencies/cmsis-nn")
 set(TENSORFLOW_SRC_PATH         "${ml_embedded_evaluation_kit_SOURCE_DIR}/dependencies/tensorflow")
 set(ETHOS_U_NPU_DRIVER_SRC_PATH "${ml_embedded_evaluation_kit_SOURCE_DIR}/dependencies/core-driver")
