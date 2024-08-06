@@ -187,7 +187,7 @@ dependencies:
     license: "Apache-2.0"
     tpip-category: "category-2"
     security-risk: "low"
-    version: "24.05"
+    version: "ddb3ffdbcfc6f66dc3906e84158f235824536b4a"
     repository:
       type: "git"
       url: "https://review.mlplatform.org/ml/ethos-u/ml-embedded-evaluation-kit.git"

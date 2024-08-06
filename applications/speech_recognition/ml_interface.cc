@@ -579,7 +579,6 @@ static int prvMlInterfaceInit( void )
     caseContext.Set<const std::vector<std::string> &>( "labels", labels );
     caseContext.Set<arm::app::AsrClassifier &>( "classifier", classifier );
 
-    PrintTensorFlowVersion();
     LogInfo( ( "*** ML interface initialised\r\n" ) );
     return 0;
 }

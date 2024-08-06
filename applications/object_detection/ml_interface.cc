@@ -487,7 +487,6 @@ static int prvMlInterfaceInit( void )
     /* Instantiate application context. */
     xCaseContext.Set<arm::app::Model &>( "model", xModel );
 
-    PrintTensorFlowVersion();
     LogInfo( ( "*** ML interface initialised\r\n" ) );
     return 0;
 }

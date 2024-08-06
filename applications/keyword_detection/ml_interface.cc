@@ -1053,7 +1053,6 @@ static int prvMlInterfaceInit()
 
     caseContext.Set<const std::vector<std::string> &>( "labels", labels );
 
-    PrintTensorFlowVersion();
     LogInfo( ( "*** ML interface initialised\r\n" ) );
     return 0;
 }
