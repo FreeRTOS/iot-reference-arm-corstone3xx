@@ -19,6 +19,8 @@ variables:
 
 # Those fragments contain base variables required by pipelines for applications.
 # They can be used to set matrix parameters and extended using << : .anchor syntax
+.pipeline_config_corstone320: &pipeline_config_corstone320
+  TARGET: [corstone320]
 .pipeline_config_corstone315: &pipeline_config_corstone315
   TARGET: [corstone315]
 .pipeline_config_corstone310: &pipeline_config_corstone310
@@ -76,6 +78,26 @@ workflow:
           build/update-signature.txt \
           applications/${APP_UNDERSCORED}/configs/aws_configs
       fi
+
+# Build Corstone320 applications which later are tested.
+build-applications-corstone320:
+  stage: build
+  extends: .build_job
+  parallel:
+    matrix:
+       -
+         << : [*pipeline_config_corstone320, *pipeline_config_toolchain]
+         APP: [blinky, keyword-detection, speech-recognition, object-detection]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+  artifacts:
+    paths:
+      - ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz
+    expire_in: 1 week
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
 
 # Build Corstone315 applications which later are tested.
 build-applications-corstone315:
@@ -157,8 +179,13 @@ build-applications-corstone300:
       if [ $TARGET == "corstone315" ];then
         FVP_BIN=FVP_Corstone_SSE-315
       fi
+    - |
+      if [ $TARGET == "corstone320" ];then
+        FVP_BIN=FVP_Corstone_SSE-320
+      fi
   parallel:
     matrix:
+      - *pipeline_config_corstone320
       - *pipeline_config_corstone315
       - *pipeline_config_corstone310
       - *pipeline_config_corstone300
@@ -168,6 +195,8 @@ build-applications-corstone300:
 test-blinky-output:
   extends: .test_job
   needs:
+    - job: build-applications-corstone320
+      artifacts: true
     - job: build-applications-corstone315
       artifacts: true
     - job: build-applications-corstone310
@@ -186,6 +215,13 @@ test-blinky-output:
         --fail-output-file "applications/${APP}/tests/fail_output.log"
   parallel:
     matrix:
+       -
+         << : [*pipeline_config_corstone320, *pipeline_config_toolchain]
+         APP: [blinky]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : [*pipeline_config_corstone315, *pipeline_config_toolchain]
          APP: [blinky]
@@ -257,6 +293,8 @@ test-blinky-output:
 test-ml-applications-output:
   extends: .test-applications_base
   needs:
+  - job: build-applications-corstone320
+    artifacts: true
   - job: build-applications-corstone315
     artifacts: true
   - job: build-applications-corstone310
@@ -265,6 +303,14 @@ test-ml-applications-output:
     artifacts: true
   parallel:
     matrix:
+       -
+         << : *pipeline_config_corstone320
+         APP: [keyword-detection, speech-recognition, object-detection]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         TOOLCHAIN: [ARMCLANG]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : *pipeline_config_corstone315
          APP: [keyword-detection, speech-recognition, object-detection]
@@ -342,6 +388,11 @@ integration-tests:
   parallel:
     matrix:
       -
+        << : [*pipeline_config_corstone320, *pipeline_config_toolchain]
+        APP: [freertos-iot-libraries-tests]
+        CONN_STACK: [FREERTOS_PLUS_TCP, IOT_VSOCKET]
+        PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+      -
         << : [*pipeline_config_corstone315, *pipeline_config_toolchain]
         APP: [freertos-iot-libraries-tests]
         CONN_STACK: [FREERTOS_PLUS_TCP, IOT_VSOCKET]
@@ -383,6 +434,30 @@ sw-vsi-configs-test:
     - !reference [.test-applications_base, script]
   parallel:
     matrix:
+       -
+         << : *pipeline_config_corstone320
+         APP: [keyword-detection, speech-recognition]
+         INFERENCE: [ETHOS]
+         AUDIO: [VSI]
+         TOOLCHAIN: [ARMCLANG]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+       -
+         << : *pipeline_config_corstone320
+         APP: [keyword-detection, speech-recognition]
+         INFERENCE: [SOFTWARE]
+         AUDIO: [ROM, VSI]
+         TOOLCHAIN: [ARMCLANG]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+       -
+         << : *pipeline_config_corstone320
+         APP: [object-detection]
+         INFERENCE: [SOFTWARE]
+         AUDIO: [ROM]
+         TOOLCHAIN: [ARMCLANG]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
        -
          << : *pipeline_config_corstone315
          APP: [keyword-detection, speech-recognition]
@@ -467,6 +542,22 @@ gnu-toolchain-test:
   parallel:
     matrix:
        -
+         << : *pipeline_config_corstone320
+         APP: [keyword-detection, speech-recognition]
+         INFERENCE: [ETHOS, SOFTWARE]
+         AUDIO: [ROM,VSI]
+         TOOLCHAIN: [GNU]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+       -
+         << : *pipeline_config_corstone320
+         APP: [object-detection]
+         INFERENCE: [ETHOS, SOFTWARE]
+         AUDIO: [ROM]
+         TOOLCHAIN: [GNU]
+         CONN_STACK: [FREERTOS_PLUS_TCP]
+         PSA_CRYPTO_IMPLEMENTATION: [TF-M]
+       -
          << : *pipeline_config_corstone315
          APP: [keyword-detection, speech-recognition]
          INFERENCE: [ETHOS, SOFTWARE]
@@ -525,6 +616,14 @@ iot-vsocket-psa-crypto-mbedtls-test:
     - !reference [.test-applications_base, script]
   parallel:
     matrix:
+       -
+         << : *pipeline_config_corstone320
+         APP: [keyword-detection, speech-recognition, object-detection]
+         INFERENCE: [ETHOS]
+         AUDIO: [ROM]
+         TOOLCHAIN: [GNU, ARMCLANG]
+         CONN_STACK: [IOT_VSOCKET]
+         PSA_CRYPTO_IMPLEMENTATION: [MBEDTLS]
        -
          << : *pipeline_config_corstone315
          APP: [keyword-detection, speech-recognition, object-detection]

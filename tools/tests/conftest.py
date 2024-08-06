@@ -134,7 +134,7 @@ def fvp_process(
     # When the test is terminated, the FVP subprocess is closed.
     # Note: It can take few seconds to terminate the FVP
 
-    if "SSE-315" in fvp_path:
+    if "SSE-315" in fvp_path or "SSE-320" in fvp_path:
         cmdline = [
             fvp_path,
             "-a",

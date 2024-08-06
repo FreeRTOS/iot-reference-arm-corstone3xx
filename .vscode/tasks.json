@@ -124,7 +124,8 @@
             "options": [
                 "-tcorstone300",
                 "-tcorstone310",
-                "-tcorstone315"
+                "-tcorstone315",
+                "-tcorstone320"
             ],
             "default": "-tcorstone315"
         },

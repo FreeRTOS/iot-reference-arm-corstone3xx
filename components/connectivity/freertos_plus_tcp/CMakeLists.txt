@@ -13,7 +13,7 @@ else ()
 
     if (${ARM_CORSTONE_BSP_TARGET_PLATFORM} STREQUAL "corstone300" OR ${ARM_CORSTONE_BSP_TARGET_PLATFORM} STREQUAL "corstone310")
         set(FREERTOS_PLUS_TCP_NETWORK_IF "MPS3_AN552" CACHE STRING "FreeRTOS Plus TCP Network Interface selection")
-    elseif (${ARM_CORSTONE_BSP_TARGET_PLATFORM} STREQUAL "corstone315")
+    elseif (${ARM_CORSTONE_BSP_TARGET_PLATFORM} STREQUAL "corstone315" OR ${ARM_CORSTONE_BSP_TARGET_PLATFORM} STREQUAL "corstone320")
         set(FREERTOS_PLUS_TCP_NETWORK_IF "MPS4_CS315" CACHE STRING "FreeRTOS Plus TCP Network Interface selection")
     endif()
 
@@ -21,6 +21,5 @@ else ()
 
     add_subdirectory(library/source)
     add_subdirectory(library/tools)
-
 endif()
 add_subdirectory(integration)

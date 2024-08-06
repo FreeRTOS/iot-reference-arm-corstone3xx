@@ -8,10 +8,10 @@ HERE="$(dirname "$0")"
 ROOT="$(realpath $HERE/../..)"
 EXAMPLE=""
 BUILD_PATH="$(realpath $ROOT/build)"
-TARGET="corstone315"
+TARGET="corstone320"
 AUDIO_SOURCE="ROM"
 NPU_ID=""
-FVP_BIN="FVP_Corstone_SSE-315"
+FVP_BIN="FVP_Corstone_SSE-320"
 FRAMES=""
 OPTIONS=""
 DISPLAY=true
@@ -123,8 +123,11 @@ case "$TARGET" in
     corstone315 )
       FVP_BIN="FVP_Corstone_SSE-315"
       ;;
+    corstone320 )
+      FVP_BIN="FVP_Corstone_SSE-320"
+      ;;
     *)
-      echo "Invalid target <corstone300 | corstone310 | corstone315>"
+      echo "Invalid target <corstone300 | corstone310 | corstone315 | corstone320>"
       show_usage
       exit 2
       ;;
@@ -200,7 +203,7 @@ case "$TARGET" in
       --stat \
       -C mps3_board.DISABLE_GATING=1"
       ;;
-    corstone315 )
+    corstone315 | corstone320 )
       OPTIONS="$OPTIONS $DISPLAY_OPTIONS \
       -C mps4_board.visualisation.disable-visualisation=1 \
       -C core_clk.mul=200000000 \
@@ -217,8 +220,8 @@ case "$TARGET" in
       ;;
 esac
 
-if [ "$EXAMPLE" == "object-detection" ] && [ "$TARGET" != "corstone315" ]; then
-    echo "Error: Invalid combination of example and target. object-detection only supports corstone315" >&2
+if [ "$EXAMPLE" == "object-detection" ] && [ "$TARGET" != "corstone315" ] && [ "$TARGET" != "corstone320" ]; then
+    echo "Error: Invalid combination of example and target. object-detection only supports corstone315 and corstone320" >&2
     exit 2
 fi
 
