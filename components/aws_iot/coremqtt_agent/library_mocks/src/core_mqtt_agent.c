@@ -58,3 +58,15 @@ DEFINE_FAKE_VALUE_FUNC( MQTTStatus_t,
 DEFINE_FAKE_VALUE_FUNC( MQTTStatus_t,
                         MQTTAgent_CancelAll,
                         MQTTAgentContext_t * );
+
+DEFINE_FAKE_VALUE_FUNC( MQTTStatus_t,
+                        MQTTAgent_Publish,
+                        const MQTTAgentContext_t *,
+                        MQTTPublishInfo_t *,
+                        const MQTTAgentCommandInfo_t * );
+
+DEFINE_FAKE_VALUE_FUNC( MQTTStatus_t,
+                        MQTTAgent_Unsubscribe,
+                        const MQTTAgentContext_t *,
+                        MQTTAgentSubscribeArgs_t *,
+                        const MQTTAgentCommandInfo_t * );

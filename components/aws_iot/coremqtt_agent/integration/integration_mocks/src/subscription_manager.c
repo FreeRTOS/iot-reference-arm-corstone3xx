@@ -26,8 +26,15 @@
  *
  */
 
+#include "fff.h"
 #include "subscription_manager.h"
 
+DEFINE_FAKE_VALUE_FUNC( bool,
+                        addSubscription,
+                        const char *,
+                        uint16_t,
+                        IncomingPubCallback_t,
+                        void * );
 DEFINE_FAKE_VOID_FUNC( removeSubscription,
                        const char *,
                        uint16_t );

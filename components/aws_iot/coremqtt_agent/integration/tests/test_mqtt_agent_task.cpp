@@ -541,7 +541,7 @@ TEST_F( TestMqttAgentTask, Publish_callback_calls_publish_handler )
 
     EXPECT_EQ( handleIncomingPublishes_fake.call_count, 0 );
     int dummy = 5;
-    MQTTAgentContext_t mqttAgentContext = { &dummy };
+    MQTTAgentContext_t mqttAgentContext = { nullptr, &dummy };
     uint16_t dummyId = 10;
     MQTTPublishInfo_t xPublishInfo;
     xPublishInfo.qos = MQTTQoS0;
@@ -561,7 +561,7 @@ TEST_F( TestMqttAgentTask, Publish_callback_does_not_error_if_publish_handled )
     handleIncomingPublishes_fake.return_val = handled;
 
     int dummy = 5;
-    MQTTAgentContext_t mqttAgentContext = { &dummy };
+    MQTTAgentContext_t mqttAgentContext = { nullptr, &dummy };
     uint16_t dummyId = 10;
     MQTTPublishInfo_t xPublishInfo;
     xPublishInfo.qos = MQTTQoS0;
@@ -581,7 +581,7 @@ TEST_F( TestMqttAgentTask, Publish_callback_generates_log_if_handler_fails )
     handleIncomingPublishes_fake.return_val = handled;
 
     int dummy = 5;
-    MQTTAgentContext_t mqttAgentContext = { &dummy };
+    MQTTAgentContext_t mqttAgentContext = { nullptr, &dummy };
     uint16_t dummyId = 10;
     MQTTPublishInfo_t xPublishInfo;
     xPublishInfo.qos = MQTTQoS0;

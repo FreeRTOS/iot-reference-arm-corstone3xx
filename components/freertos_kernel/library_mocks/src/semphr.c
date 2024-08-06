@@ -28,34 +28,19 @@
  *
  */
 
-#include "task.h"
-#include "fff.h"
+/* This file has no equivalent in the FreeRTOS kernel */
+/* but has been added for ease of unit testing. */
 
-DEFINE_FAKE_VALUE_FUNC( TickType_t, xTaskGetTickCount );
+#include "semphr.h"
+
 DEFINE_FAKE_VALUE_FUNC( BaseType_t,
-                        xTaskCreate,
-                        TaskFunction_t,
-                        const char * const,
-                        const uint16_t,
-                        void * const,
-                        UBaseType_t,
-                        TaskHandle_t * const );
-DEFINE_FAKE_VALUE_FUNC( BaseType_t,
-                        xTaskNotify,
-                        TaskHandle_t,
-                        uint32_t,
-                        eNotifyAction );
-DEFINE_FAKE_VALUE_FUNC( TaskHandle_t, xTaskGetCurrentTaskHandle );
-DEFINE_FAKE_VALUE_FUNC( BaseType_t,
-                        xTaskNotifyWait,
-                        int,
-                        int,
-                        void *,
+                        xSemaphoreTake,
+                        SemaphoreHandle_t,
                         TickType_t );
-
-DEFINE_FAKE_VOID_FUNC( vTaskDelete, TaskHandle_t );
-DEFINE_FAKE_VOID_FUNC( vTaskDelay, const TickType_t );
-
 DEFINE_FAKE_VALUE_FUNC( BaseType_t,
-                        xTaskNotifyStateClear,
-                        TaskHandle_t );
+                        xSemaphoreGive,
+                        SemaphoreHandle_t );
+DEFINE_FAKE_VALUE_FUNC( SemaphoreHandle_t,
+                        xSemaphoreCreateMutex );
+DEFINE_FAKE_VOID_FUNC( vSemaphoreDelete,
+                       SemaphoreHandle_t );

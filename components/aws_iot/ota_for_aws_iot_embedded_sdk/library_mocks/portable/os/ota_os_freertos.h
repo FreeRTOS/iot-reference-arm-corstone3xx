@@ -1,7 +1,7 @@
 /*
- * FreeRTOS Kernel V11.1.0
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * Copyright 2023-2024 Arm Limited and/or its affiliates
+ * AWS IoT Over-the-air Update v3.4.0
+ * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright 2024 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: MIT
@@ -22,19 +22,9 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * https://www.FreeRTOS.org
- * https://github.com/FreeRTOS
- *
  */
 
-#ifndef PORTMACRO_H
-#define PORTMACRO_H
+#ifndef _OTA_OS_FREERTOS_H_
+#define _OTA_OS_FREERTOS_H_
 
-typedef long             BaseType_t;
-typedef unsigned short   UBaseType_t;
-typedef unsigned long    TickType_t;
-
-#define portMAX_DELAY    ( TickType_t ) 0xFFFFFFFFUL
-
-#endif /* ifndef PORTMACRO_H */
+#endif /* OTA_OS_FREERTOS_H_ */

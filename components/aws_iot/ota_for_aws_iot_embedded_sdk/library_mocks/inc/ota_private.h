@@ -1,7 +1,7 @@
 /*
- * FreeRTOS Kernel V11.1.0
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * Copyright 2023-2024 Arm Limited and/or its affiliates
+ * AWS IoT Over-the-air Update v3.4.0
+ * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright 2024 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: MIT
@@ -22,19 +22,52 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * https://www.FreeRTOS.org
- * https://github.com/FreeRTOS
- *
  */
 
-#ifndef PORTMACRO_H
-#define PORTMACRO_H
+#ifndef OTA_PRIVATE_H
+#define OTA_PRIVATE_H
 
-typedef long             BaseType_t;
-typedef unsigned short   UBaseType_t;
-typedef unsigned long    TickType_t;
+#include <stdbool.h>
+#include <stdint.h>
 
-#define portMAX_DELAY    ( TickType_t ) 0xFFFFFFFFUL
+#define OTA_MAX_BLOCK_BITMAP_SIZE    128U
 
-#endif /* ifndef PORTMACRO_H */
+typedef struct OtaAgentStatistics
+{
+    uint32_t otaPacketsReceived;
+    uint32_t otaPacketsQueued;
+    uint32_t otaPacketsProcessed;
+    uint32_t otaPacketsDropped;
+} OtaAgentStatistics_t;
+
+typedef enum OtaImageState
+{
+    OtaImageStateUnknown = 0,
+    OtaImageStateTesting = 1,
+    OtaImageStateAccepted = 2,
+    OtaImageStateRejected = 3,
+    OtaImageStateAborted = 4,
+    OtaLastImageState = OtaImageStateAborted
+} OtaImageState_t;
+
+typedef enum OtaEvent
+{
+    OtaAgentEventStart = 0,
+    OtaAgentEventReceivedJobDocument,
+    OtaAgentEventReceivedFileBlock
+} OtaEvent_t;
+
+typedef struct OtaEventData
+{
+    uint8_t data[ 10 ];
+    uint32_t dataLength;
+    bool bufferUsed;
+} OtaEventData_t;
+
+typedef struct OtaEventMsg
+{
+    OtaEventData_t * pEventData;
+    OtaEvent_t eventId;
+} OtaEventMsg_t;
+
+#endif /* OTA_PRIVATE_H */

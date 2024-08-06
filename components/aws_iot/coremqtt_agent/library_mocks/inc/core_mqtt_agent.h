@@ -41,6 +41,7 @@ typedef struct MQTTAgentCommand MQTTAgentCommand_t;
 
 typedef struct MQTTAgentContext
 {
+    MQTTAgentCommand_t * pArgs;
     void * mqttContext;
 } MQTTAgentContext_t;
 
@@ -101,5 +102,17 @@ DECLARE_FAKE_VALUE_FUNC( MQTTStatus_t,
 DECLARE_FAKE_VALUE_FUNC( MQTTStatus_t,
                          MQTTAgent_CancelAll,
                          MQTTAgentContext_t * );
+
+DECLARE_FAKE_VALUE_FUNC( MQTTStatus_t,
+                         MQTTAgent_Publish,
+                         const MQTTAgentContext_t *,
+                         MQTTPublishInfo_t *,
+                         const MQTTAgentCommandInfo_t * );
+
+DECLARE_FAKE_VALUE_FUNC( MQTTStatus_t,
+                         MQTTAgent_Unsubscribe,
+                         const MQTTAgentContext_t *,
+                         MQTTAgentSubscribeArgs_t *,
+                         const MQTTAgentCommandInfo_t * );
 
 #endif /* CORE_MQTT_AGENT_H */

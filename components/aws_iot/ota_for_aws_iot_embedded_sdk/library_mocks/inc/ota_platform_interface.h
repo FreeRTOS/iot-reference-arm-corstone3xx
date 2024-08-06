@@ -1,6 +1,6 @@
 /*
- * FreeRTOS Kernel V11.1.0
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * AWS IoT Over-the-air Update v3.4.0
+ * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  * Copyright 2024 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  *
@@ -22,41 +22,54 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * https://www.FreeRTOS.org
- * https://github.com/FreeRTOS
- *
  */
 
-#ifndef INC_FREERTOS_H
-#define INC_FREERTOS_H
+#ifndef OTA_PLATFORM_INTERFACE
+#define OTA_PLATFORM_INTERFACE
 
-#include "fff.h"
-#include "portmacro.h"
+typedef enum
+{
+    otaPal_Abort = 1,
+} OtaPalAbort_t;
+typedef enum
+{
+    otaPal_CreateFileForRx = 1,
+} OtaPalCreateFileForRx_t;
+typedef enum
+{
+    otaPal_ResetDevice = 1,
+} OtaPalResetDevice_t;
+typedef enum
+{
+    otaPal_CloseFile = 1,
+} OtaPalCloseFile_t;
+typedef enum
+{
+    otaPal_ActivateNewImage = 1,
+} OtaPalActivateNewImage_t;
+typedef enum
+{
+    otaPal_WriteBlock = 1,
+} OtaPalWriteBlock_t;
+typedef enum
+{
+    otaPal_SetPlatformImageState = 1,
+} OtaPalSetPlatformImageState_t;
+typedef enum
+{
+    otaPal_GetPlatformImageState = 1,
+} OtaPalGetPlatformImageState_t;
 
-typedef int StaticQueue_t;
+typedef struct OtaPalInterface
+{
+    OtaPalAbort_t abort;
+    OtaPalCreateFileForRx_t createFile;
+    OtaPalCloseFile_t closeFile;
+    OtaPalWriteBlock_t writeBlock;
+    OtaPalActivateNewImage_t activate;
+    OtaPalResetDevice_t reset;
+    OtaPalSetPlatformImageState_t setPlatformImageState;
+    OtaPalGetPlatformImageState_t getPlatformImageState;
+} OtaPalInterface_t;
 
-/*
- * Definitions found in FreeTOSConfig.h.
- * Because for testing `freertos_command_pool.c` and other files we cannot
- * directly include FreeRTOSConfig.h in the source file (as this causes build failure),
- * nor can we prototype the configAssert macro from within the file.
- */
-
-#ifndef FREERTOS_CONFIG_H
-    #define FREERTOS_CONFIG_H
-
-    DECLARE_FAKE_VOID_FUNC( vAssertCalled,
-                            const char *,
-                            unsigned long );
-    #define configASSERT( x )    if( ( x ) == 0 ) vAssertCalled( __FILE__, __LINE__ );
-
-#endif /* FREERTOS_CONFIG_H */
-
-/* This file also contains some definitions usually found in
- * 'FreeRTOSConfig_target.h'.
- * See below. */
-#define configTICK_RATE_HZ    ( 1000 )
-#define TICKS_TO_pdMS( xTicks )    ( ( uint32_t ) xTicks )
-
-#endif /* INC_FREERTOS_H */
+#endif /* OTA_PLATFORM_INTERFACE */

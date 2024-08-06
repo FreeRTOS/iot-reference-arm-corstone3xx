@@ -31,5 +31,21 @@
 #ifndef SEMAPHORE_H
 #define SEMAPHORE_H
 
+#include "fff.h"
+#include "portmacro.h"
+
+typedef int SemaphoreHandle_t;
+
+DECLARE_FAKE_VALUE_FUNC( BaseType_t,
+                         xSemaphoreTake,
+                         SemaphoreHandle_t,
+                         TickType_t );
+DECLARE_FAKE_VALUE_FUNC( BaseType_t,
+                         xSemaphoreGive,
+                         SemaphoreHandle_t );
+DECLARE_FAKE_VALUE_FUNC( SemaphoreHandle_t,
+                         xSemaphoreCreateMutex );
+DECLARE_FAKE_VOID_FUNC( vSemaphoreDelete,
+                        SemaphoreHandle_t );
 
 #endif /* SEMAPHORE_H */

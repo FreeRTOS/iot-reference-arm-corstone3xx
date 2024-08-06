@@ -33,7 +33,8 @@ typedef enum MQTTStatus
 {
     MQTTSuccess = 0,
     MQTTBadParameter,
-    MQTTSendFailed
+    MQTTSendFailed,
+    MQTTRecvFailed
 } MQTTStatus_t;
 
 typedef struct MQTTConnectInfo

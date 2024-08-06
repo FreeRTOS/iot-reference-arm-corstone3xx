@@ -18,4 +18,6 @@ if(CMAKE_CROSSCOMPILING)
     iot_reference_arm_corstone3xx_apply_patches("${freertos_ota_pal_psa_SOURCE_DIR}" "${PATCH_FILES}")
 
     add_subdirectory(integration)
+else()
+    add_subdirectory(library_mocks)
 endif()

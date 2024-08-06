@@ -4,6 +4,7 @@
 
 add_library(freertos-kernel-mock
     src/event_groups.c
+    src/semphr.c
     src/tasks.c
     src/queue.c
 )
