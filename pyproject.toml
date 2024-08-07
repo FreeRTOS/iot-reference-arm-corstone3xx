@@ -5,6 +5,7 @@ build-backend = "setuptools.build_meta"
 local_scheme = "no-local-version"
 
 [tool.towncrier]
+ignore = [".gitkeep"]
 directory = "release_changes"
 filename = "CHANGELOG.md"
 template = "tools/ci/towncrier/template.rst"
