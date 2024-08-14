@@ -43,7 +43,7 @@ if(APPLICATION_PATH MATCHES ".*blinky")
     # the exported library `psa_crypto_config` is not used by the non-secure side and these definitions are missing.
     target_compile_definitions(tfm-ns-interface-mbedtls-config
         INTERFACE
-            MBEDTLS_CONFIG_FILE="${trusted_firmware-m_SOURCE_DIR}/lib/ext/mbedcrypto/mbedcrypto_config/tfm_mbedcrypto_config_default_client.h"
+            MBEDTLS_CONFIG_FILE="${trusted_firmware-m_SOURCE_DIR}/lib/ext/mbedcrypto/mbedcrypto_config/tfm_mbedcrypto_config_client.h"
             MBEDTLS_PSA_CRYPTO_CONFIG_FILE="${trusted_firmware-m_SOURCE_DIR}/lib/ext/mbedcrypto/mbedcrypto_config/crypto_config_default.h"
     )
 else()
