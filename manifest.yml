@@ -25,7 +25,7 @@ dependencies:
     license: "BSD-3-Clause"
     tpip-category: "category-2"
     security-risk: "high"
-    version: "TF-Mv2.1.0"
+    version: "c9352b59f2a501b5af3f648b3fc91065993c002f"
     repository:
       type: "git"
       url: "https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git"

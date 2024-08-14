@@ -44,7 +44,7 @@ function(iot_reference_arm_corstone3xx_tf_m_merge_images target)
                     $<TARGET_FILE_DIR:${target}>/${target}_signed.bin -Binary -offset ${NS_IMAGE_LOAD_ADDRESS}
                     ${ddr_binary_param}
                     ${ns_provisioning_data_param}
-                    ${BINARY_DIR}/api_ns/bin/encrypted_provisioning_bundle.bin -Binary -offset ${S_PROVISIONING_BUNDLE_LOAD_ADDRESS}
+                    ${BINARY_DIR}/api_ns/bin/provisioning_bundle.bin -Binary -offset ${S_PROVISIONING_BUNDLE_LOAD_ADDRESS}
                     -o $<TARGET_FILE_DIR:${target}>/${target}_merged.hex
             COMMAND
                 ${objcopy} -I ihex -O elf32-little
