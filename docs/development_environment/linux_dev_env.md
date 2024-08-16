@@ -25,7 +25,7 @@
 
     ```bash
     sudo apt update
-    sudo apt install python3.8-venv -y
+    sudo apt install python3.10-venv -y
     python3 -m venv ~/fri-venv
     source ~/fri-venv/bin/activate
     ```
@@ -34,7 +34,7 @@
 
     ```bash
     sudo apt install python3-pip -y
-    python3 -m pip install ninja imgtool cffi intelhex cbor2 jinja2 PyYaml pyelftools click pyhsslms
+    python3 -m pip install ninja imgtool cffi intelhex cbor2 jinja2 PyYaml pyelftools click pyhsslms cbor cmake setuptools wheel
     ```
 
     **NOTE**: The virtual environment can be deactivated when not needed anymore
