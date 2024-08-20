@@ -15,7 +15,7 @@
                 "${input:FRICertificatPath}",
                 "${input:FRIPrivateKeyPath}",
                 "${input:FRIBuildDirectory}",
-                "-TGNU",
+                "${input:FRIBuildToolchain}",
                 "${input:FRICleanBeforeBuild}"
             ],
             "options": {
@@ -106,6 +106,16 @@
             "id": "FRIBuildDirectory",
             "description": "Where would you like the build directory to be?",
             "default": "-pbuild"
+        },
+        {
+            "type": "pickString",
+            "id": "FRIBuildToolchain",
+            "description": "Which toolchain would you like to build with?",
+            "options": [
+                "-TGNU",
+                "-TARMCLANG"
+            ],
+            "default": "-TGNU"
         },
         {
             "type": "pickString",
