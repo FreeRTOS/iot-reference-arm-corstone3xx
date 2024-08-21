@@ -14,7 +14,7 @@ This tutorial will lay out the steps for adding unit tests for IoT Reference Int
 
 The IoT Reference Integration for Arm Corstone-3xx aims to provide mocked symbols for all components it fetches. This allows for unit tests to be written for the component's integration code as well as for other components's integration code that depend on it.
 
-`coreMQTT Agent` and `FreeRTOS-Kernel` mocks will be used as examples for which symbols to mock and how to mock them. The mocks can be found [here](../components/aws_iot/coremqtt_agent/mocks) and [here](../components/freertos_kernel/mocks) respectively.
+`coreMQTT Agent` and `FreeRTOS-Kernel` mocks will be used as examples for which symbols to mock and how to mock them. The mocks can be found [here](../components/aws_iot/coremqtt_agent/library_mocks) and [here](../components/freertos_kernel/library_mocks) respectively.
 
 The `coreMQTT Agent` mocks are used to write unit test for the `coreMQTT Agent`'s integration code. The unit test can be found [here](../components/aws_iot/coremqtt_agent/integration/tests/test_freertos_agent_message.cpp).
 
@@ -29,7 +29,7 @@ Within the IoT Reference Integration for Arm Corstone-3xx, we unit test any inte
 A mock is defined by the user and is intended to simulate existing symbols from a component. This allows for the unit test to precisely control the execution path in the file under test for each test case. The mocks are defined in the `components` sub-directory for the component mocked. The sub-directory structure is as follows:
 ``` tree
 ├── ${REAL_LIBRARY_NAME}/
-│   ├── mocks/
+│   ├── library_mocks/
 │   │   ├── inc/
 │   │   ├── src/
 │   │   ├── CMakeLists.txt
@@ -50,7 +50,7 @@ For example, if a header file is included as such:
 The folder structure within the `inc` directory should include any sub-directory, where the header file is located. In this case, the structure would be as follows:
 ``` tree
 ├── component/
-│   ├── mocks/
+│   ├── library_mocks/
 │   │   ├── inc/
 │   │   |   ├── component/
 │   │   |   |   ├── header_1.h
@@ -71,7 +71,7 @@ As the IoT Reference Integration for Arm Corstone-3xx utilises CMake as its buil
 To ensure the mocks directory is built only for unit testing, list it in CMake with a condition. The [coreMQTT Agent component CMake][inclusion-of-mocks-subdir] illustrates this:
 ```cmake
 if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
-    add_subdirectory(mocks)
+    add_subdirectory(library_mocks)
 else()
     <CMake script relating to the real component>
 endif()
@@ -81,12 +81,12 @@ This ensures that the mock is included in the build only when `CMAKE_CROSSCOMPIL
 The CMAKE_CROSSCOMPILING flag is set by CMake when not building for the host machine (e.g. for Corstone-300). This is only disabled when we are building unit tests for our host machine and for CI.
 For future-proofing, we also use the BUILD_TESTING flag that is set by CTest.
 
-The `mocks` directory must be added before the `tests` directory. This ensures the mocked CMake library target can be referenced in the test's `CMakeLists.txt` to link it. This subdirectory is linked in the component [main][inclusion-of-mocks-subdir] `CMakeLists.txt` file.
+The `library_mocks` directory must be added before the `tests` directory. This ensures the mocked CMake library target can be referenced in the test's `CMakeLists.txt` to link it. This subdirectory is linked in the component [main][inclusion-of-mocks-subdir] `CMakeLists.txt` file.
 
 ### Mocked component library
 
-The library for the mocked component should be added in the `CMakeLists.txt` within the `mocks` sub-directory. The name of the mocked component should follow the name of the CMake library where the real symbols normally are with the added `-mock` suffix.
-Use the CMake `add_library()` function to create the CMake library target. Source files that implement the mocked symbols should be added to that library, as seen for the `FreeRTOS-Kernel Mocks` [here](../components/freertos_kernel/mocks).
+The CMake library target for the mocked component should be added in the `CMakeLists.txt` within the `mocks` sub-directory. The name of the mocked component should follow the name of the CMake library where the real symbols normally are with the added `-mock` suffix.
+Use the CMake `add_library()` function to create the CMake library target. Source files that implement the mocked symbols should be added to that library, as seen for the `FreeRTOS-Kernel Mocks` [here](../components/freertos_kernel/library_mocks).
 
 #### Example for adding CMake library
 
@@ -121,6 +121,22 @@ target_link_libraries(${REAL_LIBRARY_NAME}-mock
         <any-other-required-mock-libraries>
 )
 ```
+
+#### Example for adding CMake library (with no .c source files)
+
+```cmake
+add_library(${REAL_LIBRARY_NAME}-mock INTERFACE)
+target_include_directories(${REAL_LIBRARY_NAME}-mock
+    INTERFACE
+        inc
+)
+target_link_libraries(${REAL_LIBRARY_NAME}-mock
+    INTERFACE
+        fff
+        <any-other-required-mock-libraries>v
+)
+```
+In summary: replace every occurrence of the `PRIVATE` and `PUBLIC` access modifiers in the example above with `INTERFACE`.
 
 #### Example for adding a CMake library which contains only header files
 
@@ -443,13 +459,64 @@ iot_reference_arm_corstone3xx_add_test(${FILE_UNDER_TEST_KEBAB_CASE}-test)
 * `target_link_libraries`: Links any library required to successfully build the executable. This includes `fff` as well as any required mocked CMake library.
 * `iot_reference_arm_corstone3xx_add_test`: A helper function to make the test suite discoverable by GoogleTest.
 
-##### Handling dependencies in the same component as the file under test
+#### The different types of mock directory
 
-Assume that the file under test is dependent on a file in the same directory or component as it. This is illustrated below.
+We will walk through the mocks in `components/aws_iot/coremqtt_agent`.
+The directory structure for mocks is:
 ``` tree
-├── mocks
-│   ├── inc/${DEPENDENCY}.h
-│   ├── src/${DEPENDENCY}.c
+coremqtt_agent
+├── library_mocks
+├── integration
+├── library
+├── CMakeLists.txt
+```
+This top-level contains the following elements:
+- `library` is the third-party library code we want to isolate when unit testing.
+- `library_mocks` contains mocks for the `library` components. It will contain a `CMakeLists.txt` file that defines the library mocks, which are exported as the library `coremqtt-agent-mock`.
+- `CMakeLists.txt` is set to add `library_mocks` and `integration` as subdirectories if we are unit testing, otherwise it adds `integration` and `library`.
+This assumes that `integration` contains mocks. Otherwise, `CMakeLists.txt` will not add `integration` if we are unit testing.
+- `integration` has the following structure:
+``` tree
+coremqtt_agent / integration
+├── inc
+├── integration_mocks
+├── src
+├── tests
+├── CMakeLists.txt
+```
+These elements are summarized:
+- `inc` and `src` contain the integration code we are testing.
+- `integration_mocks` contains mocks for the <b>integration code</b> within `inc` and `src`. This is exported as `coremqtt-agent-integration-mock`.
+We mock integration code because if two integration files depend on each other, we need to isolate them from each other during testing. Otherwise, bugs in one file could cause failures on the other file's tests.
+- `tests` has the following structure:
+``` tree
+coremqtt_agent / integration / tests
+├── config_mocks
+├── CMakeLists.txt
+├── test_freertos_agent_message.cpp
+... other '.cpp' test files.
+```
+The `config_mocks` folder in this directory contains mocks for config files in the `applications/` project root directory. For example, `applications/keyword_detection/configs/app_config/app_config.h` is mocked in this directory. This does not include mocks that are stored in `applications/helpers`, such as `applications/helpers/events/events.h`. These helper mocks are within `applications/helpers/<helper_name>/mocks`, where `<helper_name>` could be `events`.
+
+To summarise, there are three separate `mocks` subdirectories. From top to bottom of the directory tree:
+1. Library `library_mocks` for coremqtt_agent.
+2. Integration `integration_mocks` for our coremqtt_agent integration code.
+3. Application-specific `config_mocks`.
+Additionally, some mocks for `applications/helpers` can be found within `applications/helpers/<helper_module>/mocks`. For example, there are mocks in `applications/helpers/events/mocks/...`.
+
+It is important to note that application mocks are <b>only</b> supported for helpers and config files, not for all application code.
+
+#### Handling dependencies in the same component as the file under test
+
+Assume that the file under test is dependent on a file in the same directory or component as it. We also assume that some other test file somewhere uses a mocked version of `${FILE_UNDER_TEST}`. This is illustrated below.
+``` tree
+├── integration_mocks
+│   ├── inc
+│   │   ├── ${DEPENDENCY}.h
+│   │   ├── ${FILE_UNDER_TEST}.h
+│   ├── src
+│   │   ├── ${DEPENDENCY}.c
+│   │   ├── ${FILE_UNDER_TEST}.c
 ├── inc/
 │   ├── ${FILE_UNDER_TEST}.h
 │   ├── ${DEPENDENCY}.h
@@ -462,31 +529,12 @@ Assume that the file under test is dependent on a file in the same directory or 
 ...
 ```
 
-This introduces complications to your CMakeLists.txt files. The problems are:
-1. How can I include the <em>integration</em> `${FILE_UNDER_TEST}.c` but the <em>mock</em> `${DEPENDENCY}.c`?
-2. How can I include the <em>integration</em> `${FILE_UNDER_TEST}.h` but the <em>mock</em> `${DEPENDENCY}.h`?
+We want to test `src/${FILE_UNDER_TEST}.c`, using the real `inc/${FILE_UNDER_TEST}.h` but the mock `integration_mocks/inc/${DEPENDENCY}.h` and `integration_mocks/src/${DEPENDENCY}.c`.
+It is not possible to do this easily using `CMakeLists.txt` and cover every use case.
+You should <b>not</b> simply include this component's `-integration-mocks` library in `tests/CMakeLists.txt`, as this will cause `tests/test_${FILE_UNDER_TEST}.cpp` to find `integration_mocks/inc/${FILE_UNDER_TEST}.h` instead of the real `inc/${FILE_UNDER_TEST}.h`.
 
-
-To include the `.h` files in the correct manner, we advise copy-and-pasting (as will be described shortly). However, if the `${FILE_UNDER_TEST}` does not have a <em>mock</em> created for it, it is possible to instead  include `../../mocks/inc`, and `../inc` as follows:
-```
-target_include_directories(mqtt-agent-task-test
-    PRIVATE
-        .
-
-        # Include the mocks of header files of files belonging to
-        # this component so they can be mocked.
-        # This needs to be done before including ../inc
-        ../../mocks/inc
-
-        ../inc
-)
-```
-The reason we include `../../mocks/inc` first is so that the include guards for the files in `../../mocks` are run first, so any guarded definitions in `../inc` are not included afterwards.
-
-The above breaks if you create a mock for `${FILE_UNDER_TEST}.h` at any point. This mock header will be detected first (and set include guards) when trying to test `${FILE_UNDER_TEST}.c`. Then the real header file `${FILE_UNDER_TEST}.h ` will not be included. So some definitions that are not in the mock header but are needed to test `${FILE_UNDER_TEST}.c` may be missing.
-
-A more robust way of including the mock `${DEPENDENCY}.h` and `${DEPENDENCY}.c` files is to directly copy-and-paste them into the top of the C++ test file.
-In our example, this means copy-and-pasting contents to the following location in `test_${FILE_UNDER_TEST}.cpp`:
+The advised way of including the mock `integration_mocks/inc/${DEPENDENCY}.h` and `integration_mocks/src/${DEPENDENCY}.c` files is to directly copy-and-paste them into the top of the C++ test file.
+In our example, this means copy-and-pasting contents to the following location in `tests/test_${FILE_UNDER_TEST}.cpp`:
 ```c++
 #include "fff.h"
 
@@ -503,9 +551,9 @@ extern "C" {
 /* Directly copy-paste mock headers from the file under test's directory.
     Otherwise, the non-mock files are detected. */
 
-    /* Contents of `${DEPENDENCY}.h` */
+    /* Contents of `integration_mocks/inc/${DEPENDENCY}.h` */
 
-    /* Contents of `${DEPENDENCY}.c` */
+    /* Contents of `integration_mocks/src/${DEPENDENCY}.c` */
 
 }
 
@@ -514,6 +562,60 @@ DEFINE_FFF_GLOBALS
 /* Rest of tests continue below */
 
 ```
+
+#### Exposing static functions for testing
+
+Some files in the repository contain static functions which need to be tested. See `components/aws_iot/coremqtt_agent/integration/src/mqtt_agent_task.c` for an example.
+
+The advised method of exposing these functions for testing is as follows:
+
+1. Define the following STATIC macro.
+```c
+#ifdef UNIT_TESTING
+    #define STATIC    /* as nothing */
+#else /* ifdef UNIT_TESTING */
+    #define STATIC    static
+#endif /* UNIT_TESTING */
+```
+2. Replace the `static` scope of the functions under test with `STATIC`.
+```c
+static int dummy ( void ) {
+    return 1;
+}
+```
+Now becomes
+```c
+STATIC int dummy ( void ) {
+    return 1;
+}
+```
+3. In the C++ test file, `extern` the function definitions. Also ensure that `${FILE_UNDER_TEST}.h` is included.
+For example:
+```cpp
+/* ... other contents ... */
+
+#include "${FILE_UNDER_TEST}.h"
+
+/* ... other contents ... */
+
+using namespace std;
+
+extern "C" {
+
+/* ... other contents ... */
+
+    extern int dummy ( void );
+
+/* ... other contents ... */
+
+}
+
+DEFINE_FFF_GLOBALS
+
+/* ... other contents ... */
+```
+
+These static functions are now only visible to the file, and any unit testing files that explicitly `extern` them.
 
 ## Building and running unit tests
 
@@ -535,7 +637,7 @@ This will build and then run the tests. You will see an output for each test, wi
 [creating-mocked-component-cmake-target]:#creating-mocked-component-cmake-target-library
 [what-is-a-mock]:#what-is-a-mock
 [coremqtt-agent-message-interface-header-real]:https://github.com/FreeRTOS/coreMQTT-Agent/blob/main/source/include/core_mqtt_agent_message_interface.h
-[coremqtt-agent-message-interface-header-mock]: ../components/aws_iot/coremqtt_agent/mocks/inc/core_mqtt_agent_message_interface.h
+[coremqtt-agent-message-interface-header-mock]: ../components/aws_iot/coremqtt_agent/library_mocks/inc/core_mqtt_agent_message_interface.h
 [fff-cheat-sheet]:https://github.com/meekrosoft/fff#cheat-sheet
 [mocking-functions]:#mocking-functions
 [google-test]: https://github.com/google/googletest/tree/main
