@@ -1382,10 +1382,17 @@ int xOtaProvisionCodeSigningKey( psa_key_handle_t * pxKeyHandle,
     size_t xPubKeyDerLength = DER_FORMAT_BUFFER_LENGTH;
     size_t xPubKeyPemLength = strlen( ( const char * ) pxProvisioningParamsBundle->codeSigningPublicKey );
     int result = 0;
+    psa_status_t status = PSA_SUCCESS;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-    mbedtls_pk_context xMbedPkContext = { 0 };
 
-    mbedtls_pk_init( &xMbedPkContext );
+    #ifdef AWS_OTA_SIGN_RSA
+    mbedtls_pk_context xMbedPkContext = { 0 };
+    #elif AWS_OTA_SIGN_ECDSA
+        uint8_t * pucPubKeyDerFormatBufferEcdsaAligned = pucPubKeyDerFormatBuffer + AWS_OTA_ECDSA_HEADER_SIZE;
+        size_t xPubKeyDerLengthEcdsaAligned;
+    #else /* ifdef AWS_OTA_SIGN_RSA */
+    #error "Unknown crypto algorithm, supportted algorithms are EC and RSA!"
+    #endif
 
     result = convert_pem_to_der( ( const unsigned char * ) pxProvisioningParamsBundle->codeSigningPublicKey,
                                  xPubKeyPemLength,
@@ -1394,59 +1401,73 @@ int xOtaProvisionCodeSigningKey( psa_key_handle_t * pxKeyHandle,
 
     if( result != 0 )
     {
-        goto exit;
+        return result;
     }
 
-    /*
-     * From mbedtls 3.6.0 release note:
-     *
-     * Default behavior changes
-     * psa_import_key() now only accepts RSA keys in the PSA standard formats.
-     * The undocumented ability to import other formats (PKCS#8, SubjectPublicKey,
-     * PEM) accepted by the pkparse module has been removed. Applications that
-     * need these formats can call mbedtls_pk_parse_{public,}key() followed by
-     * mbedtls_pk_import_into_psa().
-     */
+    #ifdef AWS_OTA_SIGN_RSA
+        mbedtls_pk_init( &xMbedPkContext );
 
-    result = mbedtls_pk_parse_public_key( &xMbedPkContext,
-                                          ( const unsigned char * ) pucPubKeyDerFormatBuffer,
-                                          xPubKeyDerLength );
+        /*
+         * From mbedtls 3.6.0 release note:
+         *
+         * Default behavior changes
+         * psa_import_key() now only accepts RSA keys in the PSA standard formats.
+         * The undocumented ability to import other formats (PKCS#8, SubjectPublicKey,
+         * PEM) accepted by the pkparse module has been removed. Applications that
+         * need these formats can call mbedtls_pk_parse_{public,}key() followed by
+         * mbedtls_pk_import_into_psa().
+         */
+        result = mbedtls_pk_parse_public_key( &xMbedPkContext,
+                                              ( const unsigned char * ) pucPubKeyDerFormatBuffer,
+                                              xPubKeyDerLength );
 
-    if( result != 0 )
+        if( result != 0 )
+        {
+            mbedtls_pk_free( &xMbedPkContext );
+            return result;
+        }
+
+        result = mbedtls_pk_get_psa_attributes( &xMbedPkContext,
+                                                PSA_KEY_USAGE_VERIFY_HASH,
+                                                &attributes );
+
+        if( result != 0 )
+        {
+            mbedtls_pk_free( &xMbedPkContext );
+            return result;
+        }
+
+        #ifdef PSA_CRYPTO_IMPLEMENTATION_MBEDTLS
+            psa_set_key_lifetime( &attributes, PSA_KEY_LIFETIME_VOLATILE );
+        #endif
+
+        psa_set_key_bits( &attributes, keyBits );
+        psa_set_key_algorithm( &attributes, PSA_ALG_RSA_PSS_ANY_SALT( PSA_ALG_SHA_256 ) );
+        status = mbedtls_pk_import_into_psa( &xMbedPkContext,
+                                             &attributes,
+                                             pxKeyHandle );
+    #elif AWS_OTA_SIGN_ECDSA
+        xPubKeyDerLengthEcdsaAligned = xPubKeyDerLength - AWS_OTA_ECDSA_HEADER_SIZE;
+        #ifdef PSA_CRYPTO_IMPLEMENTATION_MBEDTLS
+            psa_set_key_lifetime( &attributes, PSA_KEY_LIFETIME_VOLATILE );
+        #endif
+        psa_set_key_bits( &attributes, keyBits );
+        psa_set_key_usage_flags( &attributes, PSA_KEY_USAGE_VERIFY_HASH );
+        psa_set_key_algorithm( &attributes, PSA_ALG_ECDSA( PSA_ALG_SHA_256 ) );
+        psa_set_key_type( &attributes, PSA_KEY_TYPE_ECC_PUBLIC_KEY( PSA_ECC_FAMILY_SECP_R1 ) );
+        status = psa_import_key( &attributes, ( const uint8_t * ) pucPubKeyDerFormatBufferEcdsaAligned,
+                                 xPubKeyDerLengthEcdsaAligned, pxKeyHandle );
+    #endif /* ifdef AWS_OTA_SIGN_RSA */
+
+    if( status != PSA_SUCCESS )
     {
-        goto exit;
-    }
-
-    result = mbedtls_pk_get_psa_attributes( &xMbedPkContext,
-                                            PSA_KEY_USAGE_VERIFY_HASH,
-                                            &attributes );
-
-    if( result != 0 )
-    {
-        goto exit;
-    }
-
-    #ifdef PSA_CRYPTO_IMPLEMENTATION_MBEDTLS
-        psa_set_key_lifetime( &attributes, PSA_KEY_LIFETIME_VOLATILE );
-    #endif
-
-    psa_set_key_algorithm( &attributes, PSA_ALG_RSA_PSS_ANY_SALT( PSA_ALG_SHA_256 ) );
-    psa_set_key_bits( &attributes, keyBits );
-
-    result = mbedtls_pk_import_into_psa( &xMbedPkContext,
-                                         &attributes,
-                                         pxKeyHandle );
-
-    if( result != 0 )
-    {
+        #ifdef AWS_OTA_SIGN_RSA
+            mbedtls_pk_free( &xMbedPkContext );
+        #endif
         *pxKeyHandle = NULL;
-        goto exit;
     }
 
-exit:
-    mbedtls_pk_free( &xMbedPkContext );
-
-    return result;
+    return status;
 }
 
 UBaseType_t uxIsDeviceProvisioned( void )

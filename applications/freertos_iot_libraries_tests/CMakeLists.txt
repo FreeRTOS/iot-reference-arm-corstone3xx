@@ -4,6 +4,8 @@
 
 cmake_minimum_required(VERSION 3.21.0 FATAL_ERROR)
 
+set(AWS_OTA_SIGNATURE_TYPE  "RSA-3072" CACHE STRING "Supported algorithms for signature validation [RSA-2048, RSA-3072, EC-P256, EC-P384]")
+
 # From: ota-for-aws-iot-embedded-sdk/source/include/ota_appversion32.h
 # struct version
 # {
@@ -51,6 +53,7 @@ list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/cm
 list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/components/aws_iot/cmake)
 list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/components/security/trusted_firmware-m/integration/cmake)
 include(SetLinkerOptions)
+include(AWSIoTHelpers)
 include(GenerateAWSUpdateDigestAndSignature)
 include(MergeTfmImages)
 include(SignTfmImage)

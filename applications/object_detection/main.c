@@ -184,7 +184,7 @@ int main( void )
 
         LogInfo( ( "Device key provisioning succeeded \n" ) );
 
-        uxStatus = xOtaProvisionCodeSigningKey( &xOTACodeVerifyKeyHandle, 3072 );
+        uxStatus = xOtaProvisionCodeSigningKey( &xOTACodeVerifyKeyHandle, AWS_OTA_SIGNATURE_KEY_LEN );
 
         if( uxStatus != PSA_SUCCESS )
         {

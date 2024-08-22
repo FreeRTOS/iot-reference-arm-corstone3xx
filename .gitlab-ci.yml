@@ -76,6 +76,7 @@ workflow:
           build/${APP}_merged.elf \
           build/${APP}-update_signed.bin \
           build/update-signature.txt \
+          build/CMakeCache.txt \
           applications/${APP_UNDERSCORED}/configs/aws_configs
       fi
 
@@ -252,6 +253,7 @@ test-blinky-output:
         tar xf ${TARGET}_${APP}_${TOOLCHAIN}_${INFERENCE}_${AUDIO}_${CONN_STACK}_${PSA_CRYPTO_IMPLEMENTATION}_build.tar.gz
       fi
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
+    - export SIGNING_ALGO=$(cat build/CMakeCache.txt | grep AWS_OTA_SIGNATURE_TYPE | sed s/.*=// | sed s/-.*//)
     - |
       if [[ $AUDIO == "VSI" ]]; then
         pytest -s tools/tests/test_applications.py \
@@ -261,6 +263,7 @@ test-blinky-output:
         --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
         --merged-elf-name "${APP}_merged.elf" \
         --signed-update-bin-name "${APP}-update_signed.bin" \
+        --signing-algo ${SIGNING_ALGO} \
         --timeout-seconds 2700 \
         --pass-output-file "applications/${APP_UNDERSCORED}/tests/${TARGET}_pass_output.log" \
         --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log" \
@@ -273,6 +276,7 @@ test-blinky-output:
         --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
         --merged-elf-name "${APP}_merged.elf" \
         --signed-update-bin-name "${APP}-update_signed.bin" \
+        --signing-algo ${SIGNING_ALGO} \
         --timeout-seconds 1800 \
         --pass-output-file "applications/${APP_UNDERSCORED}/tests/${TARGET}_pass_output.log" \
         --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"
@@ -283,6 +287,7 @@ test-blinky-output:
         --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
         --merged-elf-name "${APP}_merged.elf" \
         --signed-update-bin-name "${APP}-update_signed.bin" \
+        --signing-algo ${SIGNING_ALGO} \
         --timeout-seconds 2700 \
         --pass-output-file "applications/${APP_UNDERSCORED}/tests/${TARGET}_pass_output.log" \
         --fail-output-file "applications/${APP_UNDERSCORED}/tests/fail_output.log"

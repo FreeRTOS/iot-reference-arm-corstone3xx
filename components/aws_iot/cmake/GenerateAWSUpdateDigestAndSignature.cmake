@@ -1,10 +1,13 @@
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024, Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
-include(ExternalProject)
-
-ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
+if(${AWS_OTA_SIG_TYPE} STREQUAL "RSA")
+    set(RSA_PARAMS
+        -pkeyopt rsa_padding_mode:pss
+        -pkeyopt rsa_mgf1_md:sha256
+    )
+endif()
 
 # This function is meant to generate the AWS update signature and digest
 # for the <update_target_name> input parameter, the name of the signature
@@ -24,9 +27,8 @@ function(iot_reference_arm_corstone3xx_generate_aws_update_digest_and_signature 
         COMMAND
             openssl pkeyutl -sign
                 -pkeyopt digest:sha256
-                -pkeyopt rsa_padding_mode:pss
-                -pkeyopt rsa_mgf1_md:sha256
-                -inkey ${BINARY_DIR}/api_ns/image_signing/keys/image_ns_signing_private_key.pem
+                ${RSA_PARAMS}
+                -inkey ${AWS_OTA_SIGNATURE_PRIVATE_KEY_PATH}
                 -in  $<TARGET_FILE_DIR:${target}>/${digest_name}.bin
                 -out  $<TARGET_FILE_DIR:${target}>/${signature_name}.bin
         COMMAND

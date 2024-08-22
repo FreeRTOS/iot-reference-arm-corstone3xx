@@ -17,7 +17,7 @@ from cryptography.hazmat.primitives import hashes
 def main(args):
     key = rsa.generate_private_key(
         public_exponent=65537,
-        key_size=2048,
+        key_size=int(args.key_bit_length),
     )
     with open(Path(args.private_key_out_path).parent / "private_key.pem", "wb") as f:
         f.write(
@@ -25,6 +25,14 @@ def main(args):
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PrivateFormat.TraditionalOpenSSL,
                 encryption_algorithm=serialization.NoEncryption(),
+            )
+        )
+    pub_key = key.public_key()
+    with open(Path(args.public_key_out_path).parent / "public_key.pem", "wb") as f:
+        f.write(
+            pub_key.public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo,
             )
         )
 
@@ -48,7 +56,7 @@ def main(args):
         x509.CertificateBuilder()
         .subject_name(subject)
         .issuer_name(issuer)
-        .public_key(key.public_key())
+        .public_key(pub_key)
         .serial_number(x509.random_serial_number())
         .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
         .not_valid_after(
@@ -112,6 +120,18 @@ if __name__ == "__main__":
         "--private_key_out_path",
         help="the path where private_key.pem will be generated",
         default=".",
+        required=False,
+    )
+    parser.add_argument(
+        "--public_key_out_path",
+        help="the path where public_key.pem will be generated",
+        default=".",
+        required=False,
+    )
+    parser.add_argument(
+        "--key_bit_length",
+        help="the bit lenght of the generated private key",
+        default="2048",
         required=False,
     )
     main(parser.parse_args())

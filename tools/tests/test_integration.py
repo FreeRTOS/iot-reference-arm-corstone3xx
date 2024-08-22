@@ -19,7 +19,10 @@ test_cases_to_ignore = {}
 
 @fixture(scope="function")
 def setup_resources(
-    build_artefacts_path: str, credentials_path: str, signed_update_bin_name: str
+    build_artefacts_path: str,
+    credentials_path: str,
+    signed_update_bin_name: str,
+    signing_algo: str,
 ):
     """
     Setup resources needed to run the test.
@@ -28,7 +31,9 @@ def setup_resources(
     credentials_path: Path to AWS credentials.
     signed_update_bin_name: Name of the binary to be used for the OTA update.
     """
-    flags = Flags(build_artefacts_path, credentials_path, signed_update_bin_name)
+    flags = Flags(
+        build_artefacts_path, credentials_path, signed_update_bin_name, signing_algo
+    )
     flags = create_aws_resources(flags)
     try:
         # Caller won't actually do anything with this, but we have to yield something.

@@ -102,7 +102,7 @@ in the next step.
 1. Paste the signature string that is echoed during the build of the example
    (it is also available in
    `build/update-signature.txt`).
-1. Select `SHA-256` and `RSA` algorithms.
+1. Select `SHA-256` and `ECDSA` algorithms.
 1. For **Path name of code signing certificate on device** put in `0`
    (the path is not used)
 1. For **Path name of file on device** put in `non_secure image`
