@@ -23,8 +23,6 @@ else()
         fri-bsp
     )
 
-    ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
-
     if(FREERTOS_LIBRARIES_INTEGRATION_TESTS EQUAL 1)
         set(
             CODE_SIGNING_PUBLIC_KEY_PEM_PATH
@@ -33,13 +31,14 @@ else()
     else()
         set(
             CODE_SIGNING_PUBLIC_KEY_PEM_PATH
-            ${BINARY_DIR}/api_ns/image_signing/keys/image_ns_signing_public_key.pem
+            ${AWS_OTA_SIGNATURE_PUBLIC_KEY_PATH}
         )
     endif()
 
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/aws_clientcredential_keys.h
         DEPENDS ${AWS_CLIENT_PRIVATE_KEY_PEM_PATH}
         DEPENDS ${AWS_CLIENT_CERTIFICATE_PEM_PATH}
+        DEPENDS aws_ota_signing_keys
         COMMAND
             ${Python3_EXECUTABLE} ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/tools/scripts/generate_credentials_header.py
                 ${CMAKE_CURRENT_BINARY_DIR}
@@ -88,5 +87,14 @@ else()
         corepkcs11
         freertos_kernel
         mbedtls
+    )
+
+    target_compile_definitions(provisioning-lib
+        PUBLIC
+            $<$<STREQUAL:${AWS_OTA_SIG_TYPE},RSA>:AWS_OTA_SIGN_RSA>
+            $<$<STREQUAL:${AWS_OTA_SIG_TYPE},EC>:AWS_OTA_SIGN_ECDSA>
+            $<$<STREQUAL:${AWS_OTA_SIG_TYPE},EC>:AWS_OTA_ECDSA_HEADER_SIZE=26>
+
+            AWS_OTA_SIGNATURE_KEY_LEN=${AWS_OTA_SIG_LEN}
     )
 endif() # BUILD_TESTING AND NOT CMAKE_CROSS_COMPILING

@@ -1,4 +1,4 @@
-# Copyright 2021-2023 Arm Limited and/or its affiliates
+# Copyright 2021-2024, Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -6,6 +6,8 @@
 # to inform CMake that they don't exist before build starts. Include
 # paths do not need to be listed.
 # <BINARY_DIR> is a placeholder keyword in ExternalProject_Add.
+
+set(TFM_SIGNATURE_TYPE "EC-P256" CACHE STRING "Supported algorithms for signature validation [RSA-2048, RSA-3072, EC-P256, EC-P384]")
 
 set(tfm_ns_interface_generated
     <BINARY_DIR>/api_ns/interface/src/tfm_tz_psa_ns_api.c
@@ -48,7 +50,9 @@ ExternalProject_Add(
     BUILD_ALWAYS ON
 
     CMAKE_ARGS
-        -D TFM_TOOLCHAIN_FILE=<SOURCE_DIR>/${tfm_toolchain_file}
+        -DTFM_TOOLCHAIN_FILE=<SOURCE_DIR>/${tfm_toolchain_file}
+        -DMCUBOOT_SIGNATURE_TYPE=${TFM_SIGNATURE_TYPE}
+        -DTFM_BL1_LOG_LEVEL=LOG_LEVEL_INFO
         ${ARM_CORSTONE_BSP_TARGET_PLATFORM_TFM_CMAKE_ARGS}
 
     PATCH_COMMAND

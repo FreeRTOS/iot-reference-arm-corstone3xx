@@ -73,7 +73,7 @@
               "properties": {
                 "path": {
                   "type": "string",
-                  "pattern": "\\.(html|json|md|log|in|map|rst|patch|wav|frm|release_ignore|ini|conf|options|toml|change|pylintrc)$"
+                  "pattern": "\\.(html|json|md|log|in|map|rst|patch|wav|frm|release_ignore|ini|conf|options|toml|change|pylintrc|pem)$"
                 },
                 "type": {
                   "type": "string",

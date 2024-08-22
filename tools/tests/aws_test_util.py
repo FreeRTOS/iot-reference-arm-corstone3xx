@@ -1,4 +1,4 @@
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024, Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -34,7 +34,15 @@ def read_whole_file(path, mode="r"):
 
 
 class Flags:
-    def __init__(self, build_artefacts_path, credentials_dir, signed_update_bin_name):
+    def __init__(
+        self,
+        build_artefacts_path,
+        credentials_dir,
+        signed_update_bin_name,
+        signing_algo,
+    ):
+        if "EC" == signing_algo:
+            signing_algo = "ECDSA"
         self.BUILD_ARTEFACTS_PATH = build_artefacts_path
         self.TEST_ID = read_whole_file(Path(credentials_dir) / "test-id.txt").strip()
         self.AWS_ACCOUNT = boto3.client("sts").get_caller_identity().get("Account")
@@ -67,7 +75,7 @@ class Flags:
                         },
                         "certificateChain": {"certificateName": "0"},
                         "hashAlgorithm": "SHA256",
-                        "signatureAlgorithm": "RSA",
+                        "signatureAlgorithm": signing_algo,
                     },
                 },
             }

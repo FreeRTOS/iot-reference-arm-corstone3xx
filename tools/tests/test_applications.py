@@ -9,7 +9,9 @@ from aws_test_util import Flags, create_aws_resources, cleanup_aws_resources
 
 
 @fixture(scope="function")
-def setup_resources(build_artefacts_path, credentials_path, signed_update_bin_name):
+def setup_resources(
+    build_artefacts_path, credentials_path, signed_update_bin_name, signing_algo
+):
     """
     Setup resources needed to run the test.
 
@@ -18,7 +20,9 @@ def setup_resources(build_artefacts_path, credentials_path, signed_update_bin_na
     signed_update_bin_name: Name of the binary to be used for the OTA update.
     """
 
-    flags = Flags(build_artefacts_path, credentials_path, signed_update_bin_name)
+    flags = Flags(
+        build_artefacts_path, credentials_path, signed_update_bin_name, signing_algo
+    )
     flags = create_aws_resources(flags)
     try:
         # Caller won't actually do anything with this, but we have to yield something.

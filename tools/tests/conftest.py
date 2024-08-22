@@ -29,6 +29,7 @@ def pytest_addoption(parser):
     parser.addoption("--fvp-options", action="store", default="")
     parser.addoption("--merged-elf-name", action="store", default="")
     parser.addoption("--signed-update-bin-name", action="store", default="")
+    parser.addoption("--signing-algo", action="store", default="RSA")
     parser.addoption("--timeout-seconds", type=int, action="store", default=1800)
     parser.addoption("--pass-output-file", action="store", default="")
     parser.addoption("--fail-output-file", action="store", default="")
@@ -98,6 +99,11 @@ def merged_elf_name(pytestconfig):
 @pytest.fixture
 def signed_update_bin_name(pytestconfig):
     yield pytestconfig.getoption("--signed-update-bin-name")
+
+
+@pytest.fixture
+def signing_algo(pytestconfig):
+    yield pytestconfig.getoption("--signing-algo")
 
 
 @pytest.fixture
