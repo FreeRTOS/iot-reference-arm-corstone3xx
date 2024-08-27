@@ -100,6 +100,16 @@ to setup the needed python environment for VSI to work:
 
 These options allow you to build reference applications.
 
+> The Arm GNU Toolchain is provided with the container and is the default build
+toolchain. If you wish to use the Arm Compiler for Embedded instead, you can
+download it from its [official page](https://developer.arm.com/Tools%20and%20Software/Arm%20Compiler%20for%20Embedded).
+Login is required for the download, and you will need a license in order to
+run the toolchain once installed.
+>
+> This project has been tested with version *6.21* of the toolchain, which
+is available as `r6p21-00rel0` from the *Revision* drop-down menu on the
+download page after logging in.
+
 * **Using generic vscode task:**
 ```
 Command Palette (F1)
@@ -110,12 +120,14 @@ Command Palette (F1)
 => (Path to device certificate)
 => (Path to device private key)
 => (build directory path)
+=> (build toolchain)
 => (clean build)
 ```
 
 * **calling build script directly:**
 ```
-./tools/scripts/build.sh <reference application name> --certificate_path <certificate pem's path>
+./tools/scripts/build.sh <reference application name> --toolchain <GNU/ARMCLANG>
+--certificate_path <certificate pem's path>
 --private_key_path <private key pem's path> --target <target name>
 --inference <inference engine> --audio <audio input>
 ```

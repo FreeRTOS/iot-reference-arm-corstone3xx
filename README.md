@@ -43,8 +43,8 @@ of FVP is supported by the FRI.
 
 > Note:
   The build script `./tools/scripts/build.sh` assumes
-  `Arm Compiler for Embedded (armclang)` by default, append the extra option
-  `--toolchain GNU` to build using Arm GNU Toolchain.
+  `Arm GNU Toolchain (arm-none-eabi-gcc)` by default, append the extra option
+  `--toolchain ARMCLANG` to build using Arm Compiler for Embedded Toolchain.
 
 ## Project organisation
 
