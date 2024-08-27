@@ -1,7 +1,7 @@
 /*
  * FreeRTOS V202012.00
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- * Copyright 2024 Arm Limited and/or its affiliates
+ * Copyright 2023-2024 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -56,9 +56,6 @@ struct MQTTAgentCommandContext
     void * pArgs;
 };
 
-void vWaitUntilMQTTAgentReady( void );
-void vWaitUntilMQTTAgentConnected( void );
-bool xIsMqttAgentConnected( void );
 void vStartMqttAgentTask( void );
 
 #endif /* MQTT_AGENT_H */

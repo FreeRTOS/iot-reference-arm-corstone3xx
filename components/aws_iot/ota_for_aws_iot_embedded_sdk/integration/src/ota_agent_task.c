@@ -35,6 +35,7 @@
 #include "app_config.h"
 
 #include "mqtt_agent_task.h"
+#include "events.h"
 
 /* includes for TFM */
 #include "psa/update.h"
