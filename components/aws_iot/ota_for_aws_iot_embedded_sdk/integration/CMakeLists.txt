@@ -27,6 +27,7 @@ target_link_libraries(ota-for-aws-iot-embedded-sdk
         coremqtt
         coremqtt-agent
         freertos-ota-pal-psa
+        helpers-events
         helpers-logging
         tinycbor
 )
