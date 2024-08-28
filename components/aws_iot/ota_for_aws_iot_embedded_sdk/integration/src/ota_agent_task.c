@@ -74,8 +74,13 @@
 #include "ota_pal.h"
 
 /* Added for implicit inclusions */
+#include "core_mqtt.h"
 #include "core_mqtt_agent.h"
+#include "events.h"
 #include "logging_stack.h"
+#include "ota_os_interface.h"
+#include "ota_mqtt_interface.h"
+#include "ota_platform_interface.h"
 #include "ota_private.h"
 #include "subscription_manager.h"
 
