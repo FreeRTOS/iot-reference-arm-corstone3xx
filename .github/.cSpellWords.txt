@@ -151,6 +151,8 @@ MQTT
 MQTT's
 mqttexample
 MVEI
+mytestthing
+myTestThing
 Mzrdfkvi
 nents
 NIOS
@@ -196,6 +198,7 @@ SECP
 sntp
 Sntp
 SNTP
+someTestThing
 speex
 Speex
 SPEEX
@@ -208,6 +211,7 @@ SSSZ
 suppr
 SYSWDOG
 TALGORITHMS
+testThing
 TGENERAL
 THEIGHT
 tinycbor

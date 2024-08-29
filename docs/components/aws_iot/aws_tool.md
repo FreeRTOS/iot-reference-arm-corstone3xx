@@ -39,7 +39,7 @@ export AWS_SECRET_ACCESS_KEY=<secret_access_key>
 export AWS_SESSION_TOKEN=<session_token>
 export AWS_REGION=eu-west-1
 ```
-The above keys and tokens can be found on the AWS online portal. They are also called AWS API keys. They need to be <em>reset occasionally</em> as they expire. See [Troubleshooting](#troubleshooting) for more information.
+The above keys and tokens can be found on the [AWS access portal](https://docs.aws.amazon.com/signin/latest/userguide/sign-in-urls-defined.html#access-portal-url). They are also called AWS API keys. They need to be <em>reset occasionally</em> as they expire. See [Troubleshooting](#troubleshooting) for more information.
 
 In order to do an OTA update, you should have built an application that uses AWS, e.g. Keyword Detection. This is because the script assumes that `build/update-signature.txt` file exists when doing an OTA update.
 Alternatively, you can provide the directory holding signatures and credentials as a command line argument (see `--build_dir`). Script-generated credentials will be written here.
@@ -56,15 +56,20 @@ See `--help` for each command. For example:
 python tools/scripts/createIoTThings.py --help
 python tools/scripts/createIoTThings.py create-thing-and-policy --help
 ```
-For examples of how to use each command, see [Creating AWS IoT Firmware update](#creating-aws-iot-firmware-update-job-using-the-automated-script).
+For examples of how to use each command, see [Creating AWS IoT Firmware update](#creating-aws-iot-firmware-update-jobs-using-the-automated-script).
 
 ### Create an AWS IOT setup manually
 
 See the `docs/applications/aws_iot/setting_up_aws_connectivity.md` file for instructions on setting up IoT manually.
 
-## Creating AWS IoT firmware update job using the automated script
+#### Limitations
 
-Please refer to [AWS IOT basic concepts](#aws-iot-basic-concepts) and [Using the commands](#using-the-commands) for the general instructions and limitation about using the script.
+These limitations apply for [creating AWS IoT firmware update jobs using the automated script](#creating-aws-iot-firmware-update-jobs-using-the-automated-script).
+If you are re-using a role when making an OTA update, you must be able to assume the role. Most of the time, this means the credentials (e.g. `AWS_ACCESS_KEY_ID`) you are using must be associated with the account that created the role. The script will throw an error if this is not the case.
+
+## Creating AWS IoT firmware update jobs using the automated script
+
+Please refer to [AWS IOT basic concepts](#aws-iot-basic-concepts) and [Using the commands](#using-the-commands) for the general instructions and limitations about using the script.
 
 Performing an OTA update will require you to:
   * Create a role with the required permissions
@@ -77,7 +82,7 @@ Create a thing, an IOT policy, and attach the two together with:
 ```sh
 python tools/scripts/createIoTThings.py create-thing-and-policy --thing_name <your_thing_name> --policy_name <your_policy_name> --target_application <target_application_name>
 ```
-Where `<target_application_name>` is one of `keyword_detection`, `object_detection`, `speech_recognition`.
+Where `<target_application_name>` is one of `keyword-detection`, `object-detection`, `speech-recognition`.
 You must specify the `--target_application` argument if creating a Thing.
 The script will update your `aws_clientcredential.h` config file automatically. If you have already modified the entries `clientcredentialMQTT_BROKER_ENDPOINT` or `clientcredentialIOT_THING_NAME` in the file, the script will warn you and ask before overwriting.
   > Note: You may also create each things and policies individually, but you'll have to make sure to pass the certificate created by the first command to the second. Certificates will be printed upon creation during the first command. Use `--use_existing_certificate_arn <your_certificate>` on the second command.
@@ -93,7 +98,7 @@ You may now rebuild keyword with those certificates:
 ```
 Next, we'll create the bucket, upload the binary there, create a role capable of running an OTA update, and create the update. All of those with the following command:
 ```sh
-python tools/scripts/createIoTThings.py create-bucket-role-update --thing_name <your_thing_name> --bucket_name <your_bucket_name> --iam_role_name <prefix>-<your_role_name> --update_name <your_update_name> --ota_binary keyword-detection-update_signed.bin --permissions_boundary arn:aws:iam::<your_aws_account_id>:<your company\'s_permission_boundary>
+python tools/scripts/createIoTThings.py create-bucket-role-update --thing_name <your_thing_name> --bucket_name <your_bucket_name> --iam_role_name <prefix>-<your_role_name> --update_name <your_update_name> --ota_binary keyword-detection-update_signed.bin --permissions_boundary arn:aws:iam::<your_aws_account_id>:<your_company\'s_permission_boundary>
 ```
 The above assumes you have `keyword-detection-update_signed.bin` saved in the directory specified by the `--ota_binary_build_dir` argument. This argument defaults to the project's root directory.
 If you want to run an OTA update for another example application, use another signed binary name.
@@ -120,6 +125,124 @@ python tools/scripts/createIoTThings.py delete-thing -p --thing_name <your_thing
 - If the `-p` flag is set when deleting a Thing, certificates attached to the Thing are pruned.
 
   > Note: Your role is what allow you to interact with the OTA update. It is important you don't delete it before successfully deleting the OTA update or you will lose the permission to delete the update. If such a thing happen, you'll have to recreate the role and manually delete the update.
+
+## Creating AWS IoT firmware update job (simplified)
+
+The `create-update-simplified` command that (1) creates a Thing and Policy, (2) runs build, (3) creates a bucket, role, and update.
+This command also re-uses AWS entities where possible, validating entities being re-used.
+
+
+To use this command:
+1. Fill the following fields in the `.json` config file:
+    * `thing_name` with the name of your AWS Thing.
+    * `permissions_boundary` with the name of your Role's permission boundary - if applicable.
+    For more information, see `python tools/scripts/createIoTThings.py create-iam-role-only --help` or [AWS IOT basic concepts](#aws-iot-basic-concepts).
+    Creating a role without a permissions boundary is not supported by this script.
+    * `role_prefix` with the prefix for your role. This prefix will be pre-pended to your role name with a hyphen by default. For example, with the prefix `Proj` and role name `role`, the completed role name will become `Proj-role`.
+    * `target_application` with one of `keyword-detection`, `object-detection`, or `speech-recognition`. Alternatively, you can override this with a command-line argument (see `--help`).
+2. Set up following [prerequisites](#prerequisites).
+3. Run the command below.
+
+```sh
+python tools/scripts/createIoTThings.py create-update-simplified
+```
+You may optionally specify a different `.json` config file. See `--help`.
+
+That's it. You can now run `run.sh` and wait for OTA update to complete.
+
+If you have changed an example application and want to re-create a new OTA update, simply repeat step 3.
+To create a new OTA update but keep the old one, modify the `update_name` field in the `.json` file.
+
+
+### Overview of the .json config file
+
+```json
+{
+    # There are only 3 required fields. These need to be filled in step (1) of using this command.
+    "thing_name":"<your_thing_name>",
+    "permissions_boundary":"arn:aws:iam::<account_no>:policy/<boundary_name>",
+    "role_prefix":"<prefix>",
+    "target_application":"",
+
+    # Everything past this point need not be filled in
+
+    # USED TO REPLACE e.g. '${thing_name}' with the field's value
+    "format_vars":"thing_name;role_prefix;target_application;credentials_path",
+
+    "policy_name":"",
+    "bucket_name":"${thing_name}{lower}-bucket",
+    "iam_role_name":"",
+    "update_name":"",
+    "existing_certificate_arn":"CREATE_NEW_CERTIFICATE",
+
+    # Where to find certificates and binaries
+    "credentials_path":"certificates",
+    "build_dir":"build",
+    "ota_binary":"${target_application}-update_signed.bin",
+
+    # Build.sh script inputs are below
+    "skip_build":"",
+    "build_script_path":"",
+    "private_key_path":"",
+    "certificate_path":"",
+    "target_platform":"",
+    "inference":"",
+    "audio":"",
+    "toolchain":"",
+    "clean_build":"",
+
+    # Default values are below.
+    "policy_name_DEFAULT":"${thing_name}_policy",
+    "bucket_name_DEFAULT":"${thing_name}_bucket",
+    "iam_role_name_DEFAULT":"${role_prefix}-${thing_name}_role",
+    "update_name_DEFAULT":"${thing_name}_update",
+    "existing_certificate_arn_DEFAULT":"",
+    "credentials_path_DEFAULT":"",
+    "build_dir_DEFAULT":"",
+    "ota_binary_DEFAULT":"",
+    "skip_build_DEFAULT":"false",
+    "build_script_path_DEFAULT":"./tools/scripts/build.sh",
+    "private_key_path_DEFAULT":"${credentials_path}/thing_private_key_${thing_name}.pem.key",
+    "certificate_path_DEFAULT":"${credentials_path}/thing_certificate_${thing_name}.pem.crt",
+    "target_platform_DEFAULT":"corstone315",
+    "inference_DEFAULT":"SOFTWARE",
+    "audio_DEFAULT":"ROM",
+    "toolchain_DEFAULT":"GNU",
+    "clean_build_DEFAULT":"auto"
+}
+```
+Note the \# comments are not valid JSON syntax and are purely included for this documentation.
+
+Most settings in the config file are identical to those passed by the command-line to either `createIoTThings.py` or `build.sh`.
+If a setting is left empty (`""`), then the script will look at the definition in `{FIELD_NAME}_DEFAULT`. E.g. if `policy_name:""`, then the script will use `"${thing_name}_policy"` as the policy name.
+
+Some of the less obvious settings include:
+- `format_vars` lists settings and variables that are used in the definitions of other settings. For more information, see [how the formatter works](#how-the-formatter-works-for-the-config-file).
+- `skip_build`: if `true`, will cause `build.sh` to not run. This takes precedence over `clean_build`.
+- `clean_build`: if `auto`, will run the `build.sh` script for a clean build (with the `-c` flag) only when necessary. I.e. if `aws_clientcredential` is updated by the script. Otherwise, the script runs `build.sh` not from clean. If `true`, always run `build.sh` for a clean build.
+- `existing_certificate_arn` should be set to either a valid ARN for a certificate, or if you want the script to generate certificates for you, should be set to `CREATE_NEW_CERTIFICATE`.
+- `target_application` can be specified in the `.json` file, and <b>if not otherwise specified on the command line</b> this value will be taken as a default by the script.
+
+Changing the `_DEFAULT` setting values is not recommended. Try to <b>change the user settings instead of the default settings</b>.
+Other commands in the Python file (such as `create-policy-only`) will <b>not</b> adhere to changes made to this settings file.
+
+Another useful tip is that the script will <b>not empty any buckets</b>. It is the responsibility of the user to periodically empty a bucket being re-used, if the user wants to avoid storing too much data in said bucket.
+
+#### How the formatter works for the config file
+
+The script defines some default values in terms of user-specified variables. For example, `policy_name_DEFAULT` is specified as `${thing_name}_policy`. To do this, some formatting is supported.
+For these examples, assume that `"thing_name":"myTestThing"`.
+Because `thing_name` is in `format_vars`, the following formatting happens (in order of priority):
+
+1. `${thing_name}{lower}` maps to the value of `mytestthing`.
+2. `${thing_name}{replace my with some}` maps to `someTestThing`. I.e. the value of `testThing` where occurrences of `my` are replaced by `some`. This is case-sensitive.
+3. `${thing_name}` maps to `myTestThing`.
+
+These are the only 3 types of formatting supported. Even `${thing_name}{lower}{replace A with B}` and similar chaining is not supported. Additionally, trying to use `}` or `{` in setting definitions may break the formatter.
+
+If you want to add a setting, for example `update_name` to the definitions you can use in formatting, then append `;update_name` to the end of `format_vars`. This makes it possible to use `${update_name}` in the definitions of other settings.
+
+The `target_application` setting is special because it is not defined in the `json` file but can still be mentioned in definitions.
 
 ## Troubleshooting
 
