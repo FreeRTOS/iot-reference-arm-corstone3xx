@@ -18,6 +18,7 @@
 
 from enum import Enum
 import os
+import pathlib
 import time
 import traceback as tb
 import re
@@ -34,7 +35,13 @@ import botocore
 import click
 import logging
 
-DEFAULT_LOG_LEVEL = "warning"
+# used to build the application
+import subprocess
+
+# used to display progress for building application
+import threading
+
+DEFAULT_LOG_LEVEL = "info"
 # Default path of OTA binary directory is build/
 DEFAULT_BUILD_DIR = "build"
 DEFAULT_CREDENTIALS_PATH = "certificates"
@@ -45,7 +52,7 @@ DEFAULT_OTA_BINARY = "keyword-detection-update_signed.bin"
 # try to build one of the FRI applications (e.g. keyword-detection)
 DEFAULT_OTA_UPDATE_SIGNATURE_FILENAME = "update-signature.txt"
 
-CREATE_NEW_CERTIFICATE = ""
+CREATE_NEW_CERTIFICATE = "CREATE_NEW_CERTIFICATE"
 
 OTA_JOB_NAME_PREFIX = "AFR_OTA-"
 
@@ -63,6 +70,7 @@ iot = boto3.client("iot", AWS_REGION)
 s3 = boto3.client("s3", AWS_REGION)
 iam = boto3.client("iam", AWS_REGION)
 sts_client = boto3.client("sts", AWS_REGION)
+org_client = boto3.client("organizations")
 
 validCredentials = False
 try:
@@ -83,7 +91,15 @@ def cli():
 
 
 def read_whole_file(path, mode="r"):
-    with open(path, mode) as fp:
+    """
+    For example, to read 'createIoTThings.py', call:
+    >>> read_whole_file("tools/scripts/createIoThings.py")
+
+    Parameters:
+    path (str): the path to the file to open, relative to the ROOT of this directory.
+    """
+    absolutePath = pathlib.Path(path).resolve()
+    with open(absolutePath, mode) as fp:
         return fp.read()
 
 
@@ -97,7 +113,7 @@ class ApplicationType(Enum):
 
     def app_type_from_string(s):
         for app in AWS_APPLICATIONS:
-            if s == app.value:
+            if s == app.value.replace("_", "-"):
                 return app
         return ApplicationType.UNDEFINED
 
@@ -164,6 +180,9 @@ class Flags:
         self.updateHasBeenCreated = False
         self.policyHasBeenCreated = False
         self.thingHasBeenCreated = False
+        # Used for the create_update_simplified.
+        # If true, build.sh runs with `-c` flag.
+        self.rebuildRequired = False
         # JSONS
         self.POLICY_DOCUMENT = {
             "Version": "2012-10-17",
@@ -222,13 +241,13 @@ class Flags:
                 }
             ],
         }
-        signaturePath = os.path.join(
+        self.signaturePath = os.path.join(
             self.BUILD_DIR,
             ota_update_signature_filename,
         )
         signature = "unavailable"
         try:
-            signature = read_whole_file(signaturePath)
+            signature = read_whole_file(self.signaturePath)
         except FileNotFoundError:
             pass  # this check is done at the CLI stage.
         self.OTA_UPDATE_FILES = [
@@ -255,6 +274,28 @@ class Flags:
                 },
             }
         ]
+
+    def reload_signature(self):
+        """
+        Parameters:
+        self (Flags): the Flags object to reload the signature of.
+
+        This function reloads the update signature from the file
+        at self.signaturePath.
+
+        Returns: Nothing
+        """
+        signature = "unavailable"
+        try:
+            signature = read_whole_file(self.signaturePath)
+        except FileNotFoundError:
+            pass
+        self.OTA_UPDATE_FILES[0]["codeSigning"]["customCodeSigning"]["signature"][
+            "inlineDocument"
+        ] = bytearray(
+            signature.strip(),
+            "utf-8",
+        )
 
 
 def set_log_level(loglevel):
@@ -428,75 +469,50 @@ def replace_between(start, end, replaceWith, target):
     return re.sub(start + "(.*?)" + end, start + replaceWith + end, target, re.DOTALL)
 
 
-def _write_credentials(flags: Flags, credentials_path):
+def aws_clientcredential_needs_to_be_updated(flags):
     """
-    This function writes certificates ('credentials') for any Things
-    created to credential files in the designated directory.
-    Will create the 'credentials_path' directory if it does not exist.
-    Credentials are found from the 'flags' parameter.
-
-    This function assumes that the application type is not undefined.
+    This function identifies whether 'aws_clientcredential.h'
+    contains the Thing specified in 'flags'.
+    Additionally, whether 'aws_clientcredential.h' contains
+    the AWS endpoint.
 
     Parameters:
     flags (Flags): contains metadata needed for AWS and OTA updates
         (e.g. credentials).
-    credentials_path (string): directory to write new files to.
     """
     fileDir = os.path.dirname(os.path.realpath("__file__"))
-    # Create folder storing credentials if it does not exist.
+    credentialFileTemplate = os.path.join(
+        fileDir,
+        "applications/",
+        flags.targetApplication.value,
+        "configs/aws_configs/",
+        "aws_clientcredential.h",
+    )
+    contents = ""
     try:
-        logging.info(
-            "Creating/opening directory '"
-            + credentials_path
-            + "' to store credentials generated for Thing : '"
-            + flags.THING_NAME
-            + "'"
-        )
-        os.makedirs(os.path.join(fileDir, credentials_path), exist_ok=True)
-    except Exception:
-        err_msg = (
-            "Failed to write credentials, could not make path: '"
-            + credentials_path
-            + "'. This may be due to an invalid path being provided. "
-        )
-        logging.error(err_msg)
-    # Errors can occur here, e.g. due to invalid path names.
-    # This script will not sanitise path inputs, so checking them is
-    # the responsibility of the user.
-    """
-    Assuming the name of the new Thing is <your_thing_name>.
-    The below section of code saves:
-        1. the certificate of the new Thing to
-            'thing_certificate_<your_thing_name>.pem.crt"
-        2. the private key of the new Thing to
-            'thing_private_key_<your_thing_name>.pem.key"
-        3. the public key of the new Thing to
-            'thing_public_key_<your_thing_name>.pem.key"
-    """
-    # This script does not sanitise THING_NAME for file name conventions.
-    certificateFile = os.path.join(
-        fileDir, credentials_path, "thing_certificate_" + flags.THING_NAME + ".pem.crt"
+        with open(credentialFileTemplate, "r") as file:
+            contents = file.read()
+    except FileNotFoundError:
+        logging.warning("The file '" + credentialFileTemplate + "' was not found")
+        return True
+    return not (
+        flags.THING_NAME in contents
+        and flags.endPointAddress["endpointAddress"] in contents
     )
-    privateKeyFile = os.path.join(
-        fileDir, credentials_path, "thing_private_key_" + flags.THING_NAME + ".pem.key"
-    )
-    publicKeyFile = os.path.join(
-        fileDir, credentials_path, "thing_public_key_" + flags.THING_NAME + ".pem.key"
-    )
-    with open(certificateFile, "w") as file:
-        file.write(key_to_pem_formatter(flags.certificate))
-        logging.info("Saved Thing certificate to: " + certificateFile)
-    with open(privateKeyFile, "w") as file:
-        file.write(key_to_pem_formatter(flags.privateKey))
-        logging.info("Saved Thing private key to: " + privateKeyFile)
-    with open(publicKeyFile, "w") as file:
-        file.write(key_to_pem_formatter(flags.publicKey))
-        logging.info("Saved Thing public key to: " + publicKeyFile)
+
+
+def _write_aws_clientcredential_h(flags):
     """
     The below writes to `aws_clientcredential.h`.
     This can be specified to overwrite `aws_clientcredential.h`
     in an example application directory.
+
+    Parameters:
+    flags (Flags): contains metadata needed for AWS and OTA updates
+        (e.g. credentials).
+    fileDir (str): the project's base directory. E.g. contains top-level README.md.
     """
+    fileDir = os.path.dirname(os.path.realpath("__file__"))
     template_has_correct_format = (
         lambda contents: "clientcredentialMQTT_BROKER_ENDPOINT " in contents
         and "clientcredentialIOT_THING_NAME " in contents
@@ -580,7 +596,80 @@ def _write_credentials(flags: Flags, credentials_path):
     with open(credentialFile, "w") as file:
         file.write(template)
     logging.info("Wrote AWS client credentials to: " + credentialFile)
+    flags.rebuildRequired = True
     return True
+
+
+def _write_credentials(flags: Flags, credentials_path):
+    """
+    This function writes certificates ('credentials') for any Things
+    created to credential files in the designated directory.
+    Will create the 'credentials_path' directory if it does not exist.
+    Credentials are found from the 'flags' parameter.
+
+    This function assumes that the application type is not undefined.
+
+    Parameters:
+    flags (Flags): contains metadata needed for AWS and OTA updates
+        (e.g. credentials).
+    credentials_path (string): directory to write new files to.
+    """
+    fileDir = os.path.dirname(os.path.realpath("__file__"))
+    # Create folder storing credentials if it does not exist.
+    try:
+        logging.info(
+            "Creating/opening directory '"
+            + credentials_path
+            + "' to store credentials generated for Thing : '"
+            + flags.THING_NAME
+            + "'"
+        )
+        os.makedirs(os.path.join(fileDir, credentials_path), exist_ok=True)
+    except Exception:
+        err_msg = (
+            "Failed to write credentials, could not make path: '"
+            + credentials_path
+            + "'. This may be due to an invalid path being provided. "
+        )
+        logging.error(err_msg)
+    # Errors can occur here, e.g. due to invalid path names.
+    # This script will not sanitise path inputs, so checking them is
+    # the responsibility of the user.
+    """
+    Assuming the name of the new Thing is <your_thing_name>.
+    The below section of code saves:
+        1. the certificate of the new Thing to
+            'thing_certificate_<your_thing_name>.pem.crt"
+        2. the private key of the new Thing to
+            'thing_private_key_<your_thing_name>.pem.key"
+        3. the public key of the new Thing to
+            'thing_public_key_<your_thing_name>.pem.key"
+    """
+    # This script does not sanitise THING_NAME for file name conventions.
+    certificateFile = os.path.join(
+        fileDir, credentials_path, "thing_certificate_" + flags.THING_NAME + ".pem.crt"
+    )
+    privateKeyFile = os.path.join(
+        fileDir, credentials_path, "thing_private_key_" + flags.THING_NAME + ".pem.key"
+    )
+    publicKeyFile = os.path.join(
+        fileDir, credentials_path, "thing_public_key_" + flags.THING_NAME + ".pem.key"
+    )
+    with open(certificateFile, "w") as file:
+        file.write(key_to_pem_formatter(flags.certificate))
+        logging.info("Saved Thing certificate to: " + certificateFile)
+    with open(privateKeyFile, "w") as file:
+        file.write(key_to_pem_formatter(flags.privateKey))
+        logging.info("Saved Thing private key to: " + privateKeyFile)
+    with open(publicKeyFile, "w") as file:
+        file.write(key_to_pem_formatter(flags.publicKey))
+        logging.info("Saved Thing public key to: " + publicKeyFile)
+    """
+    The below writes to `aws_clientcredential.h`.
+    This can be specified to overwrite `aws_clientcredential.h`
+    in an example application directory.
+    """
+    return _write_aws_clientcredential_h(flags)
 
 
 def _parse_credentials(flags: Flags):
@@ -654,7 +743,7 @@ def _create_credentials(flags: Flags, credentials_path):
 def _get_credential_arn(flags: Flags, existing_certificate_arn, credentials_path):
     """
     Will create credentials (and save into 'credentials_path') if needed.
-    Otherwise, if use_existing_credentials_arn is not the empty string (""),
+    Otherwise, if existing_certificate_arn is not the empty string (""),
     will use existing credentials.
 
     Parameters:
@@ -764,7 +853,8 @@ def _create_thing(flags: Flags, Name, certificate_arn):
     help="Updates the target application's aws_clientcredential.h automatically. \
         Accepted values: "
     + reduce(
-        lambda y, z: y + ", " + z, map(lambda x: "'" + x.value + "'", AWS_APPLICATIONS)
+        lambda y, z: y + ", " + z,
+        map(lambda x: "'" + x.value.replace("_", "-") + "'", AWS_APPLICATIONS),
     )
     + ".",
 )
@@ -1036,7 +1126,7 @@ def _create_iam_role(flags: Flags, Name, permissions_boundary=None):
             logging.error("The role name is undefined.")
             return False
         if permissions_boundary is None:
-            logging.warn(
+            logging.warning(
                 "About to create role "
                 + flags.OTA_ROLE_NAME
                 + " without a permissions boundary."
@@ -1251,6 +1341,8 @@ def _wait_for_job_deleted(job_name, timeout=20):
     step = 2
     for i in range(0, timeout, step):
         if not _does_job_exist(job_name):
+            if i > 0:
+                logging.info("Job deletion complete!")
             return True
         res = iot.describe_job(jobId=job_name)
         job_status = res["job"]["status"]
@@ -1662,6 +1754,548 @@ def create_bucket_role_update(
     if not _create_aws_update(ctx.flags, update_name):
         cleanup_aws_resources(ctx.flags)
         ctx.exit(1)
+    ctx.exit(0)
+
+
+def _tryGetSetting(
+    setting: str,
+    settings: dict[str, str],
+    ctx=None,
+    errorOnFailure=True,
+):
+    """
+    This function tries to find '{setting}' or '{setting}_DEFAULT' in
+    'settings', where '{setting}' is the string value of setting.
+    If not found, the function will either error or return None,
+    depending on the flag 'errorOnFailure' and whether 'ctx' is set.
+
+    Parameters:
+    setting (str): the field to find in 'settings'.
+    settings (dict[str, str]): a mapping from settings to their values.
+    ctx: the click CLI context. Used to send exit codes.
+    errorOnFailure: if True and a setting is not found, will cause the
+        program to exit.
+        Otherwise, the programm will return None if a setting is not
+        found.
+
+    Returns:
+    str: the setting's value if the setting or default is non-empty and
+        found in 'settings'.
+    None: if 'errorOnFailure' is True, and 'ctx' is defined, and the setting is
+        not found, and a default value for the setting is not found.
+    """
+    default_setting = setting + "_DEFAULT"
+    if setting in settings and settings[setting] != "":
+        return settings[setting]
+    elif default_setting in settings and settings[default_setting] != "":
+        return settings[default_setting]
+    elif errorOnFailure and ctx is not None:
+        logging.error(
+            "Cannot find setting "
+            + setting
+            + " in settings file given, and this setting has"
+            + " no default value. "
+        )
+        ctx.exit(1)
+    else:
+        return None
+
+
+def _formatVars(
+    settings: dict[str, str],
+    ctx,
+):
+    # Replace all occurrences of "${thing_name}" with the value settings["thing_name"]
+    if "format_vars" in settings:
+        variablesToReplace = settings["format_vars"].split(";")
+        for setting in settings:
+            if setting != "format_vars":
+                for var in variablesToReplace:
+                    variableValue = _tryGetSetting(
+                        var, settings=settings, ctx=ctx, errorOnFailure=True
+                    )
+                    settings[setting] = settings[setting].replace(
+                        "${" + var + "}{lower}", variableValue.lower()
+                    )
+                    while "${" + var + "}{replace{" in settings[setting]:
+                        # settings[setting] = "${target_application}{replace{_ with -}}"
+                        # .split("${" + var + "}{replace{")[1] = "_ with -}}"
+                        # .split("}")[0] = _ with -
+                        # args = ["_", "-"]
+                        args = (
+                            settings[setting]
+                            .split("${" + var + "}{replace{")[1]
+                            .split("}")[0]
+                            .split(" with ")
+                        )
+                        variableValueFormatted = variableValue.replace(args[0], args[1])
+                        toReplace = (
+                            "${"
+                            + var
+                            + "}{replace{"
+                            + args[0]
+                            + " with "
+                            + args[1]
+                            + "}}"
+                        )
+                        logging.debug(
+                            "Replacing " + toReplace + " with " + variableValueFormatted
+                        )
+                        settings[setting] = settings[setting].replace(
+                            toReplace, variableValueFormatted
+                        )
+                    settings[setting] = settings[setting].replace(
+                        "${" + var + "}", variableValue
+                    )
+    return settings
+
+
+def _try_delete(target, del_func, **kwargs):
+    has_deleted = False
+    try:
+        has_deleted = del_func(target, kwargs)
+    except Exception as ex:
+        print_exception(ex)
+    if has_deleted:
+        logging.info("Deleted: " + target)
+    else:
+        logging.error("Failed to delete: " + target)
+
+
+def _counter(stop_event: threading.Event):
+    while not stop_event.is_set():
+        print(".", end="", flush=True)
+        time.sleep(5)
+
+
+# Defines Command-line interface for creating update using config file
+@cli.command(cls=StdCommand)
+@click.option(
+    "--target_application",
+    required=False,
+    help="Updates the target application's aws_clientcredential.h automatically. \
+        Accepted values: "
+    + reduce(
+        lambda y, z: y + ", " + z,
+        map(lambda x: "'" + x.value.replace("_", "-") + "'", AWS_APPLICATIONS),
+    )
+    + ". Providing this argument will take priority over the value specified"
+    + " in the .json config file.",
+)
+@click.option(
+    "--config_file_path",
+    help="Path to the .json file defining arguments for creating an OTA"
+    + "update. Relative to the root of this Project.",
+    default="tools/scripts/createIoTThings_settings.json",
+)
+@click.pass_context
+def create_update_simplified(
+    ctx,
+    target_application,
+    config_file_path,
+    log_level,
+):
+    """
+    This command parses and formats 'config_file_path', and uses the arguments
+    from there to create an OTA update from scratch.
+    This command attempts to re-use AWS entities (e.g. Things, Policies, ...)
+    where possible.
+    This command also runs the build script for the target application
+    provided (unless otherwise specified in the config file).
+    See `aws_tool.md` for more information on usage and the config file.
+
+    Parameters:
+    ctx: the click CLI context. Used to send exit codes.
+    target_application: one of 'keyword-detection', 'speech-recognition',
+        or 'object-detection'.
+    config_file_path: the path to the config file containing settings,
+        such as the Thing name.
+        This file must be a .json file.
+    log_level: unused parameter needed for compatibility with StdCommand.
+    """
+    settings = {}
+    target = ApplicationType.app_type_from_string(target_application)
+    # Read .json file, pass parameters to flags.
+    try:
+        contents = read_whole_file(config_file_path)
+        settings = json.loads(contents)
+        if target == ApplicationType.UNDEFINED:
+            if target_application is not None:
+                logging.warning(
+                    "Invalid target application '"
+                    + str(target_application)
+                    + "' provided by command line. Re-trying with .json setting."
+                )
+            target_cfg = _tryGetSetting(
+                "target_application", settings=settings, ctx=ctx, errorOnFailure=False
+            )
+            if target_cfg is None:
+                logging.error(
+                    f"Target application not provided as a command line argument,"
+                    f" nor in '{config_file_path}'."
+                )
+                ctx.exit(1)
+            target = ApplicationType.app_type_from_string(target_cfg)
+            if target == ApplicationType.UNDEFINED:
+                logging.error(
+                    f"Invalid application type provided by '{config_file_path}'."
+                    " Value is: "
+                    + str(target_cfg)
+                    + ". See --help for valid alternatives."
+                )
+                ctx.exit(1)
+        settings["target_application"] = target.value.replace("_", "-")
+        settings = _formatVars(settings, ctx)
+        logging.debug("Settings .json file parsed to: " + str(settings))
+    except FileNotFoundError:
+        logging.error("Config file not found at " + config_file_path)
+        ctx.exit(1)
+    except json.JSONDecodeError:
+        logging.error("Failed to parse .json file: " + config_file_path)
+        ctx.exit(1)
+
+    # Check the required settings exist.
+    thing_name = _tryGetSetting(
+        "thing_name", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    policy_name = _tryGetSetting(
+        "policy_name", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    bucket_name = _tryGetSetting(
+        "bucket_name", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    iam_role_name = _tryGetSetting(
+        "iam_role_name", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    build_dir = _tryGetSetting(
+        "build_dir", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    ota_binary = _tryGetSetting(
+        "ota_binary", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    existing_certificate_arn = _tryGetSetting(
+        "existing_certificate_arn", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    credentials_path = _tryGetSetting(
+        "credentials_path", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    permissions_boundary = _tryGetSetting(
+        "permissions_boundary", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    update_name = _tryGetSetting(
+        "update_name", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    # Build script settings
+    build_script_path = _tryGetSetting(
+        "build_script_path", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    private_key_path = _tryGetSetting(
+        "private_key_path", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    certificate_path = _tryGetSetting(
+        "certificate_path", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    target_platform = _tryGetSetting(
+        "target_platform", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    inference = _tryGetSetting(
+        "inference", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    audio = _tryGetSetting("audio", settings=settings, ctx=ctx, errorOnFailure=True)
+    toolchain = _tryGetSetting(
+        "toolchain", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    clean_build = _tryGetSetting(
+        "clean_build", settings=settings, ctx=ctx, errorOnFailure=False
+    )
+    skip_build = _tryGetSetting(
+        "skip_build", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+
+    ctx.flags = Flags(
+        bucket_name=bucket_name,
+        role_name=iam_role_name,
+        target_application=target,
+        build_dir=build_dir,
+        ota_binary=ota_binary,
+        ota_update_signature_filename=DEFAULT_OTA_UPDATE_SIGNATURE_FILENAME,
+    )
+    ctx.flags.THING_NAME = thing_name
+    ctx.flags.endPointAddress = iot.describe_endpoint(endpointType="iot:Data-ATS")
+
+    signaturePath = os.path.join(
+        ctx.flags.BUILD_DIR, DEFAULT_OTA_UPDATE_SIGNATURE_FILENAME
+    )
+
+    # All parameters are now validated.
+    certificate_arn = ""
+
+    if not _does_thing_exist(thing_name):
+        certificate_arn = _get_credential_arn(
+            ctx.flags, existing_certificate_arn, credentials_path
+        )
+        if not _create_thing(ctx.flags, thing_name, certificate_arn):
+            logging.error("Thing '" + thing_name + "' creation failed.")
+            cleanup_aws_resources(ctx.flags)
+            ctx.exit(1)
+    else:
+        logging.info("Re-using existing Thing: " + thing_name)
+
+        logging.warning(
+            "When using an existing Thing, it is the responsibility of the User"
+            + " to ensure certificates are where specified. "
+            + "\n Expecting private key path: '"
+            + private_key_path
+            + "'\n Expecting certificate path: '"
+            + certificate_path
+            + "'"
+        )
+
+    if not _does_policy_exist(policy_name):
+        if not _create_policy(ctx.flags, policy_name, certificate_arn):
+            logging.error("Policy '" + policy_name + "' creation failed.")
+            cleanup_aws_resources(ctx.flags)
+            ctx.exit(1)
+    else:
+        logging.info("Re-using existing Policy: " + policy_name)
+
+    # Check the certificates match.
+    thing_certificates = iot.list_thing_principals(thingName=thing_name)["principals"]
+    policy_certificates = iot.list_targets_for_policy(policyName=policy_name)["targets"]
+    logging.debug("Thing certificates: " + str(thing_certificates))
+    logging.debug("Policy certificates: " + str(policy_certificates))
+    matching = list(set(thing_certificates).intersection(policy_certificates))
+    logging.debug("Shared certificates: " + str(matching))
+    if len(matching) != 0:
+        logging.info("Thing and Policy have a shared Certificate. ")
+        certificate_arn = matching[0]
+    else:
+        logging.info(
+            "the Thing and Policy provided by the .json config "
+            "do not have the same certificate."
+            "This is probably because at least one of the Thing "
+            "or Policy existed before running this command."
+        )
+        if input("Delete the Thing and Policy? (Y/N): ").lower() == "y":
+            # Delete the Thing and Policy.
+            _try_delete(
+                thing_name,
+                _delete_thing,
+            )
+            _try_delete(policy_name, _delete_policy)
+        else:
+            logging.warning(
+                "Using a Thing and Policy with different certificates may cause errors."
+            )
+            cleanup_aws_resources(ctx.flags)
+            ctx.exit(1)
+
+    if aws_clientcredential_needs_to_be_updated(ctx.flags):
+        if _write_aws_clientcredential_h(ctx.flags):
+            logging.info(
+                "'aws_clientcredential.h' was updated in the Application. "
+                "Build.sh will need to run from clean. "
+            )
+        else:
+            logging.warn(
+                "'aws_clientcredential.h' failed to updated in " "the Application."
+            )
+    else:
+        logging.info(
+            "'aws_clientcredential.h' is already up-to-date in the " "Application."
+        )
+
+    # Re-build the application.
+    if skip_build != "true":
+        cmnd = [
+            build_script_path,
+            target.value.replace("_", "-"),
+            "--certificate_path",
+            certificate_path,
+            "--private_key_path",
+            private_key_path,
+            "--target",
+            target_platform,
+            "--inference",
+            inference,
+            "--audio",
+            audio,
+            "--toolchain",
+            toolchain,
+        ]
+        if clean_build == "true" or (
+            clean_build == "auto" and ctx.flags.rebuildRequired
+        ):
+            cmnd.append("-c")
+        logging.info("Executing build command: \n" + " ".join(cmnd))
+        logging.info("Grab a coffee - this may take a minute or so... ")
+        # Call and wait to finish
+        stop_event = threading.Event()
+        progressThread = threading.Thread(target=_counter, args=(stop_event,))
+        progressThread.start()
+        result = subprocess.run(cmnd, capture_output=True, text=True)
+        stop_event.set()
+        progressThread.join()
+        if result.returncode != 0:
+            logging.error(
+                "Build script failed with error code: " + str(result.returncode)
+            )
+            logging.error("Errors produced by build script: \n" + result.stderr)
+            cleanup_aws_resources(ctx.flags)
+            ctx.exit(1)
+        else:
+            logging.info("Build successful.")
+        # Signature stored in ctx.flags is now invalid - reload it.
+        ctx.flags.reload_signature()
+    else:
+        logging.info(
+            "Skipping re-build of application. To change this, see "
+            f"'skip_build' in {config_file_path}."
+        )
+
+    try:
+        open(signaturePath, "r")
+    except FileNotFoundError:
+        logging.error(
+            "The OTA update signature was not found at '"
+            + signaturePath
+            + "'. It is not possible to upload OTA updates."
+        )
+        cleanup_aws_resources(ctx.flags)
+        ctx.exit(1)
+
+    # create or re-use bucket.
+    if not _does_bucket_exist(bucket_name):
+        # create new bucket.
+        if not _create_aws_bucket(ctx.flags, bucket_name):
+            logging.error("Bucket '" + bucket_name + "' creation failed.")
+            cleanup_aws_resources(ctx.flags)
+            ctx.exit(1)
+    else:
+        logging.info(
+            "A bucket already exists with the name '" + bucket_name + "'. Re-using."
+        )
+    if _does_role_exist(iam_role_name=iam_role_name):
+        can_access_bucket = False
+        try:
+            iam_role_arn = iam.get_role(RoleName=iam_role_name)["Role"]["Arn"]
+            # assume user-specified IAM role
+            response = None
+            try:
+                response = sts_client.assume_role(
+                    RoleArn=iam_role_arn, RoleSessionName="test_bucket_access"
+                )
+            except botocore.exceptions.ClientError:
+                # Try to modify permissions of role so it is possible to assume.
+                logging.error(
+                    "You do not have permission to assume the role you "
+                    f"have provided ({iam_role_name}). You need to add "
+                    "the following under the role's "
+                    "'Trusted Entities/Statements' to use the role "
+                    "with this script."
+                )
+                role = iam.get_role(RoleName=iam_role_name)["Role"]
+                AWS_ACCOUNT_ID = sts_client.get_caller_identity()["Account"]
+                newStatement = {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": [
+                            "s3.amazonaws.com",
+                            "iot.amazonaws.com",
+                            "iam.amazonaws.com",
+                        ],
+                        "AWS": str(AWS_ACCOUNT_ID),
+                    },
+                    "Action": "sts:AssumeRole",
+                }
+                print(json.dumps(newStatement, indent=4))
+                logging.error("For example, the full document will look like: ")
+                role["AssumeRolePolicyDocument"]["Statement"].append(newStatement)
+                print(json.dumps(role["AssumeRolePolicyDocument"], indent=4))
+                cleanup_aws_resources(ctx.flags)
+                ctx.exit(1)
+            credentials = response["Credentials"]
+            # create a new boto3 session so we do not modify
+            # the default session used by variable 's3'.
+            test_session = boto3.session.Session()
+            test_s3_client = test_session.client(
+                "s3",
+                region_name=AWS_REGION,
+                aws_access_key_id=credentials["AccessKeyId"],
+                aws_secret_access_key=credentials["SecretAccessKey"],
+                aws_session_token=credentials["SessionToken"],
+            )
+            # try to put object
+            testKey = "testRolePermissionsObject"
+            test_s3_client.put_object(
+                Bucket=bucket_name, Key=testKey, Body=bytes("dummy", "utf-8")
+            )
+            # try to get object version
+            test_s3_client.list_object_versions(Bucket=bucket_name)
+            # try to get object
+            test_s3_client.get_object(Bucket=bucket_name, Key=testKey)
+            # We can put, get, and get object versioning with this role.
+            # So it has all the permissions needed for an OTA update.
+            can_access_bucket = True
+        except botocore.exceptions.ClientError as e:
+            logging.error(
+                f"Failed to access bucket {bucket_name} "
+                f"using {iam_role_name} with error:"
+            )
+            logging.error(repr(e))
+            can_access_bucket = False
+
+        # Cleanup object used to test that role has access to bucket.
+        try:
+            s3.delete_object(BucketName=bucket_name, key=testKey)
+        except Exception:
+            pass  # object doesn't exist.
+
+        if can_access_bucket:
+            logging.info(
+                "Verified the role '"
+                + iam_role_name
+                + "' provides access to bucket '"
+                + bucket_name
+                + "'"
+            )
+        else:
+            logging.error(
+                "The role (" + iam_role_name + ") found does not have "
+                "access to the bucket (" + bucket_name + ")."
+            )
+            cleanup_aws_resources(ctx.flags)
+            ctx.exit(1)
+
+    if not _does_role_exist(iam_role_name):
+        # create role
+        if not _create_iam_role(ctx.flags, iam_role_name, permissions_boundary):
+            logging.error("Role '" + iam_role_name + "' creation failed.")
+            cleanup_aws_resources(ctx.flags)
+            ctx.exit(1)
+    else:
+        logging.info(f"Attempting to re-use existing role: '{iam_role_name}'")
+
+    ota_job_name = OTA_JOB_NAME_PREFIX + update_name
+    if _does_job_exist(job_name=ota_job_name):
+        logging.error("There is already an update job with name '" + ota_job_name + "'")
+        if input("Delete update job? (Y/N) ").lower() == "y":
+            if not (
+                _delete_ota_update(update_name, True)
+                and _wait_for_job_deleted(ota_job_name)
+            ):
+                logging.warning("Failed to delete update! Try doing this manually. ")
+                cleanup_aws_resources(ctx.flags)
+                ctx.exit(1)
+
+    # create update.
+    if not _does_job_exist(job_name=ota_job_name):
+        if not _create_aws_update(ctx.flags, update_name):
+            logging.error("Update '" + update_name + "' creation failed.")
+            cleanup_aws_resources(ctx.flags)
+            ctx.exit(1)
+
+    logging.info("All done!")
     ctx.exit(0)
 
 
@@ -2157,7 +2791,7 @@ def _delete_job(job_name, force_delete=False):
 # Define command-line interface for Job deletion command.
 @cli.command(cls=StdCommand)
 @click.option(
-    "--job_name", prompt="Enter role name", help="Name of the job to be deleted."
+    "--job_name", prompt="Enter job name", help="Name of the job to be deleted."
 )
 @click.option(
     "-f",
@@ -2185,36 +2819,6 @@ def _delete_ota_update(ota_update_name, force_delete=False):
         False otherwise.
     """
     ota_job_name = OTA_JOB_NAME_PREFIX + ota_update_name
-    if not _does_job_exist(ota_job_name):
-        return True
-    job_status = None
-    try:
-        job_status = iot.describe_job(jobId=ota_job_name)["job"]["status"]
-    except botocore.exceptions.ClientError as ex:
-        if ex.response["Error"]["Code"] == "ResourceNotFoundException":
-            return False
-        else:
-            raise ex
-    # Handle edge cases.
-    if job_status == "IN_PROGRESS":
-        if not force_delete:
-            # we do have a job but don't force delete:
-            # we won't be able to delete the ota yet
-            logging.warning(
-                "The ota update is currently in progress. \
-                Try re-running with the -f option to delete it anyway."
-            )
-            return False
-    # If a deletion is ongoing, give it time (until maximum timeout) to complete.
-    elif job_status == "DELETION_IN_PROGRESS" and not _wait_for_job_deleted(
-        ota_job_name
-    ):
-        logging.error(
-            "Job deletion has been started but is taking an abnormal amount of time."
-        )
-        # Cannot delete the OTA update without the job being deleted first.
-        return False
-
     # tries to delete the ota update
     try:
         if force_delete:
@@ -2337,6 +2941,26 @@ def delete_ota_update(ctx, ota_update_name, log_level, force_delete):
     ctx.exit(1)
 
 
+def _empty_bucket(bucket_name):
+    """
+    Parameters:
+    bucket_name (string): name of the S3 Bucket to be emptied.
+
+    This function does not check if the bucket exists, and does
+    no error handling.
+
+    Returns:
+    bool: True if emptying succeeds.
+    """
+    versioning = s3.get_bucket_versioning(Bucket=bucket_name)
+    bucket = boto3.resource("s3").Bucket(bucket_name)
+    if versioning.get("Status") == "Enabled":
+        logging.debug("Removing bucket versioning")
+        bucket.object_versions.delete()
+    bucket.objects.delete()
+    logging.info("Bucket " + bucket_name + " emptied.")
+
+
 def _delete_bucket(bucket_name, force_delete=False):
     """
     Parameters:
@@ -2351,12 +2975,7 @@ def _delete_bucket(bucket_name, force_delete=False):
     """
     try:
         if force_delete:
-            versioning = s3.get_bucket_versioning(Bucket=bucket_name)
-            bucket = boto3.resource("s3").Bucket(bucket_name)
-            if versioning.get("Status") == "Enabled":
-                logging.debug("Removing bucket versioning")
-                bucket.object_versions.delete()
-            bucket.objects.delete()
+            _empty_bucket(bucket_name)
         s3.delete_bucket(Bucket=bucket_name)
     except botocore.exceptions.ClientError as ex:
         if ex.response["Error"]["Code"] == "NoSuchBucket":
@@ -2488,6 +3107,73 @@ def delete_certificate(ctx, certificate_id, log_level, force_delete):
         logging.info(certificate_id + " deleted")
         ctx.exit(0)
     ctx.exit(1)
+
+
+# Defines Command-line interface for deleting the Thing,
+# Policy, Bucket, Role, and Update
+# specified by createIoTThings_settings.json.
+@cli.command(cls=StdCommand)
+@click.option(
+    "--config_file_path",
+    help=".json file defining arguments for creating an OTA update.",
+    default="createIoTThings_settings.json",
+)
+@click.pass_context
+def cleanup_simplified(
+    ctx,
+    config_file_path,
+    log_level,
+):
+    settings = {}
+    # Read .json file, pass parameters to flags.
+    try:
+        contents = read_whole_file(config_file_path)
+        settings = json.loads(contents)
+        settings["format_vars"] = settings["format_vars"].replace(
+            "target_application;", ""
+        )
+        settings = _formatVars(settings, ctx)
+        logging.debug("Settings .json file parsed to: " + str(settings))
+    except FileNotFoundError:
+        logging.error("Config file not found at " + config_file_path)
+        ctx.exit(1)
+    except json.JSONDecodeError:
+        logging.error("Failed to parse .json file: " + config_file_path)
+        ctx.exit(1)
+
+    # Check the required settings exist.
+    thing_name = _tryGetSetting(
+        "thing_name", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    policy_name = _tryGetSetting(
+        "policy_name", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    bucket_name = _tryGetSetting(
+        "bucket_name", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    iam_role_name = _tryGetSetting(
+        "iam_role_name", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    update_name = _tryGetSetting(
+        "update_name", settings=settings, ctx=ctx, errorOnFailure=True
+    )
+    ota_job_name = OTA_JOB_NAME_PREFIX + update_name
+    if _does_job_exist(ota_job_name):
+        _delete_ota_update(ota_update_name=update_name, force_delete=True)
+        if _wait_for_job_deleted(ota_job_name):
+            logging.info("Deleted OTA update " + update_name + " successfully.")
+        else:
+            logging.warning("Failed to delete OTA update job.")
+    if _does_bucket_exist(bucket_name):
+        _try_delete(bucket_name, _delete_bucket, force_delete=True)
+    if _does_role_exist(iam_role_name):
+        _try_delete(iam_role_name, _delete_iam_role, force_delete=True)
+    if _does_policy_exist(policy_name):
+        _try_delete(policy_name, _delete_policy, prune=True)
+    if _does_thing_exist(thing_name):
+        _try_delete(thing_name, _delete_thing)
+    logging.info("All done!")
+    ctx.exit(0)
 
 
 def cleanup_aws_resources(

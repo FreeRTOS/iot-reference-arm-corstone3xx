@@ -1,0 +1,47 @@
+{
+    "thing_name":"<your_thing_name>",
+    "permissions_boundary":"arn:aws:iam::<account_no>:policy/<boundary_name>",
+    "role_prefix":"<prefix>",
+    "target_application":"",
+
+    "format_vars":"thing_name;role_prefix;target_application;credentials_path",
+
+    "policy_name":"",
+    "bucket_name":"${thing_name}{lower}-bucket",
+    "iam_role_name":"",
+    "update_name":"",
+    "existing_certificate_arn":"CREATE_NEW_CERTIFICATE",
+
+
+    "credentials_path":"certificates",
+    "build_dir":"build",
+    "ota_binary":"${target_application}-update_signed.bin",
+
+    "skip_build":"",
+    "build_script_path":"",
+    "private_key_path":"",
+    "certificate_path":"",
+    "target_platform":"",
+    "inference":"",
+    "audio":"",
+    "toolchain":"",
+    "clean_build":"",
+
+    "policy_name_DEFAULT":"${thing_name}_policy",
+    "bucket_name_DEFAULT":"${thing_name}_bucket",
+    "iam_role_name_DEFAULT":"${role_prefix}-${thing_name}_role",
+    "update_name_DEFAULT":"${thing_name}_update",
+    "existing_certificate_arn_DEFAULT":"",
+    "credentials_path_DEFAULT":"",
+    "build_dir_DEFAULT":"",
+    "ota_binary_DEFAULT":"",
+    "skip_build_DEFAULT":"false",
+    "build_script_path_DEFAULT":"./tools/scripts/build.sh",
+    "private_key_path_DEFAULT":"${credentials_path}/thing_private_key_${thing_name}.pem.key",
+    "certificate_path_DEFAULT":"${credentials_path}/thing_certificate_${thing_name}.pem.crt",
+    "target_platform_DEFAULT":"corstone315",
+    "inference_DEFAULT":"SOFTWARE",
+    "audio_DEFAULT":"ROM",
+    "toolchain_DEFAULT":"GNU",
+    "clean_build":"auto"
+}
