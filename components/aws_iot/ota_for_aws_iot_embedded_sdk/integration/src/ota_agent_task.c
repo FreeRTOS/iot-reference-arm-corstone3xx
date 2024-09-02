@@ -87,6 +87,13 @@
 extern void vOtaNotActiveHook( void );
 extern void vOtaActiveHook( void );
 
+/* Provides external linkage only when running unit test */
+#ifdef UNIT_TESTING
+    #define STATIC    /* as nothing */
+#else /* ifdef UNIT_TESTING */
+    #define STATIC    static
+#endif /* UNIT_TESTING */
+
 /*------------- Demo configurations -------------------------*/
 
 /**
@@ -221,6 +228,7 @@ typedef struct OtaTopicFilterCallback
  * @brief Buffer used to store the firmware image file path.
  * Buffer is passed to the OTA agent during initialization.
  */
+
 static uint8_t updateFilePath[ otaexampleMAX_FILE_PATH_SIZE ];
 
 /**
@@ -281,7 +289,7 @@ extern MQTTAgentContext_t xGlobalMqttAgentContext;
  *
  * @return A pointer to an unusued buffer. NULL if there are no buffers available.
  */
-static OtaEventData_t * prvOTAEventBufferGet( void );
+STATIC OtaEventData_t * prvOTAEventBufferGet( void );
 
 /**
  * @brief Free an event buffer back to pool
@@ -294,7 +302,7 @@ static OtaEventData_t * prvOTAEventBufferGet( void );
  *
  * @param[in] pxBuffer Pointer to the buffer to be freed.
  */
-static void prvOTAEventBufferFree( OtaEventData_t * const pxBuffer );
+STATIC void prvOTAEventBufferFree( OtaEventData_t * const pxBuffer );
 
 /**
  * @brief The function which runs the OTA agent task.
@@ -306,7 +314,7 @@ static void prvOTAEventBufferFree( OtaEventData_t * const pxBuffer );
  *
  * @param[in] pvParam Any parameters to be passed to OTA agent task.
  */
-static void prvOTAAgentTask( void * pvParam );
+STATIC void prvOTAAgentTask( void * pvParam );
 
 
 /**
@@ -318,14 +326,14 @@ static void prvOTAAgentTask( void * pvParam );
  *
  * @param[in] pvParam Any parameters to be passed to OTA Demo task.
  */
-static void vOtaDemoTask( void * pvParam );
+STATIC void vOtaDemoTask( void * pvParam );
 
 /**
  * @brief The function which implements the flow for OTA demo.
  *
  * @return pdPASS if success or pdFAIL.
  */
-static BaseType_t prvRunOTADemo( void );
+STATIC BaseType_t prvRunOTADemo( void );
 
 /**
  * @brief Callback registered with the OTA library that notifies the OTA agent
@@ -335,7 +343,7 @@ static BaseType_t prvRunOTADemo( void );
  * @param[in] pPublishInfo MQTT packet information which stores details of the
  * job document.
  */
-static void prvMqttJobCallback( void * pContext,
+STATIC void prvMqttJobCallback( void * pContext,
                                 MQTTPublishInfo_t * pPublish );
 
 
@@ -345,7 +353,7 @@ static void prvMqttJobCallback( void * pContext,
  * @param[in] pContext MQTT context which stores the connection.
  * @param[in] pPublishInfo MQTT packet that stores the information of the file block.
  */
-static void prvMqttDataCallback( void * pContext,
+STATIC void prvMqttDataCallback( void * pContext,
                                  MQTTPublishInfo_t * pPublish );
 
 /**
@@ -359,7 +367,7 @@ static void prvMqttDataCallback( void * pContext,
  * @param[in] pvIncomingPublishCallbackContext MQTT context which stores the connection.
  * @param[in] pPublishInfo MQTT packet that stores the information of the file block.
  */
-static void prvMqttDefaultCallback( void * pvIncomingPublishCallbackContext,
+STATIC void prvMqttDefaultCallback( void * pvIncomingPublishCallbackContext,
                                     MQTTPublishInfo_t * pxPublishInfo );
 
 /**
@@ -369,7 +377,7 @@ static void prvMqttDefaultCallback( void * pvIncomingPublishCallbackContext,
  * @param[in] topicFilterLength length of the topic filter.
  *
  */
-static void prvRegisterOTACallback( const char * pTopicFilter,
+STATIC void prvRegisterOTACallback( const char * pTopicFilter,
                                     uint16_t topicFilterLength );
 
 /**
@@ -377,14 +385,14 @@ static void prvRegisterOTACallback( const char * pTopicFilter,
  *
  * @return   pPASS or pdFAIL.
  */
-static BaseType_t prvSuspendOTA( void );
+STATIC BaseType_t prvSuspendOTA( void );
 
 /**
  * @brief Resume OTA demo.
  *
  * @return   pPASS or pdFAIL.
  */
-static BaseType_t prvResumeOTA( void );
+STATIC BaseType_t prvResumeOTA( void );
 
 /**
  * @brief Set OTA interfaces.
@@ -393,7 +401,7 @@ static BaseType_t prvResumeOTA( void );
  *
  * @return   None.
  */
-static void setOtaInterfaces( OtaInterfaces_t * pOtaInterfaces );
+STATIC void setOtaInterfaces( OtaInterfaces_t * pOtaInterfaces );
 
 /**
  * @brief Structure containing all application allocated buffers used by the OTA agent.
@@ -437,7 +445,7 @@ static OtaTopicFilterCallback_t otaTopicFilterCallbacks[] =
 
 /*-----------------------------------------------------------*/
 
-static void prvOTAEventBufferFree( OtaEventData_t * const pxBuffer )
+STATIC void prvOTAEventBufferFree( OtaEventData_t * const pxBuffer )
 {
     if( xSemaphoreTake( xBufferSemaphore, portMAX_DELAY ) == pdTRUE )
     {
@@ -448,7 +456,7 @@ static void prvOTAEventBufferFree( OtaEventData_t * const pxBuffer )
 
 /*-----------------------------------------------------------*/
 
-static OtaEventData_t * prvOTAEventBufferGet( void )
+STATIC OtaEventData_t * prvOTAEventBufferGet( void )
 {
     OtaEventData_t * pFreeBuffer = NULL;
 
@@ -493,7 +501,8 @@ static OtaEventData_t * prvOTAEventBufferGet( void )
  * @param[in] pData Data associated with the event.
  * @return None.
  */
-static void otaAppCallback( OtaJobEvent_t event,
+
+STATIC void otaAppCallback( OtaJobEvent_t event,
                             void * pData )
 {
     OtaErr_t err = OtaErrUninitialized;
@@ -620,7 +629,7 @@ static void otaAppCallback( OtaJobEvent_t event,
     }
 }
 
-static void prvMqttJobCallback( void * pvIncomingPublishCallbackContext,
+STATIC void prvMqttJobCallback( void * pvIncomingPublishCallbackContext,
                                 MQTTPublishInfo_t * pxPublishInfo )
 {
     OtaEventData_t * pData;
@@ -650,7 +659,8 @@ static void prvMqttJobCallback( void * pvIncomingPublishCallbackContext,
 }
 
 /*-----------------------------------------------------------*/
-static void prvMqttDefaultCallback( void * pvIncomingPublishCallbackContext,
+
+STATIC void prvMqttDefaultCallback( void * pvIncomingPublishCallbackContext,
                                     MQTTPublishInfo_t * pxPublishInfo )
 {
     bool isMatch = false;
@@ -668,7 +678,8 @@ static void prvMqttDefaultCallback( void * pvIncomingPublishCallbackContext,
 }
 
 /*-----------------------------------------------------------*/
-static void prvMqttDataCallback( void * pvIncomingPublishCallbackContext,
+
+STATIC void prvMqttDataCallback( void * pvIncomingPublishCallbackContext,
                                  MQTTPublishInfo_t * pxPublishInfo )
 {
     OtaEventData_t * pxData;
@@ -699,7 +710,7 @@ static void prvMqttDataCallback( void * pvIncomingPublishCallbackContext,
 
 /*-----------------------------------------------------------*/
 
-static void prvRegisterOTACallback( const char * pTopicFilter,
+STATIC void prvRegisterOTACallback( const char * pTopicFilter,
                                     uint16_t topicFilterLength )
 {
     bool isMatch = false;
@@ -741,7 +752,7 @@ static void prvRegisterOTACallback( const char * pTopicFilter,
     }
 }
 
-static void prvMQTTSubscribeCompleteCallback( MQTTAgentCommandContext_t * pxCommandContext,
+STATIC void prvMQTTSubscribeCompleteCallback( MQTTAgentCommandContext_t * pxCommandContext,
                                               MQTTAgentReturnInfo_t * pxReturnInfo )
 {
     if( pxReturnInfo->returnCode == MQTTSuccess )
@@ -763,7 +774,7 @@ static void prvMQTTSubscribeCompleteCallback( MQTTAgentCommandContext_t * pxComm
     }
 }
 
-static void prvMQTTUnsubscribeCompleteCallback( MQTTAgentCommandContext_t * pxCommandContext,
+STATIC void prvMQTTUnsubscribeCompleteCallback( MQTTAgentCommandContext_t * pxCommandContext,
                                                 MQTTAgentReturnInfo_t * pxReturnInfo )
 {
     /* Store the result in the application defined context so the task that
@@ -779,7 +790,7 @@ static void prvMQTTUnsubscribeCompleteCallback( MQTTAgentCommandContext_t * pxCo
     }
 }
 
-static OtaMqttStatus_t prvMQTTSubscribe( const char * pTopicFilter,
+STATIC OtaMqttStatus_t prvMQTTSubscribe( const char * pTopicFilter,
                                          uint16_t topicFilterLength,
                                          uint8_t ucQoS )
 {
@@ -848,7 +859,7 @@ static OtaMqttStatus_t prvMQTTSubscribe( const char * pTopicFilter,
     return otaRet;
 }
 
-static void prvOTAPublishCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
+STATIC void prvOTAPublishCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
                                           MQTTAgentReturnInfo_t * pxReturnInfo )
 {
     pxCommandContext->xReturnStatus = pxReturnInfo->returnCode;
@@ -859,7 +870,7 @@ static void prvOTAPublishCommandCallback( MQTTAgentCommandContext_t * pxCommandC
     }
 }
 
-static OtaMqttStatus_t prvMQTTPublish( const char * const pacTopic,
+STATIC OtaMqttStatus_t prvMQTTPublish( const char * const pacTopic,
                                        uint16_t topicLen,
                                        const char * pMsg,
                                        uint32_t msgSize,
@@ -921,7 +932,7 @@ static OtaMqttStatus_t prvMQTTPublish( const char * const pacTopic,
     return otaRet;
 }
 
-static OtaMqttStatus_t prvMQTTUnsubscribe( const char * pTopicFilter,
+STATIC OtaMqttStatus_t prvMQTTUnsubscribe( const char * pTopicFilter,
                                            uint16_t topicFilterLength,
                                            uint8_t ucQoS )
 {
@@ -993,7 +1004,7 @@ static OtaMqttStatus_t prvMQTTUnsubscribe( const char * pTopicFilter,
     return otaRet;
 }
 
-static void setOtaInterfaces( OtaInterfaces_t * pOtaInterfaces )
+STATIC void setOtaInterfaces( OtaInterfaces_t * pOtaInterfaces )
 {
     configASSERT( pOtaInterfaces != NULL );
 
@@ -1026,7 +1037,7 @@ static void setOtaInterfaces( OtaInterfaces_t * pOtaInterfaces )
 
 /*-----------------------------------------------------------*/
 
-static void prvOTAAgentTask( void * pParam )
+STATIC void prvOTAAgentTask( void * pParam )
 {
     /* Calling OTA agent task. */
     OTA_EventProcessingTask( pParam );
@@ -1035,7 +1046,7 @@ static void prvOTAAgentTask( void * pParam )
     vTaskDelete( NULL );
 }
 
-static BaseType_t prvSuspendOTA( void )
+STATIC BaseType_t prvSuspendOTA( void )
 {
     /* OTA library return status. */
     OtaErr_t otaRet = OtaErrNone;
@@ -1069,7 +1080,7 @@ static BaseType_t prvSuspendOTA( void )
     return status;
 }
 
-static BaseType_t prvResumeOTA( void )
+STATIC BaseType_t prvResumeOTA( void )
 {
     /* OTA library return status. */
     OtaErr_t otaRet = OtaErrNone;
@@ -1103,7 +1114,7 @@ static BaseType_t prvResumeOTA( void )
     return status;
 }
 
-static BaseType_t prvRunOTADemo( void )
+STATIC BaseType_t prvRunOTADemo( void )
 {
     /* Status indicating a successful demo or not. */
     BaseType_t xStatus = pdPASS;
@@ -1234,7 +1245,7 @@ static BaseType_t prvRunOTADemo( void )
  * the OTA agent. If not, it is simply ignored.
  *
  */
-static void vOtaDemoTask( void * pvParam )
+STATIC void vOtaDemoTask( void * pvParam )
 {
     ( void ) pvParam;
 
