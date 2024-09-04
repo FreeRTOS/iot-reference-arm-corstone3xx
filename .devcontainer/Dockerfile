@@ -2,7 +2,7 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
-FROM ubuntu:20.04
+FROM public.ecr.aws/ubuntu/ubuntu:22.04_stable
 
 SHELL ["/bin/bash", "-c"]
 
@@ -32,7 +32,6 @@ RUN apt-get update && \
     libncurses5 \
     libncurses5-dev \
     libncursesw5 \
-    libpython3.9-dev \
     libreadline6-dev \
     libsndfile1 \
     libsqlite3-dev \
@@ -42,13 +41,12 @@ RUN apt-get update && \
     lzma-dev \
     ninja-build \
     pkg-config \
-    python3.9 \
     python3-pip \
+    python3.10-venv \
     software-properties-common \
     srecord \
     sudo \
     tk-dev \
-    uncrustify \
     unzip \
     uuid-dev \
     vim \
@@ -61,20 +59,6 @@ RUN apt-get update && \
 RUN apt-add-repository -y ppa:git-core/ppa && \
     apt-get update && \
     apt-get -y install git
-
-# Download, build and install python3.10
-RUN mkdir -p /tmp/python3.10 \
-    && cd /tmp/python3.10
-RUN set -x && \
-    wget https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tgz && \
-    tar xzf Python-3.10.13.tgz && \
-    cd Python-3.10.13 && \
-    ./configure --enable-optimizations --with-lto --with-computed-gotos --with-system-ffi && \
-    make -j "$(nproc)" && \
-    make install && \
-    /usr/local/bin/python3.10 -m pip install --upgrade pip && \
-    update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.10 1 && \
-    rm -rf /tmp/python3.10
 
 # Setup zsh
 RUN if [[ $SHELL_CHOICE == "zsh" ]]; then \
@@ -136,6 +120,26 @@ RUN if [[ $SHELL_CHOICE == "zsh" ]]; then \
         echo "source ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" >> /home/$USERNAME/.zshrc; \
     fi
 
+# Setup vim
+RUN cat <<EOF > /home/$USERNAME/.vimrc
+syntax on
+filetype plugin indent on
+
+set backspace=indent,eol,start
+
+set tabstop=4
+set textwidth=80
+set wm=2
+
+set hlsearch
+hi Search ctermbg=LightCyan
+
+:set spell spelllang=en_us
+:set spellfile=~/.vim/spell/en.utf-8.add
+hi clear SpellBad
+hi SpellBad cterm=underline,bold ctermfg=red
+EOF
+
 # Download and install arm-none-eabi-gcc
 RUN wget -qO - https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-$(uname -m)-arm-none-eabi.tar.xz \
             | sudo tar -xJ -C /opt \
@@ -180,3 +184,16 @@ RUN rm -rf /home/ubuntu/FVP_Corstone_SSE-315; \
     cd /tmp/arm-ecosystem-fvp && ./FVP_Corstone_SSE-315.sh --i-agree-to-the-contained-eula --no-interactive -q; \
     rm -rf /tmp/arm-ecosystem-fvp
 ENV PATH="/home/ubuntu/FVP_Corstone_SSE-315/models/Linux64_armv8l_GCC-9.3:/home/ubuntu/FVP_Corstone_SSE-315/models/Linux64_GCC-9.3:${PATH}"
+
+# Install uncrustify
+# With ubuntu 22.04, the version of uncrustify installed is 0.72.0+dfsg1-2.
+# However, we need the version 0.69.0. Therefore, build and install it manually.
+RUN git clone https://github.com/uncrustify/uncrustify.git /tmp/uncrustify; \
+    pushd /tmp/uncrustify; \
+    git checkout uncrustify-0.69.0; \
+    mkdir build && cd build; \
+    cmake -DCMAKE_BUILD_TYPE=Release ..; \
+    cmake --build . --config Release; \
+    sudo cp uncrustify /usr/local/bin/uncrustify; \
+    popd; popd; \
+    rm -rf /tmp/uncrustify
