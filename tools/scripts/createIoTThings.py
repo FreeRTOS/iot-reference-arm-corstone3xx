@@ -510,16 +510,11 @@ def _write_aws_clientcredential_h(flags):
     Parameters:
     flags (Flags): contains metadata needed for AWS and OTA updates
         (e.g. credentials).
-    fileDir (str): the project's base directory. E.g. contains top-level README.md.
     """
     fileDir = os.path.dirname(os.path.realpath("__file__"))
     template_has_correct_format = (
         lambda contents: "clientcredentialMQTT_BROKER_ENDPOINT " in contents
         and "clientcredentialIOT_THING_NAME " in contents
-    )
-    template_has_been_edited = (
-        lambda contents: "dummy.endpointid.amazonaws.com" not in contents
-        or "dummy_thingname" not in contents
     )
     # Try to find a template for 'aws_clientcredential.h'
     template = ""
@@ -550,7 +545,22 @@ def _write_aws_clientcredential_h(flags):
         )
         logging.warning(err_msg)
         return False
-    if template_has_been_edited(template):
+    # if template has been edited, ask before overwriting.
+    DEFAULT_ENDPOINT = (
+        "#define clientcredentialMQTT_BROKER_ENDPOINT    "
+        + 'dummy.endpointid.amazonaws.com"'
+    )
+    DEFAULT_THING_NAME = (
+        "#define clientcredentialIOT_THING_NAME               " '"dummy_thingname"'
+    )
+    # Remove spaces for robustness.
+    template_without_spaces = template.replace(" ", "")
+    if (
+        DEFAULT_ENDPOINT.replace(" ", "") in template_without_spaces
+        and DEFAULT_THING_NAME.replace(" ", "") in template_without_spaces
+    ):
+        logging.debug("aws_clientcredential.h has not been edited. Overwriting.")
+    else:
         warn_msg = (
             "Your aws_clientcredential.h file at "
             + credentialFileTemplate
