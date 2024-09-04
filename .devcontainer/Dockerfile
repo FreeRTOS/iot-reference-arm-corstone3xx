@@ -19,6 +19,7 @@ RUN apt-get update && \
     apt-get -y install \
     bash-completion \
     build-essential \
+    ccache \
     cppcheck \
     curl \
     fd-find \
@@ -197,3 +198,11 @@ RUN git clone https://github.com/uncrustify/uncrustify.git /tmp/uncrustify; \
     sudo cp uncrustify /usr/local/bin/uncrustify; \
     popd; popd; \
     rm -rf /tmp/uncrustify
+
+# Setup ccache
+RUN sudo ln -s /usr/bin/ccache /usr/lib/ccache/arm-none-eabi-gcc; \
+    sudo ln -s /usr/bin/ccache /usr/lib/ccache/arm-none-eabi-g++; \
+    sudo ln -s /usr/bin/ccache /usr/lib/ccache/arm-none-eabi-c++; \
+    sudo ln -s /usr/bin/ccache /usr/lib/ccache/arm-none-eabi-cpp; \
+    sudo ln -s /usr/bin/ccache /usr/lib/ccache/arm-none-eabi-ar
+ENV PATH="/usr/lib/ccache:${PATH}"
