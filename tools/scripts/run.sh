@@ -161,7 +161,14 @@ case "$AUDIO_SOURCE" in
             export APP_UNDERSCORED=$(echo ${EXAMPLE} | tr '-' '_')
             export AVH_AUDIO_FILE=$ROOT/applications/$APP_UNDERSCORED/resources/test.wav
         fi
-        AVH_AUDIO_OPTIONS="-C mps3_board.v_path=$ROOT/tools/scripts/"
+        case "$TARGET" in
+            corstone300 | corstone310 )
+              AVH_AUDIO_OPTIONS="-C mps3_board.v_path=$ROOT/tools/scripts/"
+              ;;
+            corstone315 )
+              AVH_AUDIO_OPTIONS="-C mps4_board.v_path=$ROOT/tools/scripts/"
+              ;;
+        esac
         export PYTHONHOME="/opt/python/3.9.18"
         ;;
     *)
