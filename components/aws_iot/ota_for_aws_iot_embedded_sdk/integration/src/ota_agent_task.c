@@ -599,34 +599,6 @@ STATIC void otaAppCallback( OtaJobEvent_t event,
             LogWarn( ( "Received an unhandled callback event from OTA Agent, event = %d", event ) );
             break;
     }
-
-    OtaState_t state = OTA_GetState();
-
-    switch( state )
-    {
-        case OtaAgentStateNoTransition:
-        case OtaAgentStateInit:
-        case OtaAgentStateReady:
-        case OtaAgentStateSuspended:
-        case OtaAgentStateShuttingDown:
-        case OtaAgentStateStopped:
-            LogInfo( ( "OTA not active state `%d` from OTA Agent.", state ) );
-            vOtaNotActiveHook();
-            break;
-
-        case OtaAgentStateRequestingJob:
-        case OtaAgentStateCreatingFile:
-        case OtaAgentStateRequestingFileBlock:
-        case OtaAgentStateWaitingForFileBlock:
-        case OtaAgentStateClosingFile:
-            LogInfo( ( "OTA active state `%d` from OTA Agent.", state ) );
-            vOtaActiveHook();
-            break;
-
-        case OtaAgentStateWaitingForJob:
-        default:
-            break;
-    }
 }
 
 STATIC void prvMqttJobCallback( void * pvIncomingPublishCallbackContext,
