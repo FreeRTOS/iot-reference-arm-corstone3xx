@@ -247,4 +247,8 @@ CK_RV xDestroyProvidedObjects( CK_SESSION_HANDLE xSession,
  */
 int xOtaProvisionCodeSigningKey( psa_key_handle_t * pxKeyHandle,
                                  size_t keyBits );
+
+UBaseType_t uxIsDeviceProvisioned( void );
+psa_status_t xWriteDeviceProvisioned( void );
+
 #endif /* _AWS_DEV_MODE_KEY_PROVISIONING_H_ */

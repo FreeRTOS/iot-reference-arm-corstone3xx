@@ -67,6 +67,9 @@
 #include "mbedtls/entropy.h"
 #include "mbedtls/ctr_drbg.h"
 
+/* TF-M ITS include */
+#include "psa/internal_trusted_storage.h"
+
 /* Default FreeRTOS API for console logging. */
 #define DEV_MODE_KEY_PROVISIONING_PRINT( X )    printf
 
@@ -90,6 +93,9 @@ extern void vLoggingPrint( const char * pcFormat );
 #define COEFFICIENT_LENGTH          128
 
 #define DER_FORMAT_BUFFER_LENGTH    512
+
+#define FIRST_BOOT_ITS_UID          ( 1U )
+#define BOOT_PATTERN                ( 0x55 )
 
 /* Adding one to all of the lengths because ASN1 may pad a leading 0 byte
  * to numbers that could be interpreted as negative */
@@ -1441,6 +1447,41 @@ exit:
     mbedtls_pk_free( &xMbedPkContext );
 
     return result;
+}
+
+UBaseType_t uxIsDeviceProvisioned( void )
+{
+    psa_status_t status = PSA_ERROR_GENERIC_ERROR;
+    const psa_storage_uid_t uid = FIRST_BOOT_ITS_UID;
+    uint8_t boot_pattern_in_its = 0;
+    size_t read_data_length = 0;
+
+    status = psa_its_get( uid, 0, 1, &boot_pattern_in_its,
+                          &read_data_length );
+
+    if( status != PSA_SUCCESS )
+    {
+        return 0;
+    }
+
+    if( boot_pattern_in_its == BOOT_PATTERN )
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+psa_status_t xWriteDeviceProvisioned( void )
+{
+    const psa_storage_uid_t uid = FIRST_BOOT_ITS_UID;
+    const psa_storage_create_flags_t flags = PSA_STORAGE_FLAG_WRITE_ONCE;
+    uint8_t first_boot_pattern = BOOT_PATTERN;
+
+    /* Write the pattern to ITS */
+    return psa_its_set( uid, 1, &first_boot_pattern, flags );
 }
 
 /*-----------------------------------------------------------*/
