@@ -27,6 +27,8 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
+#include "fff.h"
+
 DECLARE_FAKE_VOID_FUNC( vAssertCalled,
                         const char *,
                         unsigned long );
