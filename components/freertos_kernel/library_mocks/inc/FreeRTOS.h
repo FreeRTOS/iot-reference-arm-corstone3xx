@@ -36,20 +36,20 @@
 
 typedef int StaticQueue_t;
 
-/* 
-Definitions found in FreeTOSConfig.h.
-Because for testing `freertos_command_pool.c` we cannot
-directly include FreeRTOSConfig.h (this causes build failure),
-nor can we prototype the configAssert macro from within the file.
-*/
+/*
+ * Definitions found in FreeTOSConfig.h.
+ * Because for testing `freertos_command_pool.c` we cannot
+ * directly include FreeRTOSConfig.h (this causes build failure),
+ * nor can we prototype the configAssert macro from within the file.
+ */
 
 #ifndef FREERTOS_CONFIG_H
-#define FREERTOS_CONFIG_H
+    #define FREERTOS_CONFIG_H
 
-DECLARE_FAKE_VOID_FUNC( vAssertCalled,
-                        const char *,
-                        unsigned long );
-#define configASSERT( x )    if( ( x ) == 0 ) vAssertCalled( __FILE__, __LINE__ );
+    DECLARE_FAKE_VOID_FUNC( vAssertCalled,
+                            const char *,
+                            unsigned long );
+    #define configASSERT( x )    if( ( x ) == 0 ) vAssertCalled( __FILE__, __LINE__ );
 
 #endif /* FREERTOS_CONFIG_H */
 

@@ -2,11 +2,13 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
-if(CMAKE_CROSSCOMPILING)
+if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
+    # left empty for future mocks.
+else ()
     set(freertos_pkcs11_psa_SOURCE_DIR
-    ${CMAKE_CURRENT_LIST_DIR}/library
-    CACHE INTERNAL
-    "Path to FreeRTOS PKCS#11 to PSA shim layer source code"
+        ${CMAKE_CURRENT_LIST_DIR}/library
+        CACHE INTERNAL
+        "Path to FreeRTOS PKCS#11 to PSA shim layer source code"
     )
 
     add_subdirectory(integration)

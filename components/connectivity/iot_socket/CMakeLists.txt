@@ -2,7 +2,9 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
-if(CMAKE_CROSSCOMPILING)
+if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
+    # left empty for future mocks.
+else ()
     set(iot_socket_SOURCE_DIR
         ${CMAKE_CURRENT_LIST_DIR}/library
         CACHE INTERNAL
