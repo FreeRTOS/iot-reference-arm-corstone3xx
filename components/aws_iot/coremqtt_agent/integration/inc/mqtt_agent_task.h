@@ -33,13 +33,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#ifdef UNIT_TESTING
-
-/* Transport interface header file.
- * Needed to compile UNIT_TESTING function prototypes. */
-    #include "transport_interface_api.h"
-#endif /* UNIT_TESTING */
-
 /* MQTT library includes. */
 #include "core_mqtt_config.h"
 #include "core_mqtt_agent.h"

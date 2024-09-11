@@ -23,6 +23,7 @@ extern "C" {
 #include "psa/crypto.h"
 #include "psa/error.h"
 #include "task.h"
+#include "transport_interface_api.h"
 #include "queue.h"
 
 /*
