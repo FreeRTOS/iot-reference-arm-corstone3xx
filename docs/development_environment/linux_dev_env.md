@@ -2,8 +2,8 @@
 
 ## Build requirements
 
-* Ubuntu 20.04. Please note that the following instructions are
-  validated on Ubuntu 20.04.
+* Ubuntu 22.04. Please note that the following instructions are
+  validated on Ubuntu 22.04.
 * Git configuration
   * `git-apply` is used to apply the required patches during CMake configuration.
     In order for this to succeed, a minimum of `User Name` and `User Email`
