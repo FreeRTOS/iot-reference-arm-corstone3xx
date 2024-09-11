@@ -208,6 +208,54 @@ extern SubscriptionElement_t xGlobalSubscriptionList[ SUBSCRIPTION_MANAGER_MAX_S
 
 /*-----------------------------------------------------------*/
 
+/**
+ * @brief Retry logic to establish a connection to the MQTT broker.
+ *
+ * If the connection fails, keep retrying with exponentially increasing
+ * timeout value, until max retries, max timeout or successful connect.
+ *
+ * @param[in] pNetworkContext Network context to connect on.
+ * @return int pdFALSE if connection failed after retries.
+ */
+STATIC BaseType_t prvSocketConnect( NetworkContext_t * pxNetworkContext );
+
+/**
+ * @brief Initializes an MQTT context, including transport interface and
+ * network buffer.
+ *
+ * @return `MQTTSuccess` if the initialization succeeds, else `MQTTBadParameter`.
+ */
+STATIC MQTTStatus_t prvMQTTInit( void );
+
+/**
+ * @brief Sends an MQTT Connect packet over the already connected TCP socket.
+ * This function takes no inputs, but does rely on the global 'xConnectInfo'
+ * variable, which contains information such as passwords and user identifiers,
+ * and whether to start a clean MQTT session.
+ *
+ * @return `MQTTSuccess` if connection succeeds, else appropriate error code
+ * from MQTT_Connect.
+ */
+STATIC MQTTStatus_t prvMQTTConnect( void );
+
+/**
+ * @brief Disconnects from the MQTT broker.
+ * Initiates an MQTT disconnect and then teardown underlying TCP connection.
+ */
+STATIC void prvDisconnectFromMQTTBroker( void );
+
+/**
+ * @brief Task for MQTT agent.
+ * Task runs MQTT agent command loop, which returns only when the user disconnects
+ * MQTT, terminates agent, or the MQTT connection is broken. If the MQTT connection is broken, the task
+ * tries to reconnect to the broker.
+ *
+ * @param[in] pParam Can be used to pass down functionality to the agent task
+ */
+STATIC void prvMQTTAgentTask( void * pParam );
+
+/*-----------------------------------------------------------*/
+
 STATIC uint32_t prvGetTimeMs( void )
 {
     TickType_t xTickCount = 0;
@@ -243,15 +291,6 @@ STATIC UBaseType_t prvGetRandomNumber( void )
     return uxRandomValue;
 }
 
-/**
- * @brief Retry logic to establish a connection to the MQTT broker.
- *
- * If the connection fails, keep retrying with exponentially increasing
- * timeout value, until max retries, max timeout or successful connect.
- *
- * @param[in] pNetworkContext Network context to connect on.
- * @return int pdFALSE if connection failed after retries.
- */
 STATIC BaseType_t prvSocketConnect( NetworkContext_t * pxNetworkContext )
 {
     BaseType_t xConnected = pdFAIL;
@@ -391,12 +430,6 @@ STATIC void prvReSubscriptionCommandCallback( MQTTAgentCommandContext_t * pxComm
     }
 }
 
-/**
- * @brief Initializes an MQTT context, including transport interface and
- * network buffer.
- *
- * @return `MQTTSuccess` if the initialization succeeds, else `MQTTBadParameter`.
- */
 STATIC MQTTStatus_t prvMQTTInit( void )
 {
     TransportInterface_t xTransport = { 0 };
@@ -512,15 +545,6 @@ STATIC MQTTStatus_t prvHandleResubscribe( void )
     return xResult;
 }
 
-/**
- * @brief Sends an MQTT Connect packet over the already connected TCP socket.
- *
- * @param[in] pxMQTTContext MQTT context pointer.
- * @param[in] xCleanSession If a clean session should be established.
- *
- * @return `MQTTSuccess` if connection succeeds, else appropriate error code
- * from MQTT_Connect.
- */
 STATIC MQTTStatus_t prvMQTTConnect( void )
 {
     MQTTStatus_t xResult;
@@ -593,10 +617,6 @@ STATIC void prvDisconnectCommandCallback( MQTTAgentCommandContext_t * pxCommandC
     }
 }
 
-/**
- * @brief Disconnects from the MQTT broker.
- * Initiates an MQTT disconnect and then teardown underlying TCP connection.
- */
 STATIC void prvDisconnectFromMQTTBroker( void )
 {
     static MQTTAgentCommandContext_t xCommandContext = { 0 };
@@ -629,14 +649,6 @@ STATIC void prvDisconnectFromMQTTBroker( void )
     }
 }
 
-/**
- * @brief Task for MQTT agent.
- * Task runs MQTT agent command loop, which returns only when the user disconnects
- * MQTT, terminates agent, or the mqtt connection is broken. If the mqtt connection is broken, the task
- * tries to reconnect to the broker.
- *
- * @param[in] pParam Can be used to pass down functionality to the agent task
- */
 STATIC void prvMQTTAgentTask( void * pParam )
 {
     BaseType_t xResult;
