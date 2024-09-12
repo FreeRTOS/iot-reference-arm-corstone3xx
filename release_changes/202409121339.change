@@ -1,0 +1,2 @@
+aws-iot-unit-test: Add tests for ota_agent_task.c.
+ota-agent-task: Debug unsafe memcpy usages in ota_agent_task.c.
