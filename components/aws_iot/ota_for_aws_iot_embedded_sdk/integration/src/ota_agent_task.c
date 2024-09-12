@@ -470,6 +470,7 @@ STATIC OtaEventData_t * prvOTAEventBufferGet( void )
             {
                 eventBuffer[ ulIndex ].bufferUsed = true;
                 pFreeBuffer = &eventBuffer[ ulIndex ];
+                pFreeBuffer->dataLength = sizeof( pFreeBuffer->data );
                 break;
             }
         }
@@ -616,13 +617,20 @@ STATIC void prvMqttJobCallback( void * pvIncomingPublishCallbackContext,
 
     if( pData != NULL )
     {
-        memcpy( pData->data, pxPublishInfo->pPayload, pxPublishInfo->payloadLength );
-        pData->dataLength = pxPublishInfo->payloadLength;
-        eventMsg.eventId = OtaAgentEventReceivedJobDocument;
-        eventMsg.pEventData = pData;
+        if( ( size_t ) pData->dataLength >= pxPublishInfo->payloadLength )
+        {
+            memcpy( pData->data, pxPublishInfo->pPayload, pxPublishInfo->payloadLength );
+            pData->dataLength = pxPublishInfo->payloadLength;
+            eventMsg.eventId = OtaAgentEventReceivedJobDocument;
+            eventMsg.pEventData = pData;
 
-        /* Send job document received event. */
-        OTA_SignalEvent( &eventMsg );
+            /* Send job document received event. */
+            OTA_SignalEvent( &eventMsg );
+        }
+        else
+        {
+            LogError( ( "Error: OTA data buffers are too small for the Job message provided.\n" ) );
+        }
     }
     else
     {
@@ -666,13 +674,20 @@ STATIC void prvMqttDataCallback( void * pvIncomingPublishCallbackContext,
 
     if( pxData != NULL )
     {
-        memcpy( pxData->data, pxPublishInfo->pPayload, pxPublishInfo->payloadLength );
-        pxData->dataLength = pxPublishInfo->payloadLength;
-        eventMsg.eventId = OtaAgentEventReceivedFileBlock;
-        eventMsg.pEventData = pxData;
+        if( ( size_t ) pxData->dataLength >= pxPublishInfo->payloadLength )
+        {
+            memcpy( pxData->data, pxPublishInfo->pPayload, pxPublishInfo->payloadLength );
+            pxData->dataLength = pxPublishInfo->payloadLength;
+            eventMsg.eventId = OtaAgentEventReceivedFileBlock;
+            eventMsg.pEventData = pxData;
 
-        /* Send job document received event. */
-        OTA_SignalEvent( &eventMsg );
+            /* Send file block received event. */
+            OTA_SignalEvent( &eventMsg );
+        }
+        else
+        {
+            LogError( ( "Error: OTA data buffers are too small for the data message received.\n" ) );
+        }
     }
     else
     {
@@ -762,6 +777,9 @@ STATIC void prvMQTTUnsubscribeCompleteCallback( MQTTAgentCommandContext_t * pxCo
     }
 }
 
+/*
+ * Precondition: pTopicFilter is not null.
+ */
 STATIC OtaMqttStatus_t prvMQTTSubscribe( const char * pTopicFilter,
                                          uint16_t topicFilterLength,
                                          uint8_t ucQoS )
