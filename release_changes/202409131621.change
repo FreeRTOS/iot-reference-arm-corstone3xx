@@ -1,0 +1,1 @@
+tools: Add command for automatically cleaning up all AWS entities created by 'createIoTThings.py create-update-simplified'

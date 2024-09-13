@@ -18,6 +18,7 @@
 
 from enum import Enum
 import os
+import glob
 import pathlib
 import time
 import traceback as tb
@@ -2064,6 +2065,20 @@ def _formatVars(
 
 
 def _try_delete(target, del_func, **kwargs):
+    """
+    This function calls:
+    >>> del_func(target, kwargs)
+    And informs the user whether deletion has succeeded or failed.
+    Example usage:
+    >>> _try_delete("my-test-bucket", _delete_bucket, force_delete=True)
+
+
+    Parameters:
+    target: the item to delete.
+    del_func: the function that will do the deletion, which
+        should return a boolean value.
+    kwargs: keyword parameters, e.g. 'force_delete=True' in the example.
+    """
     has_deleted = False
     try:
         has_deleted = del_func(target, kwargs)
@@ -3418,25 +3433,73 @@ def delete_certificate(ctx, certificate_id, config_file_path, log_level, force_d
     ctx.exit(1)
 
 
+def _try_delete_all(
+    thing_name: str,
+    policy_name: str,
+    bucket_name: str,
+    iam_role_name: str,
+    update_name: str,
+):
+    """
+    This function tries to force-delete delete each passed AWS entity (if it exists).
+    I.e. if a job is ongoing it will be deleted anyway.
+    This function displays an error if an entity exists but deletion fails, otherwise
+    it will display a success message.
+    It is important that this function deletes the OTA update before
+    anything else. E.g. deleting the role or Thing before the update will cause
+    deletion to fail.
+
+    Parameters:
+    flags (Flags): contains metadata needed for AWS and OTA updates
+        (e.g. credentials).
+    """
+    ota_job_name = OTA_JOB_NAME_PREFIX + update_name
+    if _does_job_exist(ota_job_name):
+        _try_delete(ota_job_name, _delete_ota_update, force_delete=True)
+    if _does_bucket_exist(bucket_name):
+        _try_delete(bucket_name, _delete_bucket, force_delete=True)
+    if _does_role_exist(iam_role_name):
+        _try_delete(iam_role_name, _delete_iam_role, force_delete=True)
+    if _does_policy_exist(policy_name):
+        _try_delete(policy_name, _delete_policy, prune=True)
+    if _does_thing_exist(thing_name):
+        _try_delete(thing_name, _delete_thing)
+
+
 # Defines Command-line interface for deleting the Thing,
 # Policy, Bucket, Role, and Update
 # specified by createIoTThings_settings.json.
 @cli.command(cls=StdCommand)
+@click.option(
+    "--config_file_path",
+    help=".json file defining arguments for creating an OTA update.",
+    default="createIoTThings_settings.json",
+)
+@click.option(
+    "-e",
+    "--extended",
+    "extended",
+    help="For every certificate found in the credentials directory, "
+    "delete the Thing and all related AWS entities without asking first.",
+    is_flag=True,
+)
 @click.pass_context
 def cleanup_simplified(
     ctx,
     config_file_path,
+    extended,
     log_level,
 ):
+    unformatted_settings = {}
     settings = {}
     # Read .json file, pass parameters to flags.
     try:
         contents = read_whole_file(config_file_path)
-        settings = json.loads(contents)
-        settings["format_vars"] = settings["format_vars"].replace(
-            "target_application;", ""
-        )
-        settings = _formatVars(settings, ctx)
+        unformatted_settings = json.loads(contents)
+        unformatted_settings["format_vars"] = unformatted_settings[
+            "format_vars"
+        ].replace("target_application;", "")
+        settings = _formatVars(unformatted_settings, ctx)
         logging.debug("Settings .json file parsed to: " + str(settings))
     except FileNotFoundError:
         logging.error("Config file not found at " + config_file_path)
@@ -3444,7 +3507,6 @@ def cleanup_simplified(
     except json.JSONDecodeError:
         logging.error("Failed to parse .json file: " + config_file_path)
         ctx.exit(1)
-
     # Check the required settings exist.
     thing_name = _tryGetSetting(
         "thing_name", settings=settings, ctx=ctx, errorOnFailure=True
@@ -3461,21 +3523,62 @@ def cleanup_simplified(
     update_name = _tryGetSetting(
         "update_name", settings=settings, ctx=ctx, errorOnFailure=True
     )
-    ota_job_name = OTA_JOB_NAME_PREFIX + update_name
-    if _does_job_exist(ota_job_name):
-        _delete_ota_update(ota_update_name=update_name, force_delete=True)
-        if _wait_for_job_deleted(ota_job_name):
-            logging.info("Deleted OTA update " + update_name + " successfully.")
-        else:
-            logging.warning("Failed to delete OTA update job.")
-    if _does_bucket_exist(bucket_name):
-        _try_delete(bucket_name, _delete_bucket, force_delete=True)
-    if _does_role_exist(iam_role_name):
-        _try_delete(iam_role_name, _delete_iam_role, force_delete=True)
-    if _does_policy_exist(policy_name):
-        _try_delete(policy_name, _delete_policy, prune=True)
-    if _does_thing_exist(thing_name):
-        _try_delete(thing_name, _delete_thing)
+    _try_delete_all(thing_name, policy_name, bucket_name, iam_role_name, update_name)
+    # Identify all certificates in the credentials folder.
+    if extended:
+        fileDir = os.path.dirname(os.path.realpath("__file__"))
+        credentials_path = _tryGetSetting(
+            "credentials_path", settings=settings, ctx=ctx, errorOnFailure=True
+        )
+        for file in glob.iglob(
+            os.path.join(fileDir, credentials_path, "thing_certificate_*.pem.crt")
+        ):
+            certificateFile = re.search("thing_certificate_(.*?).pem.crt", file)
+            if certificateFile is not None:
+                thing_name = re.search("thing_certificate_(.*?).pem.crt", file).group(1)
+                # Note that if you have modified a field other than thing_name, the
+                # script will not reset that field. E.g. 'policy_name' being hard-coded
+                # will mean this script will not attempt to find policies using
+                # the policy_name_DEFAULT with the formatter.
+                settings["thing_name"] = thing_name
+                # re-format settings using the new thing_name
+                settings = _formatVars(unformatted_settings, ctx)
+                # delete all associated entities.
+                policy_name = _tryGetSetting(
+                    "policy_name", settings=settings, ctx=ctx, errorOnFailure=True
+                )
+                bucket_name = _tryGetSetting(
+                    "bucket_name", settings=settings, ctx=ctx, errorOnFailure=True
+                )
+                iam_role_name = _tryGetSetting(
+                    "iam_role_name", settings=settings, ctx=ctx, errorOnFailure=True
+                )
+                update_name = _tryGetSetting(
+                    "update_name", settings=settings, ctx=ctx, errorOnFailure=True
+                )
+                _try_delete_all(
+                    thing_name, policy_name, bucket_name, iam_role_name, update_name
+                )
+                # delete credential files associated.
+                certificateFile = os.path.join(
+                    fileDir, credentials_path, f"thing_certificate_{thing_name}.pem.crt"
+                )
+                if os.path.exists(certificateFile):
+                    os.remove(certificateFile)
+                privateKeyFile = os.path.join(
+                    fileDir, credentials_path, f"thing_private_key_{thing_name}.pem.key"
+                )
+                if os.path.exists(privateKeyFile):
+                    os.remove(privateKeyFile)
+                publicKeyFile = os.path.join(
+                    fileDir, credentials_path, f"thing_public_key_{thing_name}.pem.key"
+                )
+                if os.path.exists(publicKeyFile):
+                    os.remove(publicKeyFile)
+                logging.info(
+                    "Cleaned up all associated entities (using your config"
+                    " file options) and files."
+                )
     logging.info("All done!")
     ctx.exit(0)
 

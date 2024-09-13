@@ -130,7 +130,7 @@ python tools/scripts/createIoTThings.py delete-thing -p --thing_name <your_thing
 
 ## Creating AWS IoT firmware update job (simplified)
 
-The `create-update-simplified` command that (1) creates a Thing and Policy, (2) runs build, (3) creates a bucket, role, and update.
+The `create-update-simplified` command (1) creates a Thing and Policy, (2) runs build, (3) creates a bucket, role, and update.
 This command also re-uses AWS entities where possible, validating entities being re-used.
 
 
@@ -253,6 +253,30 @@ These are the only 3 types of formatting supported. Even `${thing_name}{lower}{r
 If you want to add a setting, for example `update_name` to the definitions you can use in formatting, then append `;update_name` to the end of `format_vars`. This makes it possible to use `${update_name}` in the definitions of other settings.
 
 The `target_application` setting is special because it is not defined in the `json` file but can still be mentioned in definitions.
+
+## Cleaning up after AWS IoT firmware update job (simplified)
+
+The `cleanup-simplified` command uses the config file from `create-update-simplified` and deletes all AWS entities described there.
+Optionally, this command will check all credential files (such as certificates) to identify other Things created by the script.
+These Things are deleted with their certificates.
+The script identifies possibly linked AWS entities by using the .json config file to generate entity names. E.g. if the certificates for 'myTestThing' are found, and you have specified that 'policy_name' is '${thing_name}_policy', then the script will attempt to delete 'myTestThing_policy'.
+
+To use this command:
+1. Fill the following fields in the `.json` config file:
+    * `thing_name` with the name of your AWS Thing.
+    * `role_prefix` with the prefix for your role. This prefix will be pre-pended to your role name with a hyphen by default. For example, with the prefix `Proj` and role name `role`, the completed role name will become `Proj-role`.
+2. Set up following [prerequisites](#prerequisites).
+3. Run the command below.
+
+```sh
+python tools/scripts/createIoTThings.py cleanup-simplified
+```
+
+That's it. Your AWS entities created by this script should now be deleted.
+
+The only time this command will fail to find or remove all AWS entities is if:
+1. You have created an update, and deleted the role associated before the update is deleted. You need to try re-creating the role (e.g. via re-running `create-update-simplified` with the same config). You may see an error message indicating that you `cannot assume a role` to delete an OTA update.
+2. You have run `create-update-simplified` with config A, then used config B which specifies a different role, policy, update, or bucket name <b>format</b> from A. For example, changing `policy_name` from `${thing_name}_policy` in A to `myTestPolicy` in B will mean that `cleanup-simplified` cannot find `${thing_name}_policy` if run with config B. To fix this, run `cleanup-simplified` with each config separately.
 
 ## Troubleshooting
 
