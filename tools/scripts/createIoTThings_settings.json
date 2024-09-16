@@ -27,6 +27,9 @@
     "toolchain":"",
     "clean_build":"",
 
+    "max_listed": "",
+    "force_delete": "",
+
     "policy_name_DEFAULT":"${thing_name}_policy",
     "bucket_name_DEFAULT":"${thing_name}_bucket",
     "iam_role_name_DEFAULT":"${role_prefix}-${thing_name}_role",
@@ -43,5 +46,7 @@
     "inference_DEFAULT":"SOFTWARE",
     "audio_DEFAULT":"ROM",
     "toolchain_DEFAULT":"GNU",
-    "clean_build":"auto"
+    "clean_build_DEFAULT":"auto",
+    "max_listed_DEFAULT":"25",
+    "force_delete_DEFAULT":"false"
 }

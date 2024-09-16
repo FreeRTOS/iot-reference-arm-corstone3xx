@@ -1,0 +1,1 @@
+tools: All commands in createIoTThings.py now accept JSON config inputs.
