@@ -78,6 +78,8 @@ Performing an OTA update will require you to:
   * Create a policy that allows to connect to MQTT and attach it to the thing.
   * Finally, create and run the OTA update campaign
 
+It is possible to run all subsequent commands with without any arguments, instead storing parameters in a `.json` file. See `--config_file_path` and [the overview of the .json config file](#overview-of-the-json-config-file).
+
 Create a thing, an IOT policy, and attach the two together with:
 ```sh
 python tools/scripts/createIoTThings.py create-thing-and-policy --thing_name <your_thing_name> --policy_name <your_policy_name> --target_application <target_application_name>
@@ -158,7 +160,7 @@ To create a new OTA update but keep the old one, modify the `update_name` field 
 
 ```json
 {
-    # There are only 3 required fields. These need to be filled in step (1) of using this command.
+    # There are only 4 required fields. These need to be filled in step (1) of using this command.
     "thing_name":"<your_thing_name>",
     "permissions_boundary":"arn:aws:iam::<account_no>:policy/<boundary_name>",
     "role_prefix":"<prefix>",
@@ -191,6 +193,10 @@ To create a new OTA update but keep the old one, modify the `update_name` field 
     "toolchain":"",
     "clean_build":"",
 
+    # Used by list-* and delete-* commands in the script
+    "max_listed": "",
+    "force_delete": "",
+
     # Default values are below.
     "policy_name_DEFAULT":"${thing_name}_policy",
     "bucket_name_DEFAULT":"${thing_name}_bucket",
@@ -208,7 +214,9 @@ To create a new OTA update but keep the old one, modify the `update_name` field 
     "inference_DEFAULT":"SOFTWARE",
     "audio_DEFAULT":"ROM",
     "toolchain_DEFAULT":"GNU",
-    "clean_build_DEFAULT":"auto"
+    "clean_build_DEFAULT":"auto",
+    "max_listed_DEFAULT":"25",
+    "force_delete_DEFAULT":"false"
 }
 ```
 Note the \# comments are not valid JSON syntax and are purely included for this documentation.
@@ -222,6 +230,8 @@ Some of the less obvious settings include:
 - `clean_build`: if `auto`, will run the `build.sh` script for a clean build (with the `-c` flag) only when necessary. I.e. if `aws_clientcredential` is updated by the script. Otherwise, the script runs `build.sh` not from clean. If `true`, always run `build.sh` for a clean build.
 - `existing_certificate_arn` should be set to either a valid ARN for a certificate, or if you want the script to generate certificates for you, should be set to `CREATE_NEW_CERTIFICATE`.
 - `target_application` can be specified in the `.json` file, and <b>if not otherwise specified on the command line</b> this value will be taken as a default by the script.
+- `max_listed` is the number of items listed by each `list-*`  command, and for `list-all` the number listed by each category of AWS entity.
+- `force_delete`: if `true` then all `delete-*` commands with a `force-delete` parameter will force-delete, otherwise (assuming the force delete flag is not specified on command line), these deletion commands will not force-delete. For what the term `force-delete` means, see each command's `--help` description.
 
 Changing the `_DEFAULT` setting values is not recommended. Try to <b>change the user settings instead of the default settings</b>.
 Other commands in the Python file (such as `create-policy-only`) will <b>not</b> adhere to changes made to this settings file.

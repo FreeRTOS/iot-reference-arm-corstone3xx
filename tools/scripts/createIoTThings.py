@@ -106,14 +106,14 @@ def read_whole_file(path, mode="r"):
 class ApplicationType(Enum):
     # These must be the subdirectory for each application
     # in the `applications` folder.
-    KEYWORD_DETECTION = "keyword_detection"
-    OBJECT_DETECTION = "object_detection"
-    SPEECH_RECOGNITION = "speech_recognition"
-    UNDEFINED = "DEFAULT"
+    KEYWORD_DETECTION = "keyword-detection"
+    OBJECT_DETECTION = "object-detection"
+    SPEECH_RECOGNITION = "speech-recognition"
+    UNDEFINED = "UNDEFINED"
 
     def app_type_from_string(s):
         for app in AWS_APPLICATIONS:
-            if s == app.value.replace("_", "-"):
+            if s == app.value:
                 return app
         return ApplicationType.UNDEFINED
 
@@ -320,15 +320,23 @@ class StdCommand(click.core.Command):
             'help': None}
         """
         super().__init__(*args, **kwargs)
-        self.params.insert(
-            0,
-            click.core.Option(
-                ("--log_level",),
-                help="Provide logging level. \
+        self.params.extend(
+            [
+                click.core.Option(
+                    ("--config_file_path",),
+                    help="Path to the .json file defining arguments for"
+                    " commands in this script."
+                    " Relative to the root of this Project.",
+                    default="tools/scripts/createIoTThings_settings.json",
+                ),
+                click.core.Option(
+                    ("--log_level",),
+                    help="Provide logging level. \
                     Example --log_level debug, default="
-                + DEFAULT_LOG_LEVEL,
-                default=DEFAULT_LOG_LEVEL,
-            ),
+                    + "info",
+                    default="info",
+                ),
+            ]
         )
 
     def invoke(self, ctx):
@@ -341,15 +349,23 @@ class StdCommand(click.core.Command):
 class ListingCommand(click.core.Command):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.params.insert(
-            0,
-            click.core.Option(
-                ("--log_level",),
-                help="Provide logging level. \
+        self.params.extend(
+            [
+                click.core.Option(
+                    ("--config_file_path",),
+                    help="Path to the .json file defining arguments for"
+                    " commands in this script."
+                    " Relative to the root of this Project.",
+                    default="tools/scripts/createIoTThings_settings.json",
+                ),
+                click.core.Option(
+                    ("--log_level",),
+                    help="Provide logging level. \
                     Example --log_level debug, default="
-                + "info",
-                default="info",
-            ),
+                    + "info",
+                    default="info",
+                ),
+            ]
         )
 
     def invoke(self, ctx):
@@ -484,7 +500,7 @@ def aws_clientcredential_needs_to_be_updated(flags):
     credentialFileTemplate = os.path.join(
         fileDir,
         "applications/",
-        flags.targetApplication.value,
+        flags.targetApplication.value.replace("-", "_"),
         "configs/aws_configs/",
         "aws_clientcredential.h",
     )
@@ -522,7 +538,7 @@ def _write_aws_clientcredential_h(flags):
     credentialFileTemplate = os.path.join(
         fileDir,
         "applications/",
-        flags.targetApplication.value,
+        flags.targetApplication.value.replace("-", "_"),
         "configs/aws_configs/",
         "aws_clientcredential.h",
     )
@@ -600,7 +616,7 @@ def _write_aws_clientcredential_h(flags):
         credentialFile = os.path.join(
             fileDir,
             "applications/",
-            flags.targetApplication.value,
+            flags.targetApplication.value.replace("-", "_"),
             "configs/aws_configs/aws_clientcredential.h",
         )
     with open(credentialFile, "w") as file:
@@ -829,14 +845,116 @@ def _create_thing(flags: Flags, Name, certificate_arn):
     return True
 
 
+def _tryGetSettings(
+    ctx, config_file_path, requiredSettings, optionalSettings, parameters
+):
+    """
+    This function takes a list of required settings, and a dictionary lookup for local
+    variables defined in a function, and finds the required settings via either:
+    1. Identifying them in the caller function's variables dictionary.
+    2. Finding the setting in the settings .json file.
+
+    Example usage:
+    >>> settings = _tryGetSettings(ctx, ["thing_name"], [], locals().copy())
+    >>> thing_name = settings["thing_name"]
+
+    Parameters:
+    ctx: Click context used to send exit codes.
+    config_file_path (str): the path (relative to the project's root directory) where
+        the .json config file is located.
+    requiredSettings (list(str)): a list of settings to find the values of.
+        If a setting's value cannot be found, an error will occur.
+    optionalSettings (list(str)): a list of settings to find the values of.
+        If we cannot find a setting's value, no error will occur.
+    parameters (dict): a mapping of function arguments to values for the
+        caller function.
+
+    Returns:
+    A dictionary of values of the required settings.
+    """
+    settings = {}
+    # Read .json file, pass parameters to flags.
+    if "config_file_path" not in parameters:
+        logging.error("Must define variable 'config_file_path' to use _tryGetSettings.")
+        ctx.exit(1)
+    target_application = None
+    if "target_application" in parameters:
+        target_application = parameters["target_application"]
+    target = ApplicationType.app_type_from_string(target_application)
+    try:
+        contents = read_whole_file(config_file_path)
+        settings = json.loads(contents)
+        if (
+            "target_application" in requiredSettings
+            and target == ApplicationType.UNDEFINED
+        ):
+            if target_application is not None:
+                logging.warning(
+                    "Invalid target application '"
+                    + str(target_application)
+                    + "' provided by command line. Re-trying with .json setting."
+                )
+            target_cfg = _tryGetSetting(
+                "target_application", settings=settings, ctx=ctx, errorOnFailure=False
+            )
+            if target_cfg is None:
+                logging.error(
+                    f"Target application not provided as a command line argument,"
+                    f" nor in '{config_file_path}'."
+                )
+                ctx.exit(1)
+            target = ApplicationType.app_type_from_string(target_cfg)
+            if target == ApplicationType.UNDEFINED:
+                logging.error(
+                    f"Invalid application type provided by '{config_file_path}'."
+                    " Value is: "
+                    + str(target_cfg)
+                    + ". See --help for valid alternatives."
+                )
+                ctx.exit(1)
+            settings["target_application"] = target.value
+        else:
+            settings["format_vars"] = settings["format_vars"].replace(
+                "target_application;", ""
+            )
+        settings = _formatVars(settings, ctx)
+        logging.debug("Settings .json file parsed to: " + str(settings))
+    except FileNotFoundError:
+        logging.warning("Config file not found at path " + str(config_file_path))
+    except json.JSONDecodeError:
+        logging.error("Failed to parse .json file: " + config_file_path)
+        ctx.exit(1)
+    returnSettings = {}
+    # Check the required settings exist.
+    for setting in requiredSettings:
+        if setting in parameters and parameters[setting] is not None:
+            returnSettings[setting] = parameters[setting]
+        else:
+            returnSettings[setting] = _tryGetSetting(
+                setting, settings=settings, ctx=ctx, errorOnFailure=True
+            )
+    for setting in optionalSettings:
+        if setting in parameters and parameters[setting] is not None:
+            returnSettings[setting] = parameters[setting]
+        else:
+            returnSettings[setting] = _tryGetSetting(
+                setting, settings=settings, ctx=ctx, errorOnFailure=False
+            )
+    # exception for flags like 'force_delete'
+    if "force_delete" in requiredSettings or "force_delete" in optionalSettings:
+        returnSettings["force_delete"] = returnSettings[
+            "force_delete"
+        ] or _tryGetSetting(
+            "force_delete", settings=settings, ctx=ctx, errorOnFailure=False
+        )
+    return returnSettings
+
+
 # Define command-line interface for Thing creation command.
 @cli.command(cls=StdCommand)
-@click.option(
-    "--thing_name", prompt="Enter Thing Name", help="Name of Thing to be created."
-)
+@click.option("--thing_name", help="Name of Thing to be created.")
 @click.option(
     "--existing_certificate_arn",
-    default=CREATE_NEW_CERTIFICATE,
     help="Use the provided certificate ARN instead of creating a new one",
 )
 @click.option(
@@ -859,14 +977,15 @@ def _create_thing(flags: Flags, Name, certificate_arn):
 )
 @click.option(
     "--target_application",
-    required=True,
+    required=False,
     help="Updates the target application's aws_clientcredential.h automatically. \
         Accepted values: "
     + reduce(
         lambda y, z: y + ", " + z,
-        map(lambda x: "'" + x.value.replace("_", "-") + "'", AWS_APPLICATIONS),
+        map(lambda x: "'" + x.value + "'", AWS_APPLICATIONS),
     )
-    + ".",
+    + ". Providing this argument will take priority over the value specified"
+    + " in the .json config file.",
 )
 @click.pass_context
 def create_thing_only(
@@ -877,27 +996,33 @@ def create_thing_only(
     build_dir,
     ota_binary,
     target_application,
+    config_file_path,
     log_level,
 ):
-    target = ApplicationType.app_type_from_string(target_application)
-    if target_application == ApplicationType.UNDEFINED:
-        logging.error(
-            "The provided target application '"
-            + target_application
-            + "' is not passed using the CLI."
-        )
-        ctx.exit(1)
+    requiredSettings = [
+        "target_application",
+        "thing_name",
+        "existing_certificate_arn",
+        "credentials_path",
+        "build_dir",
+        "ota_binary",
+    ]
+    # Define 'thing_name', and other required settings.
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+    target = ApplicationType.app_type_from_string(settings["target_application"])
     ctx.flags = Flags(
-        build_dir=build_dir,
-        ota_binary=ota_binary,
+        build_dir=settings["build_dir"],
+        ota_binary=settings["ota_binary"],
         target_application=target,
     )
-    ctx.flags.THING_NAME = thing_name
+    ctx.flags.THING_NAME = settings["thing_name"]
     certificate_arn = _get_credential_arn(
-        ctx.flags, existing_certificate_arn, credentials_path
+        ctx.flags, settings["existing_certificate_arn"], settings["credentials_path"]
     )
 
-    if not _create_thing(ctx.flags, thing_name, certificate_arn):
+    if not _create_thing(ctx.flags, settings["thing_name"], certificate_arn):
         cleanup_aws_resources(ctx.flags)
         ctx.exit(1)
     ctx.exit(0)
@@ -971,12 +1096,9 @@ def _create_policy(flags: Flags, Name, certificate_arn):
 
 # Define command-line interface for Policy creation command.
 @cli.command(cls=StdCommand)
-@click.option(
-    "--policy_name", prompt="Enter Policy Name", help="Name of Policy to be created."
-)
+@click.option("--policy_name", help="Name of Policy to be created.")
 @click.option(
     "--thing_name",
-    prompt="Enter Thing Name",
     help="If you create a new certificate, you must name the thing\
           this credential will be attached to.",
 )
@@ -1004,6 +1126,18 @@ def _create_policy(flags: Flags, Name, certificate_arn):
     help="Override the default OTA file used",
     default=DEFAULT_OTA_BINARY,
 )
+@click.option(
+    "--target_application",
+    required=False,
+    help="Updates the target application's aws_clientcredential.h automatically. \
+        Accepted values: "
+    + reduce(
+        lambda y, z: y + ", " + z,
+        map(lambda x: "'" + x.value + "'", AWS_APPLICATIONS),
+    )
+    + ". Providing this argument will take priority over the value specified"
+    + " in the .json config file.",
+)
 @click.pass_context
 def create_policy_only(
     ctx,
@@ -1013,18 +1147,34 @@ def create_policy_only(
     credentials_path,
     build_dir,
     ota_binary,
+    target_application,
+    config_file_path,
     log_level,
 ):
-    ctx.flags = Flags(
-        build_dir=build_dir,
-        ota_binary=ota_binary,
+    requiredSettings = [
+        "policy_name",
+        "credentials_path",
+        "build_dir",
+        "ota_binary",
+        "target_application",
+    ]
+    optionalSettings = ["thing_name", "existing_certificate_arn"]
+    # Define 'thing_name', and other required settings.
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, optionalSettings, locals().copy()
     )
-    ctx.flags.THING_NAME = thing_name
-    ctx.flags.POLICY_NAME = policy_name
-    if existing_certificate_arn is None:
+    target = ApplicationType.app_type_from_string(settings["target_application"])
+    ctx.flags = Flags(
+        build_dir=settings["build_dir"],
+        ota_binary=settings["ota_binary"],
+        target_application=target,
+    )
+    ctx.flags.THING_NAME = settings["thing_name"]
+    ctx.flags.POLICY_NAME = settings["policy_name"]
+    if "existing_certificate_arn" not in settings:
         # then we create a new credential, and require a thing name
-        if thing_name is not None:
-            ctx.flags.THING_NAME = thing_name
+        if "thing_name" in settings:
+            ctx.flags.THING_NAME = settings["thing_name"]
         else:
             logging.error(
                 (
@@ -1036,10 +1186,10 @@ def create_policy_only(
             ctx.exit(1)
 
     certificate_arn = _get_credential_arn(
-        ctx.flags, existing_certificate_arn, credentials_path
+        ctx.flags, settings["existing_certificate_arn"], settings["credentials_path"]
     )
 
-    if not _create_policy(ctx.flags, policy_name, certificate_arn):
+    if not _create_policy(ctx.flags, settings["policy_name"], certificate_arn):
         cleanup_aws_resources(ctx.flags)
         ctx.exit(1)
     ctx.exit(0)
@@ -1087,9 +1237,7 @@ def _create_aws_bucket(flags: Flags, Name):
 
 # Define command-line interface for Bucket creation command.
 @cli.command(cls=StdCommand)
-@click.option(
-    "--bucket_name", prompt="Enter Bucket Name", help="Name of Bucket to be created."
-)
+@click.option("--bucket_name", help="Name of Bucket to be created.")
 @click.option(
     "--build_dir",
     help="Override the default build directory",
@@ -1101,12 +1249,24 @@ def _create_aws_bucket(flags: Flags, Name):
     default=DEFAULT_OTA_BINARY,
 )
 @click.pass_context
-def create_bucket_only(ctx, bucket_name, build_dir, ota_binary, log_level):
-    ctx.flags = Flags(
-        build_dir=build_dir,
-        ota_binary=ota_binary,
+def create_bucket_only(
+    ctx, bucket_name, build_dir, ota_binary, config_file_path, log_level
+):
+    requiredSettings = [
+        "bucket_name",
+        "build_dir",
+        "ota_binary",
+    ]
+    # Define 'bucket_name', and other required settings.
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
     )
-    if not _create_aws_bucket(ctx.flags, bucket_name):
+
+    ctx.flags = Flags(
+        build_dir=settings["build_dir"],
+        ota_binary=settings["ota_binary"],
+    )
+    if not _create_aws_bucket(ctx.flags, settings["bucket_name"]):
         cleanup_aws_resources(ctx.flags)
         ctx.exit(1)
     ctx.exit(0)
@@ -1157,7 +1317,7 @@ def _create_iam_role(flags: Flags, Name, permissions_boundary=None):
                 AssumeRolePolicyDocument=json.dumps(flags.ASSUME_ROLE_POLICY_DOCUMENT),
                 PermissionsBoundary=permissions_boundary,
             )["Role"]
-        logging.info("Role Created")
+        logging.info(f"Role {flags.OTA_ROLE_NAME} created")
         iam.attach_role_policy(
             RoleName=flags.OTA_ROLE_NAME,
             PolicyArn=("arn:aws:iam::aws:policy/service-role/" "AWSIoTRuleActions"),
@@ -1246,7 +1406,6 @@ def _create_iam_role(flags: Flags, Name, permissions_boundary=None):
 @cli.command(cls=StdCommand)
 @click.option(
     "--iam_role_name",
-    prompt="Enter IAM Role Name",
     help="Name of IAM Role to be created.",
 )
 @click.option(
@@ -1273,15 +1432,29 @@ def create_iam_role_only(
     build_dir,
     ota_binary,
     permissions_boundary,
+    config_file_path,
     log_level,
 ):
+    requiredSettings = [
+        "iam_role_name",
+        "build_dir",
+        "ota_binary",
+        "permissions_boundary",
+    ]
+    optionalSettings = ["permissions_boundary"]
+    # Define 'iam_role_name', and other required settings.
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, optionalSettings, locals().copy()
+    )
     ctx.flags = Flags(
         bucket_name="",
-        role_name=iam_role_name,
-        build_dir=build_dir,
-        ota_binary=ota_binary,
+        role_name=settings["iam_role_name"],
+        build_dir=settings["build_dir"],
+        ota_binary=settings["ota_binary"],
     )
-    if not _create_iam_role(ctx.flags, iam_role_name, permissions_boundary):
+    if not _create_iam_role(
+        ctx.flags, settings["iam_role_name"], settings["permissions_boundary"]
+    ):
         cleanup_aws_resources(ctx.flags)
         ctx.exit(1)
     ctx.exit(0)
@@ -1506,27 +1679,22 @@ def _create_aws_update(flags: Flags, ota_name):
 @cli.command(cls=StdCommand)
 @click.option(
     "--thing_name",
-    prompt="Enter Thing Name",
     help="Name of the existing Thing to use when creating the update.",
 )
 @click.option(
     "--policy_name",
-    prompt="Enter Policy Name",
     help="Name of the existing Policy to use when creating the update.",
 )
 @click.option(
     "--bucket_name",
-    prompt="Enter Bucket Name",
     help="Name of the existing Bucket to use when creating the update.",
 )
 @click.option(
     "--iam_role_name",
-    prompt="Enter IAM Role Name",
     help="Name of the existing IAM Role to use when creating the update.",
 )
 @click.option(
     "--update_name",
-    prompt="Enter Update ID: ",
     help="Update ID to create.",
 )
 @click.option(
@@ -1549,13 +1717,28 @@ def create_update_only(
     update_name,
     build_dir,
     ota_binary,
+    config_file_path,
     log_level,
 ):
+    requiredSettings = [
+        "thing_name",
+        "policy_name",
+        "bucket_name",
+        "iam_role_name",
+        "update_name",
+        "build_dir",
+        "ota_binary",
+    ]
+    optionalSettings = []
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, optionalSettings, locals().copy()
+    )
+
     ctx.flags = Flags(
-        bucket_name=bucket_name,
-        role_name=iam_role_name,
-        build_dir=build_dir,
-        ota_binary=ota_binary,
+        bucket_name=settings["bucket_name"],
+        role_name=settings["iam_role_name"],
+        build_dir=settings["build_dir"],
+        ota_binary=settings["ota_binary"],
         ota_update_signature_filename=DEFAULT_OTA_UPDATE_SIGNATURE_FILENAME,
     )
     signaturePath = os.path.join(
@@ -1572,26 +1755,26 @@ def create_update_only(
         ctx.exit(1)
 
     # Need previously created things and policy to setup an OTA update job
-    ctx.flags.THING_NAME = thing_name
-    if not _does_thing_exist(thing_name):
-        logging.error("no thing found with the name " + thing_name)
+    ctx.flags.THING_NAME = settings["thing_name"]
+    if not _does_thing_exist(settings["thing_name"]):
+        logging.error("no thing found with the name " + settings["thing_name"])
         ctx.exit(1)
 
-    ctx.flags.POLICY_NAME = policy_name
-    if not _does_policy_exist(policy_name):
-        logging.error("no policy found with the name " + policy_name)
+    ctx.flags.POLICY_NAME = settings["policy_name"]
+    if not _does_policy_exist(settings["policy_name"]):
+        logging.error("no policy found with the name " + settings["policy_name"])
         ctx.exit(1)
 
-    ctx.flags.OTA_BUCKET_NAME = bucket_name
-    if not _does_bucket_exist(bucket_name):
-        logging.error("no bucket found with the name " + bucket_name)
+    ctx.flags.OTA_BUCKET_NAME = settings["bucket_name"]
+    if not _does_bucket_exist(settings["bucket_name"]):
+        logging.error("no bucket found with the name " + settings["bucket_name"])
         ctx.exit(1)
 
-    if not _does_role_exist(iam_role_name):
-        logging.error("no iam role found with the name " + iam_role_name)
+    if not _does_role_exist(settings["iam_role_name"]):
+        logging.error("no iam role found with the name " + settings["iam_role_name"])
         ctx.exit(1)
 
-    if not _create_aws_update(ctx.flags, update_name):
+    if not _create_aws_update(ctx.flags, settings["update_name"]):
         cleanup_aws_resources(ctx.flags)
         ctx.exit(1)
     ctx.exit(0)
@@ -1599,12 +1782,8 @@ def create_update_only(
 
 # Define command-line interface for create-thing-and-policy command.
 @cli.command(cls=StdCommand)
-@click.option(
-    "--thing_name", prompt="Enter Thing Name", help="Name of Thing to be created."
-)
-@click.option(
-    "--policy_name", prompt="Enter Policy Name", help="Name of Policy to be created."
-)
+@click.option("--thing_name", help="Name of Thing to be created.")
+@click.option("--policy_name", help="Name of Policy to be created.")
 @click.option(
     "--existing_certificate_arn",
     default=CREATE_NEW_CERTIFICATE,
@@ -1631,7 +1810,6 @@ def create_update_only(
 )
 @click.option(
     "--target_application",
-    required=True,
     help="Updates target application's aws_clientcredential.h automatically. \
         Accepted values: "
     + reduce(
@@ -1649,31 +1827,47 @@ def create_thing_and_policy(
     build_dir,
     ota_binary,
     target_application,
+    config_file_path,
     log_level,
 ):
-    target = ApplicationType.app_type_from_string(target_application)
-    if target_application == ApplicationType.UNDEFINED:
+    requiredSettings = [
+        "thing_name",
+        "policy_name",
+        "credentials_path",
+        "target_application",
+        "build_dir",
+        "ota_binary",
+    ]
+    optionalSettings = ["existing_certificate_arn", "target_application"]
+    # Define 'thing_name', and other required settings.
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, optionalSettings, locals().copy()
+    )
+    target = None
+    if "target_application" in settings:
+        target = ApplicationType.app_type_from_string(settings["target_application"])
+    if target == ApplicationType.UNDEFINED:
         logging.error(
             "The provided target application '"
-            + target_application
+            + settings["target_application"]
             + "' is not passed using the CLI."
         )
         ctx.exit(1)
     ctx.flags = Flags(
-        build_dir=build_dir,
-        ota_binary=ota_binary,
+        build_dir=settings["build_dir"],
+        ota_binary=settings["ota_binary"],
         target_application=target,
     )
 
-    ctx.flags.THING_NAME = thing_name
+    ctx.flags.THING_NAME = settings["thing_name"]
     certificate_arn = _get_credential_arn(
-        ctx.flags, existing_certificate_arn, credentials_path
+        ctx.flags, settings["existing_certificate_arn"], settings["credentials_path"]
     )
 
-    if not _create_thing(ctx.flags, thing_name, certificate_arn):
+    if not _create_thing(ctx.flags, settings["thing_name"], certificate_arn):
         cleanup_aws_resources(ctx.flags)
         ctx.exit(1)
-    if not _create_policy(ctx.flags, policy_name, certificate_arn):
+    if not _create_policy(ctx.flags, settings["policy_name"], certificate_arn):
         # Delete all AWS entities created by the script so far.
         # I.e. delete the created Thing and Thing certificate.
         cleanup_aws_resources(ctx.flags)
@@ -1683,18 +1877,13 @@ def create_thing_and_policy(
 
 # Defines Command-line interface for creating bucket, role, and OTA update.
 @cli.command(cls=StdCommand)
-@click.option(
-    "--thing_name", prompt="Enter existing Thing Name", help="Name of Thing to be used."
-)
-@click.option(
-    "--bucket_name", prompt="Enter Bucket Name", help="Name of Bucket to be created."
-)
+@click.option("--thing_name", help="Name of Thing to be used.")
+@click.option("--bucket_name", help="Name of Bucket to be created.")
 @click.option(
     "--iam_role_name",
-    prompt="Enter IAM Role Name",
     help="Name of IAM Role to be created.",
 )
-@click.option("--update_name", prompt="Enter Update ID", help="Update ID to create.")
+@click.option("--update_name", help="Update ID to create.")
 @click.option(
     "--build_dir",
     help="Override the default build directory",
@@ -1722,13 +1911,28 @@ def create_bucket_role_update(
     build_dir,
     ota_binary,
     permissions_boundary,
+    config_file_path,
     log_level,
 ):
+    requiredSettings = [
+        "thing_name",
+        "bucket_name",
+        "iam_role_name",
+        "update_name",
+        "build_dir",
+        "ota_binary",
+        "permissions_boundary",
+    ]
+    # Define 'iam_role_name', and other required settings.
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
     ctx.flags = Flags(
-        bucket_name=bucket_name,
-        role_name=iam_role_name,
-        build_dir=build_dir,
-        ota_binary=ota_binary,
+        bucket_name=settings["bucket_name"],
+        role_name=settings["iam_role_name"],
+        build_dir=settings["build_dir"],
+        ota_binary=settings["ota_binary"],
         ota_update_signature_filename=DEFAULT_OTA_UPDATE_SIGNATURE_FILENAME,
     )
     signaturePath = os.path.join(
@@ -1743,25 +1947,24 @@ def create_bucket_role_update(
             + "'. It is not possible to upload OTA updates."
         )
         ctx.exit(1)
-    if permissions_boundary is None:
-        logging.error('Must define "--permissions_boundary" to create a role.')
-        ctx.exit(1)
 
     # Need previously created thing to setup an OTA update job
-    ctx.flags.THING_NAME = thing_name
-    if not _does_thing_exist(thing_name):
-        logging.error("no thing found with the name " + thing_name)
+    ctx.flags.THING_NAME = settings["thing_name"]
+    if not _does_thing_exist(settings["thing_name"]):
+        logging.error("No thing found with the name " + settings["thing_name"])
         ctx.exit(1)
 
-    if not _create_aws_bucket(ctx.flags, bucket_name):
+    if not _create_aws_bucket(ctx.flags, settings["bucket_name"]):
         cleanup_aws_resources(ctx.flags)
         ctx.exit(1)
 
-    if not _create_iam_role(ctx.flags, iam_role_name, permissions_boundary):
+    if not _create_iam_role(
+        ctx.flags, settings["iam_role_name"], settings["permissions_boundary"]
+    ):
         cleanup_aws_resources(ctx.flags)
         ctx.exit(1)
 
-    if not _create_aws_update(ctx.flags, update_name):
+    if not _create_aws_update(ctx.flags, settings["update_name"]):
         cleanup_aws_resources(ctx.flags)
         ctx.exit(1)
     ctx.exit(0)
@@ -1887,16 +2090,10 @@ def _counter(stop_event: threading.Event):
         Accepted values: "
     + reduce(
         lambda y, z: y + ", " + z,
-        map(lambda x: "'" + x.value.replace("_", "-") + "'", AWS_APPLICATIONS),
+        map(lambda x: "'" + x.value + "'", AWS_APPLICATIONS),
     )
     + ". Providing this argument will take priority over the value specified"
     + " in the .json config file.",
-)
-@click.option(
-    "--config_file_path",
-    help="Path to the .json file defining arguments for creating an OTA"
-    + "update. Relative to the root of this Project.",
-    default="tools/scripts/createIoTThings_settings.json",
 )
 @click.pass_context
 def create_update_simplified(
@@ -1954,7 +2151,7 @@ def create_update_simplified(
                     + ". See --help for valid alternatives."
                 )
                 ctx.exit(1)
-        settings["target_application"] = target.value.replace("_", "-")
+        settings["target_application"] = target.value
         settings = _formatVars(settings, ctx)
         logging.debug("Settings .json file parsed to: " + str(settings))
     except FileNotFoundError:
@@ -2093,6 +2290,8 @@ def create_update_simplified(
                 _delete_thing,
             )
             _try_delete(policy_name, _delete_policy)
+            cleanup_aws_resources(ctx.flags)
+            ctx.exit(1)
         else:
             logging.warning(
                 "Using a Thing and Policy with different certificates may cause errors."
@@ -2119,7 +2318,7 @@ def create_update_simplified(
     if skip_build != "true":
         cmnd = [
             build_script_path,
-            target.value.replace("_", "-"),
+            target.value,
             "--certificate_path",
             certificate_path,
             "--private_key_path",
@@ -2367,11 +2566,15 @@ def _list_things(max_listed=float("inf")):
 @click.option(
     "--max_listed",
     help="Will not print more than max_listed things",
-    default=25,
 )
 @click.pass_context
-def list_things(ctx, log_level, max_listed):
-    _list_things(max_listed)
+def list_things(ctx, config_file_path, log_level, max_listed):
+    requiredSettings = ["max_listed"]
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
+    _list_things(int(settings["max_listed"]))
     ctx.exit(0)
 
 
@@ -2387,11 +2590,15 @@ def _list_policies(max_listed=float("inf")):
 @click.option(
     "--max_listed",
     help="Will not print more than max_listed policies",
-    default=25,
 )
 @click.pass_context
-def list_policies(ctx, log_level, max_listed):
-    _list_policies(max_listed)
+def list_policies(ctx, config_file_path, log_level, max_listed):
+    requiredSettings = ["max_listed"]
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
+    _list_policies(int(settings["max_listed"]))
     ctx.exit(0)
 
 
@@ -2407,11 +2614,15 @@ def _list_iam_roles(max_listed=float("inf")):
 @click.option(
     "--max_listed",
     help="Will not print more than max_listed roles",
-    default=25,
 )
 @click.pass_context
-def list_iam_roles(ctx, log_level, max_listed):
-    _list_iam_roles(max_listed)
+def list_iam_roles(ctx, config_file_path, log_level, max_listed):
+    requiredSettings = ["max_listed"]
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
+    _list_iam_roles(int(settings["max_listed"]))
     ctx.exit(0)
 
 
@@ -2427,11 +2638,15 @@ def _list_ota_updates(max_listed=float("inf")):
 @click.option(
     "--max_listed",
     help="Will not print more than max_listed ota updates",
-    default=25,
 )
 @click.pass_context
-def list_ota_updates(ctx, log_level, max_listed):
-    _list_ota_updates(max_listed)
+def list_ota_updates(ctx, config_file_path, log_level, max_listed):
+    requiredSettings = ["max_listed"]
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
+    _list_ota_updates(int(settings["max_listed"]))
     ctx.exit(0)
 
 
@@ -2447,11 +2662,15 @@ def _list_jobs(max_listed=float("inf")):
 @click.option(
     "--max_listed",
     help="Will not print more than max_listed jobs",
-    default=25,
 )
 @click.pass_context
-def list_jobs(ctx, log_level, max_listed):
-    _list_jobs(max_listed)
+def list_jobs(ctx, config_file_path, log_level, max_listed):
+    requiredSettings = ["max_listed"]
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
+    _list_jobs(int(settings["max_listed"]))
     ctx.exit(0)
 
 
@@ -2479,11 +2698,15 @@ def _list_buckets(max_listed=float("inf")):
 @click.option(
     "--max_listed",
     help="Will not print more than max_listed buckets",
-    default=25,
 )
 @click.pass_context
-def list_buckets(ctx, log_level, max_listed):
-    _list_buckets(max_listed)
+def list_buckets(ctx, config_file_path, log_level, max_listed):
+    requiredSettings = ["max_listed"]
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
+    _list_buckets(int(settings["max_listed"]))
     ctx.exit(0)
 
 
@@ -2499,11 +2722,15 @@ def _list_certificates(max_listed=float("inf")):
 @click.option(
     "--max_listed",
     help="Will not print more than max_listed certificates",
-    default=25,
 )
 @click.pass_context
-def list_certificates(ctx, log_level, max_listed):
-    _list_certificates(max_listed)
+def list_certificates(ctx, config_file_path, log_level, max_listed):
+    requiredSettings = ["max_listed"]
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
+    _list_certificates(int(settings["max_listed"]))
     ctx.exit(0)
 
 
@@ -2512,24 +2739,28 @@ def list_certificates(ctx, log_level, max_listed):
 @click.option(
     "--max_listed",
     help="Will not print more than max_listed item for each category",
-    default=15,
 )
 @click.pass_context
-def list_all(ctx, log_level, max_listed):
+def list_all(ctx, config_file_path, log_level, max_listed):
+    requiredSettings = ["max_listed"]
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
     logging.info("Things:")
-    _list_things(max_listed)
+    _list_things(int(settings["max_listed"]))
     logging.info("\n\nPolicies:")
-    _list_policies(max_listed)
+    _list_policies(int(settings["max_listed"]))
     logging.info("\n\nRoles:")
-    _list_iam_roles(max_listed)
+    _list_iam_roles(int(settings["max_listed"]))
     logging.info("\n\nOTA Updates:")
-    _list_ota_updates(max_listed)
+    _list_ota_updates(int(settings["max_listed"]))
     logging.info("\n\nJobs:")
-    _list_jobs(max_listed)
+    _list_jobs(int(settings["max_listed"]))
     logging.info("\n\nBuckets:")
-    _list_buckets(max_listed)
+    _list_buckets(int(settings["max_listed"]))
     logging.info("\n\nCertificates:")
-    _list_certificates(max_listed)
+    _list_certificates(int(settings["max_listed"]))
     ctx.exit(0)
 
 
@@ -2613,7 +2844,6 @@ def _delete_thing(thing_name, prune=False):
 @cli.command(cls=StdCommand)
 @click.option(
     "--thing_name",
-    prompt="Enter thing name",
     help="Name of thing to be\
           deleted.",
 )
@@ -2626,9 +2856,18 @@ def _delete_thing(thing_name, prune=False):
     is_flag=True,
 )
 @click.pass_context
-def delete_thing(ctx, thing_name, log_level, prune):
-    if _delete_thing(thing_name, prune):
-        logging.info(thing_name + " deleted")
+def delete_thing(ctx, thing_name, config_file_path, log_level, prune):
+    requiredSettings = [
+        "thing_name",
+        "prune",
+    ]
+    # Define 'thing_name' and other required settings
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
+    if _delete_thing(settings["thing_name"], settings["prune"]):
+        logging.info(settings["thing_name"] + " deleted")
         ctx.exit(0)
     ctx.exit(1)
 
@@ -2677,9 +2916,7 @@ def _delete_policy(policy_name, prune=False):
 
 # Define command-line interface for Policy deletion command.
 @cli.command(cls=StdCommand)
-@click.option(
-    "--policy_name", prompt="Enter policy name", help="Name of policy to be deleted."
-)
+@click.option("--policy_name", help="Name of policy to be deleted.")
 @click.option(
     "-p",
     "--prune-certificate",
@@ -2689,9 +2926,18 @@ def _delete_policy(policy_name, prune=False):
     is_flag=True,
 )
 @click.pass_context
-def delete_policy(ctx, policy_name, log_level, prune):
-    if _delete_policy(policy_name, prune):
-        logging.info(policy_name + " deleted")
+def delete_policy(ctx, policy_name, config_file_path, log_level, prune):
+    requiredSettings = [
+        "policy_name",
+        "prune",
+    ]
+    # Define 'policy_name' and other required settings
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
+    if _delete_policy(settings["policy_name"], settings["prune"]):
+        logging.info(settings["policy_name"] + " deleted")
         ctx.exit(0)
     ctx.exit(1)
 
@@ -2750,9 +2996,7 @@ def _delete_iam_role(iam_role_name, force_delete=False):
 
 # Define command-line interface for Role deletion command.
 @cli.command(cls=StdCommand)
-@click.option(
-    "--iam_role_name", prompt="Enter role name", help="Name of the role to be deleted."
-)
+@click.option("--iam_role_name", help="Name of the role to be deleted.")
 @click.option(
     "-f",
     "--force-delete",
@@ -2761,9 +3005,21 @@ def _delete_iam_role(iam_role_name, force_delete=False):
     is_flag=True,
 )
 @click.pass_context
-def delete_iam_role(ctx, iam_role_name, log_level, force_delete):
-    if _delete_iam_role(iam_role_name, force_delete):
-        logging.info(iam_role_name + " deleted")
+def delete_iam_role(ctx, iam_role_name, config_file_path, log_level, force_delete):
+    requiredSettings = [
+        "iam_role_name",
+        "force_delete",
+    ]
+    # Define 'iam_role_name' and other required settings
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
+    if _delete_iam_role(
+        settings["iam_role_name"],
+        settings["force_delete"] == "true" or settings["force_delete"] is True,
+    ):
+        logging.info(settings["iam_role_name"] + " deleted")
         ctx.exit(0)
     ctx.exit(1)
 
@@ -2800,9 +3056,7 @@ def _delete_job(job_name, force_delete=False):
 
 # Define command-line interface for Job deletion command.
 @cli.command(cls=StdCommand)
-@click.option(
-    "--job_name", prompt="Enter job name", help="Name of the job to be deleted."
-)
+@click.option("--job_name", help="Name of the job to be deleted.")
 @click.option(
     "-f",
     "--force-delete",
@@ -2811,9 +3065,21 @@ def _delete_job(job_name, force_delete=False):
     is_flag=True,
 )
 @click.pass_context
-def delete_job(ctx, job_name, log_level, force_delete):
-    if _delete_job(job_name, force_delete):
-        logging.info(job_name + " deleted")
+def delete_job(ctx, job_name, config_file_path, log_level, force_delete):
+    requiredSettings = [
+        "job_name",
+        "force_delete",
+    ]
+    # Define 'job_name' and other required settings
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
+    if _delete_job(
+        settings["job_name"],
+        settings["force_delete"] == "true" or settings["force_delete"] is True,
+    ):
+        logging.info(settings["job_name"] + " deleted")
         ctx.exit(0)
     ctx.exit(1)
 
@@ -2930,7 +3196,6 @@ def _delete_ota_update(ota_update_name, force_delete=False):
 @cli.command(cls=StdCommand)
 @click.option(
     "--ota_update_name",
-    prompt="Enter ota update name",
     help="Name of the ota update to be deleted.",
 )
 @click.option(
@@ -2944,9 +3209,21 @@ def _delete_ota_update(ota_update_name, force_delete=False):
     is_flag=True,
 )
 @click.pass_context
-def delete_ota_update(ctx, ota_update_name, log_level, force_delete):
-    if _delete_ota_update(ota_update_name, force_delete):
-        logging.info(ota_update_name + " deleted")
+def delete_ota_update(ctx, ota_update_name, config_file_path, log_level, force_delete):
+    requiredSettings = [
+        "ota_update_name",
+        "force_delete",
+    ]
+    # Define 'ota_update_name' and other required settings
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
+    if _delete_ota_update(
+        settings["ota_update_name"],
+        settings["force_delete"] == "true" or settings["force_delete"] is True,
+    ):
+        logging.info(settings["ota_update_name"] + " deleted")
         ctx.exit(0)
     ctx.exit(1)
 
@@ -3012,7 +3289,6 @@ def _delete_bucket(bucket_name, force_delete=False):
 @cli.command(cls=StdCommand)
 @click.option(
     "--bucket_name",
-    prompt="Enter bucket name",
     help="Name of the bucket to be deleted.",
 )
 @click.option(
@@ -3023,9 +3299,21 @@ def _delete_bucket(bucket_name, force_delete=False):
     is_flag=True,
 )
 @click.pass_context
-def delete_bucket(ctx, bucket_name, log_level, force_delete):
-    if _delete_bucket(bucket_name, force_delete):
-        logging.info(bucket_name + " deleted")
+def delete_bucket(ctx, bucket_name, config_file_path, log_level, force_delete):
+    requiredSettings = [
+        "bucket_name",
+        "force_delete",
+    ]
+    # Define 'bucket_name' and other required settings
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
+    if _delete_bucket(
+        settings["bucket_name"],
+        settings["force_delete"] == "true" or settings["force_delete"] is True,
+    ):
+        logging.info(settings["bucket_name"] + " deleted")
         ctx.exit(0)
     ctx.exit(1)
 
@@ -3100,7 +3388,6 @@ def _delete_certificate(certificate_id, force_delete=False):
 @cli.command(cls=StdCommand)
 @click.option(
     "--certificate_id",
-    prompt="Enter certificate id",
     help="Id of the certificate to be deleted.",
 )
 @click.option(
@@ -3112,9 +3399,21 @@ def _delete_certificate(certificate_id, force_delete=False):
     is_flag=True,
 )
 @click.pass_context
-def delete_certificate(ctx, certificate_id, log_level, force_delete):
-    if _delete_certificate(certificate_id, force_delete):
-        logging.info(certificate_id + " deleted")
+def delete_certificate(ctx, certificate_id, config_file_path, log_level, force_delete):
+    requiredSettings = [
+        "certificate_id",
+        "force_delete",
+    ]
+    # Define 'job_name' and other required settings
+    settings = _tryGetSettings(
+        ctx, config_file_path, requiredSettings, [], locals().copy()
+    )
+
+    if _delete_certificate(
+        settings["certificate_id"],
+        settings["force_delete"] == "true" or settings["force_delete"] is True,
+    ):
+        logging.info(settings["certificate_id"] + " deleted")
         ctx.exit(0)
     ctx.exit(1)
 
@@ -3123,11 +3422,6 @@ def delete_certificate(ctx, certificate_id, log_level, force_delete):
 # Policy, Bucket, Role, and Update
 # specified by createIoTThings_settings.json.
 @cli.command(cls=StdCommand)
-@click.option(
-    "--config_file_path",
-    help=".json file defining arguments for creating an OTA update.",
-    default="createIoTThings_settings.json",
-)
 @click.pass_context
 def cleanup_simplified(
     ctx,
