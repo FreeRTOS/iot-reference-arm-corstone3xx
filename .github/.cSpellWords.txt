@@ -40,6 +40,7 @@ compatibil
 coremqtt
 COSE
 CLRF
+Cqqpk
 CSRS
 ctest
 Customisation
@@ -80,6 +81,7 @@ evlog
 EVTOLUX
 evtolux
 feip
+Fgdszfl
 FIFOS
 fftr
 fftwrap
@@ -110,6 +112,7 @@ iridix
 IRQN
 ISRAM
 istty
+Ixyh
 JITP
 JITR
 Jytl
@@ -150,6 +153,7 @@ Mqtt
 MQTT
 MQTT's
 mqttexample
+Mqud
 MVEI
 mytestthing
 myTestThing
@@ -233,16 +237,23 @@ unusued
 utilises
 USART
 UYVY
+Vbex
 VCLK
 VECTACTIVE
 venv
 vmean
 vsocket
 vsync
+Vwij
 YPJLH
 WGHT
 wght
 WLATENCY
+Xcycu
 xtea
+Xwzpc
+Xxrcgxi
 zeroize
 ZEROIZE
+ZIUVJ
+Zwjr
