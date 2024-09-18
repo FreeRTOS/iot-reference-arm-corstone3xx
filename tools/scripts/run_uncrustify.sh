@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -21,4 +21,4 @@ do
 done
 exclude_pattern+="./build"
 
-fdfind -E $exclude_pattern -e c -e h --exec uncrustify --no-backup --replace --if-changed -c tools/uncrustify.cfg
+fdfind -E $exclude_pattern -e c -e h -e cc -e cpp --exec uncrustify --no-backup --replace --if-changed -c tools/uncrustify.cfg
