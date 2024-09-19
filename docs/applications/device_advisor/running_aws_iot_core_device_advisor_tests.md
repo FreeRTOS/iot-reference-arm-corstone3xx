@@ -6,25 +6,70 @@ to learn more about the device advisor.
 
 ## Creating an IoT thing
 
-Follow the instructions described in the section listed below to create an IoT thing for your device.
+Follow the instructions described in the section listed below to create an [IoT thing][creating-an-iot-thing-for-your-device], policy, IAM Policy and IAM role
+for your device.
 
-* [IoT thing][creating-an-iot-thing-for-your-device]
-
-## Creating roles and policies
-
-Follow the instructions described in the [page](https://docs.aws.amazon.com/iot/latest/developerguide/device-advisor-setting-up.html#da-iam-role) to create a policy for your IoT thing and then a device advisor role.
+## Setting up IAM Roles and Policies
 
 * Create an IAM role to use as your device role.
   * As part of creating the policy, the topic and topic filter shall be assigned a value `*` and the `clientId` should match the IoT thing name.
 * Create a custom-managed policy for an IAM user to use Device Advisor
 * Create an IAM user to use Device Advisor (AWS recommendation)
 
+1. Go to the [IAM Dashboard](https://us-east-1.console.aws.amazon.com/iam/home?region=us-west-2#/home).
+2. In the left navigation pane under **Access management** select **Policies**, then click on **Create policy**.
+    * Select the `IoT` service, then click on **Next**.
+    * Under `IoT` **Actions allowed** select the following: `Connect`, `Publish`, `Subscribe`, `Receive` and
+      `RetainPublish`.\
+      Under **Resources**: Ether keep it on `All`, or specify the **client**, **topic** and **topicfilter** with
+      clicking on **Add ARNs**.
+      Make sure that you select the same **Resource region** that you specified when creating your **IoT Thing**,
+      or specify it as `*`. You can set the **Resource client** as your **IoT Thing** name or `*`. In the end you should see:
+      ```text
+      client:         arn:aws:iot:eu-west-1:{account-id}:client/*
+      topic:          arn:aws:iot:eu-west-1:{account-id}:topic/*
+      topicfilter:    arn:aws:iot:eu-west-1:{account-id}:topicfilter/*
+      ```
+      then click on **Next**.
+    * Give a **Policy name** in which you can include the **region** you are using, like:
+      `Proj-device-advisor-eu-west-1-any`, and click on **Create policy**.
+3. In the left navigation pane under **Access management** select **Roles**, then click on **Create role**.
+    * Select `Custom trust policy`, and set the following **Trust policy**:
+      ```json
+      {
+          "Version": "2012-10-17",
+          "Statement": [
+              {
+                  "Sid": "AllowAwsIoTCoreDeviceAdvisor",
+                  "Effect": "Allow",
+                  "Principal": {
+                      "Service": "iotdeviceadvisor.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+              }
+          ]
+      }
+      ```
+      then click on **Next**.
+    * Under **Permission policies** select the policy that you previously defined, like:
+      `Proj-device-advisor-eu-west-1-any`.\
+      Under **Set permission boundary** select `Use a permissions boundary to control the maximum role permissions` if
+      you have predefined boundary's, then select your project admin boundary.
+      Then click on **Next**.
+    * Set the role name, like: `Proj-device-advisor-role-eu-west-1-any`, then click on **Create role**.
+
+For more information follow the instructions described in the
+[page](https://docs.aws.amazon.com/iot/latest/developerguide/device-advisor-setting-up.html#da-iam-role)
+to create a policy for your IoT thing and then a device advisor role.
+
 ## Creating AWS IoT Core Qualification test suite
 
 Follow the instructions described the [page](https://docs.aws.amazon.com/iot/latest/developerguide/device-advisor-console-tutorial.html#device-advisor-console-create-suite)
 to create AWS IoT Core Qualification test suite.
 
-The `Trigger Topic` property should be set to the value of `deviceAdvisorTOPIC_FORMAT` macro available at [aws_device_advisor_task.h](../../../applications/helpers/device_advisor/inc/aws_device_advisor_task.h) for `TLS Receive Maximum Size Fragments` test.
+- The `Trigger Topic` property should be set to the value of `deviceAdvisorTOPIC_FORMAT` macro available at [aws_device_advisor_task.h](../../../applications/helpers/device_advisor/inc/aws_device_advisor_task.h) for `TLS Receive Maximum Size Fragments` test.
+- The Device role should be a previously created IAM Role, like: `Proj-device-advisor-role-eu-west-1-any`.
+- **Make sure that this role is also set up for the same region, that your test is using, or any!**
 
 ## Configuring the application to connect to AWS IoT Core Device Advisor
 
