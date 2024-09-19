@@ -413,6 +413,101 @@ This is testing the function `initialize_network`, however this function does no
 
 > :bulb: This can be avoided by using a Test Driven Development (TDD) approach which will ensure that all functions developed can be tested. Writing unit test cases for existing modules does not guarantee that the behavior can be tested without observing implementation details.
 
+### Testing with configASSERT
+
+We define the macro configASSERT to be:
+
+```c
+#define configASSERT( x )    if( ( x ) == 0 ) vAssertCalled( __FILE__, __LINE__ );
+```
+Where `vAssertCalled` is a void-returning fake function.
+
+We want to test the below function:
+```c
+MQTTAgentCommand_t * Agent_GetCommand( uint32_t blockTimeMs )
+{
+    MQTTAgentCommand_t * structToUse = NULL;
+    bool structRetrieved = false;
+
+    /* Check queue has been created. */
+    configASSERT( initStatus == QUEUE_INITIALIZED );
+
+    /* Retrieve a struct from the queue. */
+    structRetrieved = Agent_MessageReceive( &commandStructMessageCtx, &( structToUse ), blockTimeMs );
+
+    if( !structRetrieved )
+    {
+        LogDebug( ( "No command structure available.\n" ) );
+    }
+
+    return structToUse;
+}
+```
+
+We want to test that if the function is called with the command pool uninitialized, then it will error and not call `Agent_MessageReceive`.
+
+A naive test would be:
+
+```cpp
+TEST_F(TestFreertosCommandPool, does_not_try_to_get_command_if_pool_not_initialized) {
+    Agent_MessageReceive_fake.return_val = true;
+    Agent_MessageSend_fake.return_val = true;
+
+    // We expect MessageReceive to never be called on unsafe memory.
+    Agent_GetCommand(20);
+    expect_errors();
+    EXPECT_EQ(Agent_MessageReceive_fake.call_count, 0);
+}
+```
+The above will not work. If we do not define a custom fake for `vAssertCalled`, the program will not stop at the line `configASSERT` fails, but instead continue to the next line and call `Agent_MessageReceive`, which will cause the test to fail.
+
+The desired behaviour is:
+
+1. Failing an assertion causes the function under test to stop running.
+2. GoogleTest still checks other assertions (such as `Agent_MessageReceive_fake.call_count equals zero`).
+
+The method in use at the moment is to:
+
+1. Define an `ASSERTION_FAILURE` error code and a custom fake for `vAssertCalled`.
+2. Define a custom fake for `vAssertCalled`
+```cpp
+#define ASSERTION_FAILURE 1
+
+/* Mocks for vAssertCalled */
+void throw_assertion_failure ( const char * pcFile,
+                                      unsigned long ulLine ) {
+    /*
+    Behaviour wanted:
+    - Encounters assertion fail, stops running any more code. E.g. does not go to next line.
+    - But checks all assertions in the google test program hold.
+    */
+    throw (ASSERTION_FAILURE);
+}
+```
+3. Assign the `vAssertCalled` custom fake for every test (by default). Within the initialisation for `TestFreertosCommandPool()`:
+```cpp
+        vAssertCalled_fake.custom_fake = throw_assertion_failure;
+```
+4. Within tests expected to fail an assertion, catch the assertion.
+```cpp
+TEST_F(TestFreertosCommandPool, does_not_try_to_get_command_if_pool_not_initialized) {
+    Agent_MessageReceive_fake.return_val = true;
+    Agent_MessageSend_fake.return_val = true;
+
+    // We expect MessageReceive to never be called on unsafe memory.
+    try{
+        Agent_GetCommand(20);
+    } catch (int num) {
+        if (num != ASSERTION_FAILURE) {
+            throw (num);
+        }
+    }
+    expect_errors();
+    EXPECT_EQ(Agent_MessageReceive_fake.call_count, 0);
+}
+```
+
+The above example is from the file [`test_freertos_command_pool.cpp`](../components/aws_iot/coremqtt_agent/integration/tests/test_freertos_command_pool.cpp).
 
 ### Integrating unit test file with CMake
 
