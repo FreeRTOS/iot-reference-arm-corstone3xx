@@ -96,7 +96,7 @@ You may now use MQTT to send and receive message for that device. See section [O
 
 You may now rebuild keyword with those certificates:
 ```sh
-./tools/scripts/build.sh keyword-detection --certificate_path certificates/thing_certificate_<your_thing_name>.pem.crt --private_key_path certificates/thing_private_key_<your_thing_name>.pem.key --target <corstone300/corstone310/corstone315> --inference <ETHOS/SOFTWARE> --audio <ROM/VSI> --toolchain <ARMCLANG/GNU>
+./tools/scripts/build.sh keyword-detection --certificate_path certificates/thing_certificate_<your_thing_name>.pem.crt --private_key_path certificates/thing_private_key_<your_thing_name>.pem.key --target <corstone300/corstone310/corstone315> --inference <ETHOS/SOFTWARE> --audio <ROM/VSI> --toolchain <ARMCLANG/GNU> --conn-stack <FREERTOS_PLUS_TCP/IOT_VSOCKET> --psa-crypto-implementation <TF-M/MBEDTLS>
 ```
 Next, we'll create the bucket, upload the binary there, create a role capable of running an OTA update, and create the update. All of those with the following command:
 ```sh

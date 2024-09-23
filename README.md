@@ -73,8 +73,10 @@ and [AWS OTA PAL PSA implementation](#aws-ota-pal-psa-implementation) can be per
 
 Corstone platform communicates with the AWS IoT Core over a secure TLS
 connection. Mbed TLS running on the NSPE is used to establish the TLS
-connection. Mbed TLS makes use of the PSA Crypto APIs provided by TF-M for
-Crypto operations.
+connection. For crypto operations, Mbed TLS supports PSA Crypto APIs provided by either
+the Mbed TLS itself or the Trusted Firmware-M and the default is
+PSA Crypto API from Trusted Firmware-M. For more information about the PSA Crypto APIs
+implementation, please refer to [Mbed TLS document](docs/components/security/mbedtls/mbedtls.md#psa-crypto-apis-implementation).
 
 [PKCS#11](https://www.freertos.org/pkcs11/index.html) APIs to perform TLS
 client authentication and import TLS client certificate and private key into
