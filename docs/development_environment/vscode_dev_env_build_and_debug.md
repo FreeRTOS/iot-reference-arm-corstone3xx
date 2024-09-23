@@ -129,7 +129,8 @@ Command Palette (F1)
 ./tools/scripts/build.sh <reference application name> --toolchain <GNU/ARMCLANG>
 --certificate_path <certificate pem's path>
 --private_key_path <private key pem's path> --target <target name>
---inference <inference engine> --audio <audio input>
+--inference <inference engine> --audio <audio input> --conn-stack <connectivity stack>
+--psa-crypto-implementation <library providing PSA Crypto APIs implementation>
 ```
 
 ## Running a reference application

@@ -65,7 +65,7 @@ Save and close the file.
 To build the application, run the following command:
 
 ```bash
-./tools/scripts/build.sh ${APPLICATION_NAME} --certificate_path <certificate pem's path> --private_key_path <private key pem's path> --target <corstone300/corstone310/corstone315> --toolchain GNU
+./tools/scripts/build.sh ${APPLICATION_NAME} --certificate_path <certificate pem's path> --private_key_path <private key pem's path> --target <corstone300/corstone310/corstone315> --toolchain GNU --conn-stack <FREERTOS_PLUS_TCP/IOT_VSOCKET> --psa-crypto-implementation <TF-M/MBEDTLS>
 ```
 
 * The `certificate pem's path` and `private key pem's path` should be the downloaded key's and certificate's paths during the Thing creation.
@@ -73,7 +73,7 @@ To build the application, run the following command:
 Or, run the command below to perform a clean build:
 
 ```bash
-./tools/scripts/build.sh ${APPLICATION_NAME} --certificate_path <certificate pem's path> --private_key_path <private key pem's path> --target <corstone300/corstone310/corstone315> --toolchain GNU -c
+./tools/scripts/build.sh ${APPLICATION_NAME} --certificate_path <certificate pem's path> --private_key_path <private key pem's path> --target <corstone300/corstone310/corstone315> --toolchain GNU --conn-stack <FREERTOS_PLUS_TCP/IOT_VSOCKET> --psa-crypto-implementation <TF-M/MBEDTLS> -c
 ```
 
 ## Running the application

@@ -38,6 +38,24 @@ target_compile_definitions(mbedtls-config
 
 To enable the FreeRTOS threading protection `#define MBEDTLS_THREADING_ALT` should be present in the user provided mbedtls configuration file.
 
+### PSA Crypto APIs Implementation
+
+PSA Crypto is part of Platform Security Architecture initiative that standardized crypto interfaces. The PSA Crypto specification is available [here](https://arm-software.github.io/psa-api/crypto/1.1/). Mbed TLS, and Trusted Firmware-M libraries provide implementation for PSA Crypto APIs.
+
+User can choose which library is to be used for implementing PSA Crypto APIs used by Mbed TLS library running on the Non-Secure side through the build option `--psa-crypto-implementation <TF-M/MBEDTLS>`.
+
+The default PSA Crypto APIs implementation is the one provided by Trusted Firmware-M library, where the `--psa-crypto-implementation` build option default value is `TF-M`.
+
+In case of using Trusted Firmware-M as the PSA Crypto APIs implementation, `tfm-ns-interface` library has to be linked to the `mbedtls` target.
+
+```cmake
+target_link_libraries(mbedtls
+    PUBLIC
+        mbedtls-config
+        tfm-ns-interface
+)
+```
+
 ## Integration
 
 ### FreeRTOS threading support
