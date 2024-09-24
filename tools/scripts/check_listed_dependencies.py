@@ -19,6 +19,7 @@ def main(manifest_file: str) -> None:
             - a TPIP category attribute
             - a version attribute
             - a path attribute
+            - a security risk attribute
     Args:
         manifest_file (str): Path to the YAML manifest file.
     """
@@ -54,6 +55,12 @@ def check_the_manifest(manifest_data: Dict) -> bool:
             print(
                 f"Dependency '{dependency['name']}' is missing"
                 f" `tpip-category` attribute in the manifest file"
+            )
+            manifest_has_all_attributes = False
+        if "security-risk" not in dependency:
+            print(
+                f"Dependency '{dependency['name']}' is missing"
+                f" `security-risk` attribute in the manifest file"
             )
             manifest_has_all_attributes = False
         if "version" not in dependency:
