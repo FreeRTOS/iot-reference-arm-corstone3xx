@@ -29,6 +29,8 @@ is used to run the application artefacts.
 The [currently released version <11.24.22>](https://developer.arm.com/downloads/-/arm-ecosystem-fvps)
 of FVP is supported by the FRI.
 
+* [Corstone-320](https://developer.arm.com/Processors/Corstone-320)
+  * Arm Cortex-M85 CPU, Ethos-U85 NPU and Mali-C55 ISP
 * [Corstone-315](https://developer.arm.com/Processors/Corstone-315)
   * Arm Cortex-M85 CPU, Ethos-U65 NPU and Mali-C55 ISP
 * [Corstone-310](https://developer.arm.com/Processors/Corstone-310)

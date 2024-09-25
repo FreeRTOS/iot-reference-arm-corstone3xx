@@ -25,7 +25,7 @@ Follow the instructions described in [Setting Up AWS Connectivity](./aws_iot/set
 
 To build the Object-Detection example, run the following command:
 ```bash
-./tools/scripts/build.sh object-detection --certificate_path <certificate pem's path> --private_key_path <private key pem's path> -t corstone315 --toolchain GNU --conn-stack <FREERTOS_PLUS_TCP/IOT_VSOCKET> --psa-crypto-implementation <TF-M/MBEDTLS>
+./tools/scripts/build.sh object-detection --certificate_path <certificate pem's path> --private_key_path <private key pem's path> -t <corstone315/corstone320> --toolchain GNU --conn-stack <FREERTOS_PLUS_TCP/IOT_VSOCKET> --psa-crypto-implementation <TF-M/MBEDTLS>
 ```
 - The `certificate pem's path` and `private key pem's path` should be the downloaded key's and certificate's path if you chose the **Auto-generate a new certificate** during the Thing creation. If you chose **Skip creating a certificate at this time** then these paths should locate the generated credential files that were created by the `./tools/scripts/generate_credentials.py` script in the previous step.
 
@@ -38,7 +38,7 @@ implementation, please refer to [Mbed TLS document](../components/security/mbedt
 
 Or, run the command below to perform a clean build:
 ```bash
-./tools/scripts/build.sh object-detection --certificate_path <certificate pem's path> --private_key_path <private key pem's path> -t corstone315 --toolchain GNU --conn-stack <FREERTOS_PLUS_TCP/IOT_VSOCKET> --psa-crypto-implementation <TF-M/MBEDTLS> -c
+./tools/scripts/build.sh object-detection --certificate_path <certificate pem's path> --private_key_path <private key pem's path> -t <corstone315/corstone320> --toolchain GNU --conn-stack <FREERTOS_PLUS_TCP/IOT_VSOCKET> --psa-crypto-implementation <TF-M/MBEDTLS> -c
 ```
 
 ## Provisioning the device credentials into Protected Storage
@@ -48,7 +48,7 @@ Check [Device Provisioning](./device_provisioning/device_provisioning.md) for de
 ## Running the application
 
 ```bash
-./tools/scripts/run.sh object-detection -t corstone315 --frames applications/object_detection/resources/test.frm
+./tools/scripts/run.sh object-detection -t <corstone315/corstone320> --frames applications/object_detection/resources/test.frm
 ```
 - The `frames` is used to select the input frames file.
 
