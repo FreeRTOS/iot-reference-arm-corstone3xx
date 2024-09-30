@@ -186,6 +186,20 @@ RUN rm -rf /home/ubuntu/FVP_Corstone_SSE-315; \
     rm -rf /tmp/arm-ecosystem-fvp
 ENV PATH="/home/ubuntu/FVP_Corstone_SSE-315/models/Linux64_armv8l_GCC-9.3:/home/ubuntu/FVP_Corstone_SSE-315/models/Linux64_GCC-9.3:${PATH}"
 
+# Download and install Corstone-320 ecosystem FVP
+RUN rm -rf /home/ubuntu/FVP_Corstone_SSE-320; \
+    mkdir /tmp/arm-ecosystem-fvp; \
+    FVP_LINK=""; \
+    if [[ $(uname -m) == "aarch64" ]]; then \
+        FVP_LINK="_armv8l"; \
+    fi; \
+    wget -qO - https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Corstone-320/FVP_Corstone_SSE-320_11.27_25_Linux64${FVP_LINK}.tgz \
+    | tar -xz -C /tmp/arm-ecosystem-fvp; \
+    cd /tmp/arm-ecosystem-fvp && ./FVP_Corstone_SSE-320.sh --i-agree-to-the-contained-eula --no-interactive -q; \
+    rm -rf /tmp/arm-ecosystem-fvp
+ENV PATH="/home/ubuntu/FVP_Corstone_SSE-320/models/Linux64_armv8l_GCC-9.3:/home/ubuntu/FVP_Corstone_SSE-320/models/Linux64_GCC-9.3:${PATH}"
+ENV LD_LIBRARY_PATH=/home/ubuntu/FVP_Corstone_SSE-320/python/lib
+
 # Install uncrustify
 # With ubuntu 22.04, the version of uncrustify installed is 0.72.0+dfsg1-2.
 # However, we need the version 0.69.0. Therefore, build and install it manually.
