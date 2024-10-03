@@ -16,7 +16,7 @@ dependencies:
     license: "Apache-2.0"
     tpip-category: "category-2"
     security-risk: "low"
-    version: "v0.3.0"
+    version: "v0.4.0"
     repository:
       type: "git"
       url: "https://git.gitlab.arm.com/iot/open-iot-sdk/arm-corstone-platform-bsp.git"
