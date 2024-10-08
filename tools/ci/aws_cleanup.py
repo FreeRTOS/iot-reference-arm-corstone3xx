@@ -1,4 +1,4 @@
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -137,7 +137,7 @@ def process_things(nextToken: str) -> str:
 
 
 def process_buckets(nextToken: str) -> str:
-    response = s3.list_buckets(nextToken=nextToken)
+    response = s3.list_buckets(ContinuationToken=nextToken)
 
     for bucket in response["Buckets"]:
         bucket_name: str = bucket["Name"]
