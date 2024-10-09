@@ -183,25 +183,36 @@ int main( void )
         }
     #endif
 
-    UBaseType_t xRetVal = vDevModeKeyProvisioning();
-
-    if( xRetVal != CKR_OK )
+    if( uxIsDeviceProvisioned() == 0 )
     {
-        LogError( ( "Device key provisioning failed [%d]\n", xRetVal ) );
-        LogError( ( "Device cannot connect to IoT Core. Exiting...\n" ) );
-        return EXIT_FAILURE;
+        UBaseType_t uxReturnValue = vDevModeKeyProvisioning();
+
+        if( uxReturnValue != CKR_OK )
+        {
+            LogError( ( "Device key provisioning failed [%d]\n", uxReturnValue ) );
+            LogError( ( "Device cannot connect to IoT Core. Exiting...\n" ) );
+            return EXIT_FAILURE;
+        }
+
+        LogInfo( ( "Device key provisioning succeeded \n" ) );
+
+        psa_status_t uxStatus = xOtaProvisionCodeSigningKey( &xOTACodeVerifyKeyHandle, 3072 );
+
+        if( uxStatus != PSA_SUCCESS )
+        {
+            LogError( ( "OTA signing key provision failed [%d]\n", uxStatus ) );
+            return EXIT_FAILURE;
+        }
+        else
+        {
+            LogInfo( ( "OTA signing key provisioning succeeded \n" ) );
+        }
+
+        if( xWriteDeviceProvisioned() != PSA_SUCCESS )
+        {
+            return EXIT_FAILURE;
+        }
     }
-
-    LogInfo( ( "Device key provisioning succeeded \n" ) );
-
-    status = xOtaProvisionCodeSigningKey( &xOTACodeVerifyKeyHandle, 3072 );
-
-    if( status != PSA_SUCCESS )
-    {
-        LogError( ( "OTA signing key provision failed [%d]\n", status ) );
-    }
-
-    LogInfo( ( "OTA signing key provisioning succeeded \n" ) );
 
     /* The next initializations are done as a part of the main */
     /* function as these resources are shared between tasks */

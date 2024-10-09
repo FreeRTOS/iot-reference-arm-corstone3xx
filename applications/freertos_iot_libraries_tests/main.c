@@ -160,25 +160,35 @@ int main( void )
                                mbedtls_platform_mutex_lock,
                                mbedtls_platform_mutex_unlock );
 
-    xRetVal = vDevModeKeyProvisioning();
-
-    if( xRetVal != CKR_OK )
+    if( uxIsDeviceProvisioned() == 0 )
     {
-        LogError( ( "Device key provisioning failed [%d]\n", xRetVal ) );
-        LogError( ( "Device cannot connect to IoT Core. Exiting...\n" ) );
-        return EXIT_FAILURE;
-    }
-    else
-    {
-        LogInfo( ( "Device key provisioning succeeded \n" ) );
-        status = xOtaProvisionCodeSigningKey( &xOTACodeVerifyKeyHandle, 3072 );
+        UBaseType_t uxReturnValue = vDevModeKeyProvisioning();
 
-        if( status != PSA_SUCCESS )
+        if( uxReturnValue != CKR_OK )
         {
-            LogError( ( "OTA signing key provision failed [%d]\n", status ) );
+            LogError( ( "Device key provisioning failed [%d]\n", uxReturnValue ) );
+            LogError( ( "Device cannot connect to IoT Core. Exiting...\n" ) );
+            return EXIT_FAILURE;
         }
 
-        LogInfo( ( "OTA signing key provisioning succeeded \n" ) );
+        LogInfo( ( "Device key provisioning succeeded \n" ) );
+
+        psa_status_t uxStatus = xOtaProvisionCodeSigningKey( &xOTACodeVerifyKeyHandle, 3072 );
+
+        if( uxStatus != PSA_SUCCESS )
+        {
+            LogError( ( "OTA signing key provision failed [%d]\n", uxStatus ) );
+            return EXIT_FAILURE;
+        }
+        else
+        {
+            LogInfo( ( "OTA signing key provisioning succeeded \n" ) );
+        }
+
+        if( xWriteDeviceProvisioned() != PSA_SUCCESS )
+        {
+            return EXIT_FAILURE;
+        }
     }
 
     status = network_startup();
