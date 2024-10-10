@@ -662,6 +662,47 @@ iot-vsocket-psa-crypto-mbedtls-test:
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
 
+########################
+# Black Duck scan      #
+########################
+black-duck:
+  tags:
+    - iotmsw-amd64
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
+  rules:
+    - if: ( $SCHEDULED_JOB_TO_RUN == "run-blackduck-scan" )
+  script:
+    - export PROJECTNAME="${BLACKDUCK_PROJECT_NAME}"
+    - apt update -y
+    - apt install default-jdk -y
+    - echo "-------Starting Black Duck Scan-------"
+    - bash <(curl -s -L ${BLACKDUCK_DETECT_SCRIPT})
+      --blackduck.url="${BLACKDUCK_URL}"
+      --blackduck.api.token="${BLACKDUCK_API_TOKEN}"
+      --detect.source.path="."
+      --detect.project.name="${PROJECTNAME}"
+      --detect.project.version.name="${CI_COMMIT_REF_NAME}"
+      --detect.project.tags=security_scan
+      --detect.project.version.phase=DEVELOPMENT
+      --detect.project.version.distribution=OPENSOURCE
+      --detect.project.version.update=true
+      --detect.cleanup=false
+      --detect.impact.analysis.enabled=true
+      --detect.binary.scan.search.depth=05
+      --detect.blackduck.scan.mode=INTELLIGENT
+      --detect.blackduck.signature.scanner.individual.file.matching=ALL
+      --detect.blackduck.signature.scanner.copyright.search=true
+      --detect.blackduck.signature.scanner.license.search=true
+      --detect.blackduck.signature.scanner.snippet.matching=SNIPPET_MATCHING
+      --detect.blackduck.signature.scanner.upload.source.mode=true
+    - tar -czf fri-bd-scan-results.tar.gz -C /root/blackduck/runs .
+  artifacts:
+    paths:
+      - fri-bd-scan-results.tar.gz
+    expire_in: 1 week
+    when: always
+
 # The clean up only happens once daily when the `Daily OTA cleanup`
 # scheduled pipeline sets the `SCHEDULED_JOB_TO_RUN` variable to `cleanup`.
 aws-cleanup:
