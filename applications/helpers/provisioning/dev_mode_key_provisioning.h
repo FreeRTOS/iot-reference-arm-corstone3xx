@@ -41,6 +41,7 @@
 #ifndef _AWS_DEV_MODE_KEY_PROVISIONING_H_
 #define _AWS_DEV_MODE_KEY_PROVISIONING_H_
 
+#include "FreeRTOS.h"
 #include "core_pkcs11_config.h"
 #include "core_pkcs11.h"
 #include "provisioning_data.h"
