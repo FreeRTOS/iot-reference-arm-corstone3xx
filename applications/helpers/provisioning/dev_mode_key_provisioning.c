@@ -1451,37 +1451,55 @@ exit:
 
 UBaseType_t uxIsDeviceProvisioned( void )
 {
-    psa_status_t status = PSA_ERROR_GENERIC_ERROR;
-    const psa_storage_uid_t uid = FIRST_BOOT_ITS_UID;
-    uint8_t boot_pattern_in_its = 0;
-    size_t read_data_length = 0;
+    /* When using Mbed TLS as the PSA crypto implementation on the non-secure
+     * side, the device private key is defined as volatile key since there is
+     * no filesystem support. Therefore, always provision the keys when using
+     * Mbed TLS as the PSA crypto implementation on the non-secure side.
+     */
+    #ifdef PSA_CRYPTO_IMPLEMENTATION_TFM
+        psa_status_t status = PSA_ERROR_GENERIC_ERROR;
+        const psa_storage_uid_t uid = FIRST_BOOT_ITS_UID;
+        uint8_t boot_pattern_in_its = 0;
+        size_t read_data_length = 0;
 
-    status = psa_its_get( uid, 0, 1, &boot_pattern_in_its,
-                          &read_data_length );
+        status = psa_its_get( uid, 0, 1, &boot_pattern_in_its,
+                              &read_data_length );
 
-    if( status != PSA_SUCCESS )
-    {
+        if( status != PSA_SUCCESS )
+        {
+            return 0;
+        }
+
+        if( boot_pattern_in_its == BOOT_PATTERN )
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    #else /* ifdef PSA_CRYPTO_IMPLEMENTATION_TFM */
         return 0;
-    }
-
-    if( boot_pattern_in_its == BOOT_PATTERN )
-    {
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
+    #endif /* ifdef PSA_CRYPTO_IMPLEMENTATION_TFM */
 }
 
 psa_status_t xWriteDeviceProvisioned( void )
 {
-    const psa_storage_uid_t uid = FIRST_BOOT_ITS_UID;
-    const psa_storage_create_flags_t flags = PSA_STORAGE_FLAG_WRITE_ONCE;
-    uint8_t first_boot_pattern = BOOT_PATTERN;
+    /* When using Mbed TLS as the PSA crypto implementation on the non-secure
+     * side, the device private key is defined as volatile key since there is
+     * no filesystem support. Therefore, always provision the keys when using
+     * Mbed TLS as the PSA crypto implementation on the non-secure side.
+     */
+    #ifdef PSA_CRYPTO_IMPLEMENTATION_TFM
+        const psa_storage_uid_t uid = FIRST_BOOT_ITS_UID;
+        const psa_storage_create_flags_t flags = PSA_STORAGE_FLAG_WRITE_ONCE;
+        uint8_t first_boot_pattern = BOOT_PATTERN;
 
-    /* Write the pattern to ITS */
-    return psa_its_set( uid, 1, &first_boot_pattern, flags );
+        /* Write the pattern to ITS */
+        return psa_its_set( uid, 1, &first_boot_pattern, flags );
+    #else /* ifdef PSA_CRYPTO_IMPLEMENTATION_TFM */
+        return PSA_SUCCESS;
+    #endif /* ifdef PSA_CRYPTO_IMPLEMENTATION_TFM */
 }
 
 /*-----------------------------------------------------------*/
