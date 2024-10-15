@@ -52,6 +52,22 @@ workflow:
   before_script:
     - python -m pip install pyelftools
   script:
+    - |
+      apt-get update -y && \
+      apt-get install ccache -y && \
+      apt-get clean && \
+      rm -rf /var/lib/apt/lists
+    - ccache -o cache_dir=/cache/$CI_JOB_NAME_SLUG/.ccache
+    - ccache -p
+    - ln -s /usr/bin/ccache /usr/lib/ccache/arm-none-eabi-gcc
+    - ln -s /usr/bin/ccache /usr/lib/ccache/arm-none-eabi-g++
+    - ln -s /usr/bin/ccache /usr/lib/ccache/arm-none-eabi-cpp
+    - ln -s /usr/bin/ccache /usr/lib/ccache/arm-none-eabi-c++
+    - ln -s /usr/bin/ccache /usr/lib/ccache/arm-none-eabi-ar
+    - ln -s /usr/bin/ccache /usr/lib/ccache/armclang
+    - ln -s /usr/bin/ccache /usr/lib/ccache/armar
+    - export PATH=/usr/lib/ccache:$PATH
+    - echo $PATH
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - ./tools/ci/generate_credentials.sh -f -p applications/${APP_UNDERSCORED}/configs/aws_configs
     - git config --global user.email "ci@example.com"
@@ -79,6 +95,7 @@ workflow:
           build/CMakeCache.txt \
           applications/${APP_UNDERSCORED}/configs/aws_configs
       fi
+    - ccache -s
 
 # Build Corstone320 applications which later are tested.
 build-applications-corstone320:
@@ -359,6 +376,22 @@ integration-tests:
   rules:
     - if: ( $SCHEDULED_JOB_TO_RUN == "integration-tests" )
   script:
+    - |
+      apt-get update -y && \
+      apt-get install ccache -y && \
+      apt-get clean && \
+      rm -rf /var/lib/apt/lists
+    - ccache -o cache_dir=/cache/$CI_JOB_NAME_SLUG/.ccache
+    - ccache -p
+    - ln -s /usr/bin/ccache /usr/lib/ccache/arm-none-eabi-gcc
+    - ln -s /usr/bin/ccache /usr/lib/ccache/arm-none-eabi-g++
+    - ln -s /usr/bin/ccache /usr/lib/ccache/arm-none-eabi-cpp
+    - ln -s /usr/bin/ccache /usr/lib/ccache/arm-none-eabi-c++
+    - ln -s /usr/bin/ccache /usr/lib/ccache/arm-none-eabi-ar
+    - ln -s /usr/bin/ccache /usr/lib/ccache/armclang
+    - ln -s /usr/bin/ccache /usr/lib/ccache/armar
+    - export PATH=/usr/lib/ccache:$PATH
+    - echo $PATH
     - export APP_UNDERSCORED=$(echo ${APP} | tr '-' '_')
     - ./tools/ci/generate_credentials.sh -f -p applications/${APP_UNDERSCORED}/configs/aws_configs
     - git config --global user.email "ci@example.com"
@@ -390,6 +423,7 @@ integration-tests:
       --merged-elf-name "${APP}_merged.elf" \
       --signed-update-bin-name "${APP}-update_signed.bin" \
       --timeout-seconds 14400
+    - ccache -s
   parallel:
     matrix:
       -
