@@ -154,7 +154,6 @@ target_link_libraries(speech-recognition
         fri-bsp
         helpers-events
         mbedtls
-        ota-for-aws-iot-embedded-sdk
         provisioning-lib
         speexdsp
         tfm-ns-interface

@@ -34,5 +34,4 @@ target_link_libraries(freertos-ota-pal-psa
         freertos_kernel
         helpers-logging
         mbedtls
-        ota-for-aws-iot-embedded-sdk
 )
