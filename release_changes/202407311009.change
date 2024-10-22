@@ -1,2 +1,0 @@
-coremqtt-agent-unit-test: Add tests for mqtt_agent_task.c.
-coremqtt-agent-task: Debug mqtt_agent_task.c
