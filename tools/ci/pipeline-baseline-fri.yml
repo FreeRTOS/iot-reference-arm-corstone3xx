@@ -44,7 +44,7 @@ pre-commit:
     - .base-job-rules
   stage: quality-check
   script:
-    - pip install . -t $PWD
+    - pip install tools/ci -t $PWD
     - apt-get update -y
     - apt-get install fd-find -y
     - cp $PWD/bin/banned-api-hook $PWD/banned-api-hook
@@ -83,6 +83,7 @@ check-changelog-addition:
     - git fetch origin ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}
     - >
       towncrier check
+      --config tools/ci/pyproject.toml
       --compare-with origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}
 
 ########################
