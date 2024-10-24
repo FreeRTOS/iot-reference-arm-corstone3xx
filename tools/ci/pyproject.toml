@@ -3,12 +3,13 @@ requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
 build-backend = "setuptools.build_meta"
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
+root = "../.."
 
 [tool.towncrier]
 ignore = [".gitkeep"]
-directory = "release_changes"
+directory = "../../release_changes"
 filename = "CHANGELOG.md"
-template = "tools/ci/towncrier/template.rst"
+template = "towncrier/template.rst"
 
 [[tool.towncrier.type]]
 directory = "change"
