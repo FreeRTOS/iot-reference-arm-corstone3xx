@@ -228,3 +228,12 @@ dependencies:
       type: "git"
       url: "https://github.com/google/googletest.git"
       path: "components/tools/googletest/library"
+  - name: "Jobs-for-AWS-IoT-embedded-sdk"
+    license: "MIT"
+    tpip-category: "category-2"
+    security-risk: "low"
+    version: "v1.5.1"
+    repository:
+      type: "git"
+      url: "https://github.com/aws/Jobs-for-AWS-IoT-embedded-sdk.git"
+      path: "components/aws_iot/jobs_for_aws_iot_embedded_sdk/library"

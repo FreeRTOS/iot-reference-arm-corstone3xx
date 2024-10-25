@@ -73,3 +73,6 @@
 [submodule "googletest"]
 	path = components/tools/googletest/library
 	url = https://github.com/google/googletest.git
+[submodule "components/aws_iot/jobs_for_aws_iot_embedded_sdk/library"]
+	path = components/aws_iot/jobs_for_aws_iot_embedded_sdk/library
+	url = https://github.com/aws/Jobs-for-AWS-IoT-embedded-sdk.git
