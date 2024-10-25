@@ -237,3 +237,12 @@ dependencies:
       type: "git"
       url: "https://github.com/aws/Jobs-for-AWS-IoT-embedded-sdk.git"
       path: "components/aws_iot/jobs_for_aws_iot_embedded_sdk/library"
+  - name: "aws-iot-core-mqtt-file-streams-embedded-c"
+    license: "MIT"
+    tpip-category: "category-2"
+    security-risk: "low"
+    version: "v1.1.0"
+    repository:
+      type: "git"
+      url: "https://github.com/aws/aws-iot-core-mqtt-file-streams-embedded-c.git"
+      path: "components/aws_iot/aws_iot_core_mqtt_file_streams_embedded_c/library"

@@ -76,3 +76,6 @@
 [submodule "components/aws_iot/jobs_for_aws_iot_embedded_sdk/library"]
 	path = components/aws_iot/jobs_for_aws_iot_embedded_sdk/library
 	url = https://github.com/aws/Jobs-for-AWS-IoT-embedded-sdk.git
+[submodule "components/aws_iot/aws_iot_core_mqtt_file_streams_embedded_c/library"]
+	path = components/aws_iot/aws_iot_core_mqtt_file_streams_embedded_c/library
+	url = https://github.com/aws/aws-iot-core-mqtt-file-streams-embedded-c/
