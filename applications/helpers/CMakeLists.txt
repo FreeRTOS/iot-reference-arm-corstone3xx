@@ -7,6 +7,7 @@ add_subdirectory(device_advisor)
 add_subdirectory(events)
 add_subdirectory(hdlcd)
 add_subdirectory(logging)
+add_subdirectory(ota_orchestrator)
 add_subdirectory(provisioning)
 # sntp helper library depends on FreeRTOS-Plus-TCP connectivity stack as it
 # includes `FreeRTOS_IP.h` header file in one of its source files (sntp_client_task.c),

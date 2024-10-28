@@ -142,6 +142,7 @@ target_link_libraries(keyword-detection
         helpers-device-advisor
         helpers-events
         mbedtls
+        ota-update
         provisioning-lib
         tfm-ns-interface
         toolchain-override

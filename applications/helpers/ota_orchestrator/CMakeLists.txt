@@ -1,0 +1,33 @@
+# Copyright 2024 Arm Limited and/or its affiliates
+# <open-source-office@arm.com>
+# SPDX-License-Identifier: MIT
+
+if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
+    # Left empty for future mocks.
+else()
+    add_library(ota-update
+        src/mqtt_helpers.c
+        src/ota_orchestrator_helpers.c
+        src/ota_os_freertos.c
+        src/ota_orchestrator.c
+    )
+
+    target_include_directories(ota-update
+        PUBLIC
+            inc/
+    )
+
+    target_link_libraries(ota-update
+        jobs-for-aws-iot-embedded-sdk
+        aws-iot-core-mqtt-file-streams-embedded-c
+        freertos_kernel
+        corejson
+        coremqtt
+        coremqtt-agent
+        tinycbor
+        freertos-ota-pal-psa
+        helpers-events
+        backoff-algorithm
+        crt-helpers
+    )
+endif()
