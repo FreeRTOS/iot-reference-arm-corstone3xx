@@ -14,6 +14,7 @@ if(CMAKE_CROSSCOMPILING)
     set(PATCH_FILES_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/integration/patches")
     set(PATCH_FILES
         "${PATCH_FILES_DIRECTORY}/0001-ota-abort-Fix-successful-abortion-check.patch"
+        "${PATCH_FILES_DIRECTORY}/0002-Update-FreeRTOS-OTA-PAL-PSA-to-work-with-new-modular.patch"
     )
     iot_reference_arm_corstone3xx_apply_patches("${freertos_ota_pal_psa_SOURCE_DIR}" "${PATCH_FILES}")
 
