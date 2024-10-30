@@ -1,0 +1,56 @@
+From 02b777ed41b393163c3f793d8ff3b608ac0b9634 Mon Sep 17 00:00:00 2001
+From: Chuyue Luo <Chuyue.Luo@arm.com>
+Date: Wed, 4 Dec 2024 15:24:44 +0000
+Subject: [PATCH 2/2] Use custom `strnlen` implementation
+
+The Arm Compiler for Embedded (v6.21) does not support the `strnlen`
+function. Therefore, use our own implementation (`app_strnlen`) instead.
+
+Signed-off-by: Chuyue Luo <Chuyue.Luo@arm.com>
+---
+ source/jobs.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/source/jobs.c b/source/jobs.c
+index 9614d90..0f83c27 100644
+--- a/source/jobs.c
++++ b/source/jobs.c
+@@ -1,6 +1,8 @@
+ /*
+  * AWS IoT Jobs v1.5.1
+  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
++ * Copyright 2024 Arm Limited and/or its affiliates
++ * <open-source-office@arm.com>
+  *
+  * SPDX-License-Identifier: MIT
+  *
+@@ -36,6 +38,8 @@
+ /* External Dependencies */
+ #include "core_json.h"
+ 
++#include "app_strnlen.h"
++
+ /** @cond DO_NOT_DOCUMENT */
+ 
+ /**
+@@ -575,7 +579,7 @@ static bool isThingnameTopicMatch( const char * topic,
+         writePreamble( expectedTopicBuffer, &start, TOPIC_BUFFER_SIZE, thingName, ( uint16_t ) thingNameLength );
+         ( void ) strnAppend( expectedTopicBuffer, &start, TOPIC_BUFFER_SIZE, topicSuffix, topicSuffixLength );
+ 
+-        isMatch = ( size_t ) strnlen( expectedTopicBuffer, TOPIC_BUFFER_SIZE ) ==
++        isMatch = ( size_t ) app_strnlen( expectedTopicBuffer, TOPIC_BUFFER_SIZE ) ==
+                   topicLength;
+         isMatch = isMatch && ( strncmp( expectedTopicBuffer, topic, topicLength ) == 0 );
+     }
+@@ -894,7 +898,7 @@ bool Jobs_IsJobUpdateStatus( const char * topic,
+     ( void ) strnAppend( suffixBuffer, &start, suffixBufferLength, "/update/", ( CONST_STRLEN( "/update/" ) ) );
+     ( void ) strnAppend( suffixBuffer, &start, suffixBufferLength, jobUpdateStatusString[ expectedStatus ], jobUpdateStatusStringLengths[ expectedStatus ] );
+ 
+-    return isThingnameTopicMatch( topic, topicLength, suffixBuffer, strnlen( suffixBuffer, suffixBufferLength ), thingName, thingNameLength );
++    return isThingnameTopicMatch( topic, topicLength, suffixBuffer, app_strnlen( suffixBuffer, suffixBufferLength ), thingName, thingNameLength );
+ }
+ 
+ size_t Jobs_GetJobId( const char * message,
+-- 
+2.47.0
+
