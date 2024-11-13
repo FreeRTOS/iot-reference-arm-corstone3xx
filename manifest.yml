@@ -106,7 +106,7 @@ dependencies:
     license: "MIT"
     tpip-category: "category-2"
     security-risk: "low"
-    version: "v3.5.0"
+    version: "8a4ac0e0e27a83da5c2a5e8c87f34998f6eb7aaf"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/corePKCS11.git"
