@@ -23,17 +23,10 @@ else()
         fri-bsp
     )
 
-    if(FREERTOS_LIBRARIES_INTEGRATION_TESTS EQUAL 1)
-        set(
-            CODE_SIGNING_PUBLIC_KEY_PEM_PATH
-            ${freertos_libraries_integration_tests_SOURCE_DIR}/src/ota/test_files/tfm-rsa-sha256-signer.crt.pem
-        )
-    else()
-        set(
-            CODE_SIGNING_PUBLIC_KEY_PEM_PATH
-            ${AWS_OTA_SIGNATURE_PUBLIC_KEY_PATH}
-        )
-    endif()
+    set(
+        CODE_SIGNING_PUBLIC_KEY_PEM_PATH
+        ${AWS_OTA_SIGNATURE_PUBLIC_KEY_PATH}
+    )
 
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/aws_clientcredential_keys.h
         DEPENDS ${AWS_CLIENT_PRIVATE_KEY_PEM_PATH}

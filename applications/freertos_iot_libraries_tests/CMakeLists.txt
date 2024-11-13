@@ -79,7 +79,6 @@ target_link_libraries(freertos-libraries-integration-tests-config
         coremqtt
         helpers-logging
         freertos-libraries-integration-tests-mqtt
-        freertos-libraries-integration-tests-ota-pal
         freertos-libraries-integration-tests-qualification
         freertos-libraries-integration-tests-transport
         unity

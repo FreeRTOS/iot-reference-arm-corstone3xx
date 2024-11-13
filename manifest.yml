@@ -160,7 +160,7 @@ dependencies:
     license: "MIT"
     tpip-category: "category-2"
     security-risk: "low"
-    version: "202210.01"
+    version: "2a30583bc29aff6df3d096f4d9dc01ae10f5598f"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/FreeRTOS-Libraries-Integration-Tests"

@@ -7,7 +7,6 @@ add_library(freertos-libraries-integration-tests-config INTERFACE)
 include(${freertos_libraries_integration_tests_SOURCE_DIR}/qualification_test.cmake)
 include(${freertos_libraries_integration_tests_SOURCE_DIR}/src/mqtt_test.cmake)
 include(${freertos_libraries_integration_tests_SOURCE_DIR}/src/pkcs11_test.cmake)
-include(${freertos_libraries_integration_tests_SOURCE_DIR}/src/ota_pal_test.cmake)
 include(${freertos_libraries_integration_tests_SOURCE_DIR}/src/transport_interface_test.cmake)
 
 add_library(freertos-libraries-integration-tests-mqtt
@@ -30,20 +29,6 @@ target_link_libraries(freertos-libraries-integration-tests-mqtt
 target_compile_definitions(freertos-libraries-integration-tests-mqtt
     PRIVATE
         MQTT_KEEP_ALIVE_INTERVAL_SECONDS=60
-)
-add_library(freertos-libraries-integration-tests-ota-pal
-    ${OTA_PAL_TEST_SOURCES}
-)
-target_include_directories(freertos-libraries-integration-tests-ota-pal
-    PUBLIC
-        ${OTA_PAL_TEST_INCLUDE_DIRS}
-)
-target_link_libraries(freertos-libraries-integration-tests-ota-pal
-    PRIVATE
-        freertos-libraries-integration-tests-config
-        freertos-ota-pal-psa
-        ota-for-aws-iot-embedded-sdk
-        unity
 )
 
 add_library(freertos-libraries-integration-tests-pkcs11
@@ -82,7 +67,6 @@ target_link_libraries(freertos-libraries-integration-tests-qualification
         coremqtt
         freertos-libraries-integration-tests-config
         freertos-libraries-integration-tests-mqtt
-        freertos-libraries-integration-tests-ota-pal
         freertos-libraries-integration-tests-pkcs11
 )
 

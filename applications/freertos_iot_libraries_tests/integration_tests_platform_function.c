@@ -19,7 +19,6 @@
 
 #include "transport_interface_test.h"
 #include "qualification_test.h"
-#include "ota_pal_test.h"
 #include "mqtt_test.h"
 
 #include "demo_config.h"
@@ -126,11 +125,6 @@ void SetupMqttTestParam( MqttTestParam_t * pTestParam )
         pTestParam->pSecondNetworkContext = &xSecondNetworkContext;
         pTestParam->pGetTimeMs = FRTest_GetTimeMs;
     }
-}
-
-void SetupOtaPalTestParam( OtaPalTestParam_t * pTestParam )
-{
-    pTestParam->pageSize = 4096;
 }
 
 typedef struct Task_t
