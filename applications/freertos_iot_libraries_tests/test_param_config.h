@@ -186,35 +186,6 @@
  * #define TEST_START_DELAY_MS  5000
  */
 
-#define OTA_RSA_SHA1                                       1
-#define OTA_RSA_SHA256                                     2
-#define OTA_ECDSA_SHA256                                   3
-
-/**
- * @brief Certificate type for OTA PAL test.
- * Valid options are: OTA_RSA_SHA1, OTA_RSA_SHA256, OTA_ECDSA_SHA256.
- */
-#define OTA_PAL_TEST_CERT_TYPE                             OTA_RSA_SHA256
-
-/**
- * @brief Path to cert for OTA test PAL. Used to verify signature.
- * If applicable, the device must be pre-provisioned with this certificate. Please see
- * test/common/ota/test_files for the set of certificates.
- */
-#define OTA_PAL_CERTIFICATE_FILE                           "ecdsa-sha256-signer.crt.pem"
-
-/**
- * @brief Some devices have a hard-coded name for the firmware image to boot.
- */
-#define OTA_PAL_FIRMWARE_FILE                              "non_secure image"
-
-/**
- * @brief Some boards OTA PAL layers will use the file names passed into it for the
- * image and the certificates because their non-volatile memory is abstracted by a
- * file system. Set this to 1 if that is the case for your device.
- */
-#define OTA_PAL_USE_FILE_SYSTEM                            0
-
 /**
  * @brief The PKCS #11 supports RSA key function.
  *

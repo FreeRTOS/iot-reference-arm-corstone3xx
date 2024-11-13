@@ -56,11 +56,6 @@
 #define TRANSPORT_INTERFACE_TEST_ENABLED    ( 1 )
 
 /**
- * @brief Configuration to enable the OTA PAL test.
- */
-#define OTA_PAL_TEST_ENABLED                ( 1 )
-
-/**
  * @brief Configuration to enable the OTA End-to-end test.
  */
 #define OTA_E2E_TEST_ENABLED                ( 0 )
