@@ -12,8 +12,6 @@ include:
 
 variables:
   OPEN_IOT_SDK_DOCKER_VERSION: v2
-  KUBERNETES_CPU_REQUEST: 1
-  KUBERNETES_MEMORY_REQUEST: 1Gi
   GIT_SUBMODULE_STRATEGY: none
   RETRY_LIMIT: 100
 
@@ -96,6 +94,10 @@ workflow:
           applications/${APP_UNDERSCORED}/configs/aws_configs
       fi
     - ccache -s
+  variables:
+    KUBERNETES_CPU_REQUEST: 8
+    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 10Gi
+    KUBERNETES_MEMORY_REQUEST: 12Gi
 
 # Build Corstone320 applications which later are tested.
 build-applications-corstone320:
@@ -209,6 +211,9 @@ build-applications-corstone300:
       - *pipeline_config_corstone300
   variables:
     PYTHONUNBUFFERED: 1
+    KUBERNETES_CPU_REQUEST: 16
+    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 10Gi
+    KUBERNETES_MEMORY_REQUEST: 12Gi
 
 test-blinky-output:
   extends: .test_job
@@ -561,6 +566,10 @@ sw-vsi-configs-test:
       - runner_system_failure
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
+    KUBERNETES_CPU_REQUEST: 16
+    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 10Gi
+    KUBERNETES_MEMORY_REQUEST: 12Gi
+
 
 gnu-toolchain-test:
   tags:
@@ -636,6 +645,9 @@ gnu-toolchain-test:
       - runner_system_failure
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
+    KUBERNETES_CPU_REQUEST: 16
+    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 10Gi
+    KUBERNETES_MEMORY_REQUEST: 12Gi
 
 iot-vsocket-psa-crypto-mbedtls-test:
   tags:
@@ -695,6 +707,9 @@ iot-vsocket-psa-crypto-mbedtls-test:
       - runner_system_failure
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
+    KUBERNETES_CPU_REQUEST: 16
+    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 10Gi
+    KUBERNETES_MEMORY_REQUEST: 12Gi
 
 ########################
 # Black Duck scan      #
