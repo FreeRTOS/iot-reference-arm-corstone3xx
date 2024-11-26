@@ -2,6 +2,7 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
+add_subdirectory(crt_helpers)
 add_subdirectory(device_advisor)
 add_subdirectory(events)
 add_subdirectory(hdlcd)
