@@ -154,6 +154,7 @@ target_link_libraries(speech-recognition
         fri-bsp
         helpers-events
         mbedtls
+        ota-update
         provisioning-lib
         speexdsp
         tfm-ns-interface
