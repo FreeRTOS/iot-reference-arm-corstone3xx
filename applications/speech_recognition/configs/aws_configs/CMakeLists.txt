@@ -1,4 +1,4 @@
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2024 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -28,11 +28,6 @@ target_include_directories(freertos-ota-pal-psa-config
 )
 
 target_include_directories(freertos-pkcs11-psa-config
-    INTERFACE
-        .
-)
-
-target_include_directories(ota-for-aws-iot-embedded-sdk-config
     INTERFACE
         .
 )

@@ -39,6 +39,7 @@ coef
 compatibil
 coremqtt
 COSE
+coverity
 CLRF
 Cqqpk
 CSRS
@@ -147,6 +148,7 @@ Merkle
 Mfcc
 MFCC
 MFLN
+MISRA
 mlek
 mqtt
 mqttconfig

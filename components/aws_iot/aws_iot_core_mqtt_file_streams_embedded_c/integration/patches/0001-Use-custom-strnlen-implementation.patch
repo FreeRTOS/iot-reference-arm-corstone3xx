@@ -1,0 +1,48 @@
+From e760c27b177175214a7e71c93e7d9940e7044c23 Mon Sep 17 00:00:00 2001
+From: Chuyue Luo <Chuyue.Luo@arm.com>
+Date: Wed, 4 Dec 2024 15:08:01 +0000
+Subject: [PATCH] Use custom `strnlen` implementation
+
+The Arm Compiler for Embedded (v6.21) does not support the `strnlen`
+function. Therefore, use our own implementation (`app_strnlen`) instead.
+
+Signed-off-by: Chuyue Luo <Chuyue.Luo@arm.com>
+---
+ source/MQTTFileDownloader.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/source/MQTTFileDownloader.c b/source/MQTTFileDownloader.c
+index 93a4894..48edce3 100644
+--- a/source/MQTTFileDownloader.c
++++ b/source/MQTTFileDownloader.c
+@@ -1,6 +1,9 @@
+ /*
+  * AWS IoT Core MQTT File Streams Embedded C v1.1.0
+  * Copyright (C) 2023 Amazon.com, Inc. and its affiliates. All Rights Reserved.
++ * Copyright 2024 Arm Limited and/or its affiliates
++ * <open-source-office@arm.com>
++ *
+  * SPDX-License-Identifier: MIT
+  *
+  * Licensed under the MIT License. See the LICENSE accompanying this file
+@@ -27,6 +30,8 @@
+ #include "MQTTFileDownloader_cbor.h"
+ #include "core_json.h"
+ 
++#include "app_strnlen.h"
++
+ /**
+  * @brief Macro to check whether a character is an ASCII digit or not.
+  */
+@@ -320,7 +325,7 @@ size_t mqttDownloader_createGetDataBlockRequest( DataType_t dataType,
+                                blockOffset,
+                                numberOfBlocksRequested );
+ 
+-            requestLength = strnlen( getStreamRequest,
++            requestLength = app_strnlen( getStreamRequest,
+                                      GET_STREAM_REQUEST_BUFFER_SIZE );
+         }
+         else
+-- 
+2.47.0
+

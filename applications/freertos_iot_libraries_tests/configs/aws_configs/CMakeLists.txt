@@ -31,8 +31,3 @@ target_include_directories(freertos-pkcs11-psa-config
     INTERFACE
         .
 )
-
-target_include_directories(ota-for-aws-iot-embedded-sdk-config
-    INTERFACE
-        .
-)

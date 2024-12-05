@@ -108,7 +108,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         freertos-ota-pal-psa
         fri-bsp
         helpers-events
-        ota-for-aws-iot-embedded-sdk
+        ota-update
         provisioning-lib
         mbedtls
         tfm-ns-interface

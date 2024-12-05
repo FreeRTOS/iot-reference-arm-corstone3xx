@@ -1,0 +1,766 @@
+From 45ee1cd5754d0c445bc500ed137adb896e33497a Mon Sep 17 00:00:00 2001
+From: Chuyue Luo <Chuyue.Luo@arm.com>
+Date: Thu, 5 Dec 2024 10:53:50 +0000
+Subject: [PATCH 2/2] Update FreeRTOS OTA PAL PSA to work with new modular OTA
+
+This patch is taken from
+https://github.com/Linaro/freertos-ota-pal-psa/commit/bfef9705b92badfa5bcb388f4d1cf512b27c5a5f.patch
+
+This patch updates the FreeRTOS OTA PAL PSA to work with the new modular
+OTA structure:
+- Update header includes to remove headers from the old
+ota-for-aws-iot-embedded-sdk library, replace these with headers from
+the new Jobs-for-AWS-IoT-embedded-sdk library
+- Remove usage of data structures from ota-for-aws-iot-embedded-sdk
+library, replace these with data structures from
+Jobs-for-AWS-IoT-embedded-sdk library.
+
+Signed-off-by: Chuyue Luo <Chuyue.Luo@arm.com>
+---
+ ota_pal.c                     | 172 +++++++++++++++++-----------------
+ ota_pal.h                     |  77 +++++++++++++--
+ version/application_version.c |  38 +++++++-
+ version/application_version.h |   3 +-
+ 4 files changed, 192 insertions(+), 98 deletions(-)
+
+diff --git a/ota_pal.c b/ota_pal.c
+index 165c146..9b7e6f4 100644
+--- a/ota_pal.c
++++ b/ota_pal.c
+@@ -1,7 +1,7 @@
+ /*
+  * AWS IoT Over-the-air Update v3.0.0
+  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+- * Copyright (c) 2021-2022 Arm Limited. All rights reserved.
++ * Copyright (c) 2021-2024 Arm Limited. All rights reserved.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy of
+  * this software and associated documentation files (the "Software"), to deal in
+@@ -40,13 +40,14 @@
+ #endif
+ 
+ /* define LIBRARY_LOG_LEVEL here if you want to modify the logging level from the default */
+-#define LIBRARY_LOG_LEVEL    LOG_INFO
++#ifndef LIBRARY_LOG_LEVEL
++    #define LIBRARY_LOG_LEVEL    LOG_INFO
++#endif
+ 
+ #include "logging_stack.h"
+ 
+ /* To provide appFirmwareVersion for OTA library. */
+ #include "ota_config.h"
+-#include "ota_appversion32.h"
+ 
+ /* OTA PAL Port include. */
+ #include "ota_pal.h"
+@@ -63,6 +64,8 @@
+ 
+ #define ECDSA_SHA256_RAW_SIGNATURE_LENGTH     ( 64 )
+ 
++#define OTA_FILE_SIG_KEY_STR_MAX_LENGTH    32
++
+ /***********************************************************************
+  *
+  * Structures
+@@ -93,7 +96,7 @@
+  * Keep track of system context between calls from the OTA Agent
+  *
+  */
+-const OtaFileContext_t * pxSystemContext = NULL;
++const AfrOtaJobDocumentFields_t * pxSystemContext = NULL;
+ static psa_fwu_component_t xOTAComponentID = FWU_COMPONENT_NUMBER;
+ 
+ /* The key handle for OTA image verification. The key should be provisioned
+@@ -111,12 +114,15 @@ extern psa_key_handle_t xOTACodeVerifyKeyHandle;
+  *
+  **********************************************************************/
+ 
+-static bool prvConvertToRawECDSASignature( const uint8_t * pucEncodedSignature,  uint8_t * pucRawSignature )
++static bool prvConvertToRawECDSASignature( const uint8_t * pucEncodedSignature, size_t signatureLength, uint8_t * pucRawSignature )
+ {
+     bool xReturn = true;
+     const uint8_t * pxNextLength = NULL;
+     uint8_t ucSigComponentLength;
+ 
++    /* Suppress compiler warning about unused parameter. */
++    ( void ) signatureLength;
++
+     if( ( pucRawSignature == NULL ) || ( pucEncodedSignature == NULL ) )
+     {
+         xReturn = false;
+@@ -199,38 +205,38 @@ static bool prvConvertToRawECDSASignature( const uint8_t * pucEncodedSignature,
+     return xReturn;
+ }
+ 
+-static OtaPalStatus_t PortConvertFilePathtoPSAComponentID ( OtaFileContext_t * const pFileContext,
+-                                                            psa_fwu_component_t * pxComponent )
++static bool PortConvertFilePathtoPSAComponentID ( AfrOtaJobDocumentFields_t * const pFileContext,
++                                                  psa_fwu_component_t * pxComponent )
+ {
+-    if( pFileContext == NULL || pxComponent == NULL || pFileContext->pFilePath == NULL )
++    if( pFileContext == NULL || pxComponent == NULL || pFileContext->filepath == NULL )
+     {
+-        return OTA_PAL_COMBINE_ERR( OtaPalUninitialized, 0 );
++        return false;
+     }
+ 
+ #ifdef FWU_COMPONENT_ID_SECURE
+     /* pFilePath field is got from the OTA server. */
+-    if( memcmp( pFileContext->pFilePath, "secure image", strlen("secure image") ) == 0 )
++    if( memcmp( pFileContext->filepath, "secure image", strlen("secure image") ) == 0 )
+     {
+         *pxComponent = FWU_COMPONENT_ID_SECURE;
+-        return OTA_PAL_COMBINE_ERR( OtaPalSuccess, 0 );
++        return true;
+     }
+ #endif
+ #ifdef FWU_COMPONENT_ID_NONSECURE
+-    if( memcmp( pFileContext->pFilePath, "non_secure image", strlen("non_secure image") ) == 0 )
++    if( memcmp( pFileContext->filepath, "non_secure image", strlen("non_secure image") ) == 0 )
+     {
+         *pxComponent = FWU_COMPONENT_ID_NONSECURE;
+-        return OTA_PAL_COMBINE_ERR( OtaPalSuccess, 0 );
++        return true;
+     }
+ #endif
+ #ifdef FWU_COMPONENT_ID_FULL
+-    if( memcmp( pFileContext->pFilePath, "combined image", strlen("combined image") ) == 0 )
++    if( memcmp( pFileContext->filepath, "combined image", strlen("combined image") ) == 0 )
+     {
+         *pxComponent = FWU_COMPONENT_ID_FULL;
+-        return OTA_PAL_COMBINE_ERR( OtaPalSuccess, 0 );
++        return true;
+     }
+ #endif
+ 
+-    return OTA_PAL_COMBINE_ERR( OtaPalRxFileCreateFailed, 0 );
++    return false;
+ }
+ 
+ /**
+@@ -256,25 +262,25 @@ static OtaPalStatus_t PortConvertFilePathtoPSAComponentID ( OtaFileContext_t * c
+  *   OtaPalSuccess: Aborting access to the open file was successful.
+  *   OtaPalFileAbort: Aborting access to the open file context was unsuccessful.
+  */
+-OtaPalStatus_t otaPal_Abort( OtaFileContext_t * const pFileContext )
++bool otaPal_Abort( AfrOtaJobDocumentFields_t * const pFileContext )
+ {
+-    OtaPalStatus_t retStatus = OTA_PAL_COMBINE_ERR( OtaPalSuccess, 0 );
++    bool retStatus = true;
+ 
+     if( ( pFileContext == NULL ) || ( ( pFileContext != pxSystemContext ) && ( pxSystemContext != NULL ) ) )
+     {
+         LogWarn( ( "otaPal_Abort: pFileContext or pFileContext->pFile is NULL." ) );
+-        retStatus = OTA_PAL_COMBINE_ERR( OtaPalAbortFailed, 0 );
++        retStatus = false;
+     }
+-    else if( pFileContext->pFile == NULL )
++    else if( pFileContext->fileId == 0 )
+     {
+         /* Nothing to do. No open file associated with this context. */
+     }
+     else if( ( pFileContext != pxSystemContext ) && ( pxSystemContext != NULL ) )
+     {
+         LogWarn( ( "otaPal_Abort: pFileContext is different from pxSystemContext." ) );
+-        retStatus = OTA_PAL_COMBINE_ERR( OtaPalAbortFailed, 0 );
++        retStatus = false;
+ 
+-        pFileContext->pFile = NULL;
++        pFileContext->fileId = 0;
+     }
+     else if( pxSystemContext == NULL )
+     {
+@@ -285,23 +291,23 @@ OtaPalStatus_t otaPal_Abort( OtaFileContext_t * const pFileContext )
+         psa_status_t lPsaStatus = PSA_SUCCESS;
+         if( psa_fwu_cancel( xOTAComponentID ) != PSA_SUCCESS )
+         {
+-            lPsaStatus = OTA_PAL_COMBINE_ERR( OtaPalAbortFailed, 0 );
++            lPsaStatus = false;
+         }
+         if( psa_fwu_clean( xOTAComponentID ) != PSA_SUCCESS )
+         {
+-            lPsaStatus = OTA_PAL_COMBINE_ERR( OtaPalAbortFailed, 0 );
++            lPsaStatus = false;
+         }
+         /* psa_fwu_abort returns PSA_ERROR_INVALID_ARGUMENT if xOTAImageID was NOT written before abort.
+          * But we should return success if xOTAImageID was created. */
+         if( ( lPsaStatus != PSA_SUCCESS ) && ( lPsaStatus != PSA_ERROR_INVALID_ARGUMENT ) )
+         {
+             LogWarn( ( "otaPal_Abort: psa_fwu_abort fail with error %d.", lPsaStatus ) );
+-            retStatus = OTA_PAL_COMBINE_ERR( OtaPalAbortFailed, 1 );
++            retStatus = false;
+         }
+ 
+         pxSystemContext = NULL;
+         xOTAComponentID = 0;
+-        pFileContext->pFile = NULL;
++        pFileContext->fileId = 0;
+     }
+ 
+     return retStatus;
+@@ -335,33 +341,33 @@ OtaPalStatus_t otaPal_Abort( OtaFileContext_t * const pFileContext )
+  *                             non-volatile memory. If this error is returned, then the sub error
+  *                             should be set to the appropriate platform specific value.
+  */
+-OtaPalStatus_t otaPal_CreateFileForRx( OtaFileContext_t * const pFileContext )
++OtaPalJobDocProcessingResult_t otaPal_CreateFileForRx( AfrOtaJobDocumentFields_t * const pFileContext )
+ {
+     psa_fwu_component_t uxComponent;
+ 
+-    if( pFileContext == NULL || pFileContext->pFilePath == NULL )
++    if( pFileContext == NULL || pFileContext->filepath == NULL )
+     {
+-        return OTA_PAL_COMBINE_ERR( OtaPalRxFileCreateFailed, 0 );
++        return OtaPalJobDocFileCreateFailed;
+     }
+ 
+-    if( PortConvertFilePathtoPSAComponentID( pFileContext, &uxComponent ) != OTA_PAL_COMBINE_ERR( OtaPalSuccess, 0 ) )
++    if( PortConvertFilePathtoPSAComponentID( pFileContext, &uxComponent ) != true )
+     {
+-        return OTA_PAL_COMBINE_ERR( OtaPalRxFileCreateFailed, 0 );
++        return OtaPalJobDocFileCreateFailed;
+     }
+ 
+     /* Trigger a FWU process. Image manifest is bundled within the image. */
+     if( psa_fwu_start( uxComponent, NULL, 0 ) != PSA_SUCCESS )
+     {
+-        return OTA_PAL_COMBINE_ERR( OtaPalRxFileCreateFailed, 0 );
++        return OtaPalJobDocFileCreateFailed;
+     }
+ 
+     pxSystemContext = pFileContext;
+     xOTAComponentID = uxComponent;
+-    pFileContext->pFile = &xOTAComponentID;
+-    return OTA_PAL_COMBINE_ERR( OtaPalSuccess, 0 );
++    pFileContext->fileId = ( uint32_t ) xOTAComponentID;
++    return OtaPalJobDocFileCreated;
+ }
+ 
+-static OtaPalStatus_t otaPal_CheckSignature( OtaFileContext_t * const pFileContext )
++static bool otaPal_CheckSignature( AfrOtaJobDocumentFields_t * const pFileContext )
+ {
+     psa_fwu_component_info_t xComponentInfo = { 0 };
+     psa_status_t uxStatus;
+@@ -373,28 +379,28 @@ static OtaPalStatus_t otaPal_CheckSignature( OtaFileContext_t * const pFileConte
+     uxStatus = psa_fwu_query( xOTAComponentID, &xComponentInfo );
+     if( uxStatus != PSA_SUCCESS )
+     {
+-        return OTA_PAL_COMBINE_ERR( OtaPalSignatureCheckFailed, OTA_PAL_SUB_ERR( uxStatus ) );
++        return false;
+     }
+ 
+ 
+ #if ( defined( OTA_PAL_SIGNATURE_FORMAT ) && ( OTA_PAL_SIGNATURE_FORMAT == OTA_PAL_SIGNATURE_ASN1_DER ) )
+-    if( prvConvertToRawECDSASignature( pFileContext->pSignature->data,  ucECDSARAWSignature ) == false )
++    if( prvConvertToRawECDSASignature( pFileContext->signature, pFileContext->signatureLen, ucECDSARAWSignature ) == false )
+     {
+         LogError( ( "Failed to decode ECDSA SHA256 signature." ) );
+-        return OTA_PAL_COMBINE_ERR( OtaPalSignatureCheckFailed, 0 );
++        return false;
+     }
+ 
+     ucSigBuffer = &ucECDSARAWSignature;
+     usSigLength = ECDSA_SHA256_RAW_SIGNATURE_LENGTH;
+ #else
+-    ucSigBuffer = (uint8_t *) &pFileContext->pSignature->data;
+-    usSigLength = pFileContext->pSignature->size;
++    ucSigBuffer = (uint8_t *) pFileContext->signature;
++    usSigLength = pFileContext->signatureLen;
+ #endif /* defined( OTA_PAL_SIGNATURE_FORMAT ) && ( OTA_PAL_SIGNATURE_FORMAT == OTA_PAL_SIGNATURE_ASN1_DER ) */
+ 
+     uxStatus = psa_get_key_attributes( xOTACodeVerifyKeyHandle, &xKeyAttribute );
+     if( uxStatus != PSA_SUCCESS )
+     {
+-        return OTA_PAL_COMBINE_ERR( OtaPalSignatureCheckFailed, OTA_PAL_SUB_ERR( uxStatus ) );
++        return false;
+     }
+ 
+     xKeyAlgorithm = psa_get_key_algorithm( &xKeyAttribute );
+@@ -407,10 +413,10 @@ static OtaPalStatus_t otaPal_CheckSignature( OtaFileContext_t * const pFileConte
+ 
+     if( uxStatus != PSA_SUCCESS )
+     {
+-        return OTA_PAL_COMBINE_ERR( OtaPalSignatureCheckFailed, OTA_PAL_SUB_ERR( uxStatus ) );
++        return false;
+     }
+ 
+-    return OTA_PAL_COMBINE_ERR( OtaPalSuccess, 0 );
++    return true;
+ }
+ 
+ /**
+@@ -419,7 +425,7 @@ static OtaPalStatus_t otaPal_CheckSignature( OtaFileContext_t * const pFileConte
+  * @note The input OtaFileContext_t pFileContext is checked for NULL by the OTA agent before this
+  * function is called. This function is called only at the end of block ingestion.
+  * otaPAL_CreateFileForRx() must succeed before this function is reached, so
+- * pFileContext->fileHandle(or pFileContext->pFile) is never NULL.
++ * pFileContext->fileHandle is never NULL or pFileContext->fileId is never 0.
+  * The file signature key is required job document field in the OTA Agent, so pFileContext->pSignature will
+  * never be NULL.
+  *
+@@ -438,8 +444,14 @@ static OtaPalStatus_t otaPal_CheckSignature( OtaFileContext_t * const pFileConte
+  *   OtaPalBadSignerCert: The signer certificate was not readable or zero length.
+  *   OtaPalFileClose: Error in low level file close.
+  */
+-OtaPalStatus_t otaPal_CloseFile( OtaFileContext_t * const pFileContext )
++bool otaPal_CloseFile( AfrOtaJobDocumentFields_t * const pFileContext )
+ {
++	/* Mark the image ready for installation. */
++	if( psa_fwu_finish( xOTAComponentID ) != PSA_SUCCESS )
++	{
++	    return -1;
++	}
++
+     /* Check the signature. */
+     return otaPal_CheckSignature( pFileContext );
+ }
+@@ -463,7 +475,7 @@ OtaPalStatus_t otaPal_CloseFile( OtaFileContext_t * const pFileContext )
+  * @return The number of bytes written successfully, or a negative error code from the platform
+  * abstraction layer.
+  */
+-int16_t otaPal_WriteBlock( OtaFileContext_t * const pFileContext,
++int16_t otaPal_WriteBlock( AfrOtaJobDocumentFields_t * const pFileContext,
+                            uint32_t ulOffset,
+                            uint8_t * const pcData,
+                            uint32_t ulBlockSize )
+@@ -491,16 +503,6 @@ int16_t otaPal_WriteBlock( OtaFileContext_t * const pFileContext,
+         ulDoneLength += ulWriteLength;
+     }
+ 
+-    /* If this is the last block, call 'psa_fwu_fnish()' to mark image ready for installation. */
+-    if( pFileContext->blocksRemaining == 1 )
+-    {
+-        LogDebug( ( "pFileContext->blocksRemaining == 1 ." ) );
+-        if( psa_fwu_finish( xOTAComponentID ) != PSA_SUCCESS )
+-        {
+-            return -1;
+-        }
+-    }
+-
+     return ulDoneLength;
+ }
+ 
+@@ -524,13 +526,13 @@ int16_t otaPal_WriteBlock( OtaFileContext_t * const pFileContext,
+  *   OtaPalSuccess on success.
+  *   OtaPalActivateFailed: The activation of the new OTA image failed.
+  */
+-OtaPalStatus_t otaPal_ActivateNewImage( OtaFileContext_t * const pFileContext )
++bool otaPal_ActivateNewImage( AfrOtaJobDocumentFields_t * const pFileContext )
+ {
+     psa_status_t uxStatus;
+ 
+     if( (pFileContext == NULL) || (pFileContext != pxSystemContext ) || ( xOTAComponentID >= FWU_COMPONENT_NUMBER ) )
+     {
+-        return OTA_PAL_COMBINE_ERR( OtaPalActivateFailed, 0 );
++        return false;
+     }
+ 
+     uxStatus = psa_fwu_install();
+@@ -539,15 +541,15 @@ OtaPalStatus_t otaPal_ActivateNewImage( OtaFileContext_t * const pFileContext )
+         otaPal_ResetDevice( pFileContext );
+ 
+         /* Reset failure happened. */
+-        return OTA_PAL_COMBINE_ERR( OtaPalActivateFailed, 0 );
++        return false;
+     }
+     else if( uxStatus == PSA_SUCCESS )
+     {
+-        return OTA_PAL_COMBINE_ERR( OtaPalSuccess, 0 );
++        return true;
+     }
+     else
+     {
+-        return OTA_PAL_COMBINE_ERR( OtaPalActivateFailed, OTA_PAL_SUB_ERR( uxStatus ) );
++        return false;
+     }
+ }
+ 
+@@ -572,7 +574,7 @@ OtaPalStatus_t otaPal_ActivateNewImage( OtaFileContext_t * const pFileContext )
+  *   OtaPalRejectFailed: failed to roll back the update image as requested by OtaImageStateRejected.
+  *   OtaPalCommitFailed: failed to make the update image permanent as requested by OtaImageStateAccepted.
+  */
+-OtaPalStatus_t otaPal_SetPlatformImageState( OtaFileContext_t * const pFileContext,
++bool otaPal_SetPlatformImageState( AfrOtaJobDocumentFields_t * const pFileContext,
+                                              OtaImageState_t eState )
+ {
+     psa_fwu_component_t uxComponent;
+@@ -585,22 +587,22 @@ OtaPalStatus_t otaPal_SetPlatformImageState( OtaFileContext_t * const pFileConte
+         switch ( eState )
+         {
+             case OtaImageStateAccepted:
+-                if( PortConvertFilePathtoPSAComponentID( pFileContext, &uxComponent ) != OTA_PAL_COMBINE_ERR( OtaPalSuccess, 0 ) )
++                if( PortConvertFilePathtoPSAComponentID( pFileContext, &uxComponent ) != true )
+                 {
+-                    return OTA_PAL_COMBINE_ERR( OtaPalCommitFailed, 0 );
++                    return false;
+                 }
+ 
+                 /* Make this image as a permanent one. */
+                 uxStatus = psa_fwu_accept();
+                 if( uxStatus != PSA_SUCCESS )
+                 {
+-                    return OTA_PAL_COMBINE_ERR( OtaPalCommitFailed, OTA_PAL_SUB_ERR( uxStatus ) );
++                    return false;
+                 }
+                 /* Erase the secondary slot and update FWU component state to PSA_FWU_READY. */
+                 uxStatus = psa_fwu_clean(uxComponent);
+                 if( uxStatus != PSA_SUCCESS )
+                 {
+-                    return OTA_PAL_COMBINE_ERR( OtaPalCommitFailed, OTA_PAL_SUB_ERR( uxStatus ) );
++                    return false;
+                 }
+                 break;
+             case OtaImageStateRejected:
+@@ -609,26 +611,26 @@ OtaPalStatus_t otaPal_SetPlatformImageState( OtaFileContext_t * const pFileConte
+                 uxStatus = psa_fwu_reject( PSA_ERROR_NOT_PERMITTED );
+                 if(( uxStatus != PSA_SUCCESS ) && ( uxStatus != PSA_SUCCESS_REBOOT ))
+                 {
+-                    return OTA_PAL_COMBINE_ERR( OtaPalRejectFailed, OTA_PAL_SUB_ERR( uxStatus ) );
++                    return false;
+                 }
+                 break;
+             case OtaImageStateTesting:
+-                if( PortConvertFilePathtoPSAComponentID( pFileContext, &uxComponent ) != OTA_PAL_COMBINE_ERR( OtaPalSuccess, 0 ) )
++                if( PortConvertFilePathtoPSAComponentID( pFileContext, &uxComponent ) != true )
+                 {
+-                    return OTA_PAL_COMBINE_ERR( OtaPalCommitFailed, 0 );
++                    return false;
+                 }
+                 /* Check if the component is in TRIAL state. */
+                 uxStatus = psa_fwu_query( uxComponent, &xComponentInfo );
+                 if( ( uxStatus != PSA_SUCCESS ) || ( xComponentInfo.state != PSA_FWU_TRIAL ) )
+                 {
+-                    return OTA_PAL_COMBINE_ERR( OtaPalCommitFailed, OTA_PAL_SUB_ERR( uxStatus ) );
++                    return false;
+                 }
+                 break;
+             case OtaImageStateAborted:
+                 /* The image download has been finished or has not been started.*/
+                 break;
+             default:
+-                return OTA_PAL_COMBINE_ERR( OtaPalBadImageState, 0 );
++                return false;
+         }
+     }
+     else
+@@ -637,42 +639,42 @@ OtaPalStatus_t otaPal_SetPlatformImageState( OtaFileContext_t * const pFileConte
+         {
+             case OtaImageStateAccepted:
+                 /* The image can only be set as accepted after a reboot. So the pxSystemContext should be NULL. */
+-                return OTA_PAL_COMBINE_ERR( OtaPalCommitFailed, 0 );
++                return false;
+             case OtaImageStateRejected:
+                 uxStatus = psa_fwu_query( uxComponent, &xComponentInfo );
+                 if( uxStatus != PSA_SUCCESS )
+                 {
+-                    return OTA_PAL_COMBINE_ERR( OtaPalRejectFailed, OTA_PAL_SUB_ERR( uxStatus ) );
++                    return false;
+                 }
+                 if( xComponentInfo.state != PSA_FWU_STAGED )
+                 {
+-                    return OTA_PAL_COMBINE_ERR( OtaPalBadImageState, 0 );
++                    return false;
+                 }
+                 uxStatus = psa_fwu_reject( PSA_ERROR_NOT_PERMITTED );
+                 if(( uxStatus != PSA_SUCCESS ) && ( uxStatus != PSA_SUCCESS_REBOOT ))
+                 {
+-                    return OTA_PAL_COMBINE_ERR( OtaPalRejectFailed, OTA_PAL_SUB_ERR( uxStatus ) );
++                    return false;
+                 }
+                 break;
+             case OtaImageStateAborted:
+                 /* If the component is in TRIAL state, the image will be abandoned. Reboot will be carried
+                  * out by OTA agent so there is no need to reboot here. */
+-                if( PortConvertFilePathtoPSAComponentID( pFileContext, &uxComponent ) != OTA_PAL_COMBINE_ERR( OtaPalSuccess, 0 ) )
++                if( PortConvertFilePathtoPSAComponentID( pFileContext, &uxComponent ) != true )
+                 {
+-                    return OTA_PAL_COMBINE_ERR( OtaPalRejectFailed, 0 );
++                    return false;
+                 }
+                 uxStatus = psa_fwu_cancel( uxComponent );
+                 if( uxStatus != PSA_SUCCESS )
+                 {
+-                    return OTA_PAL_COMBINE_ERR( OtaPalRejectFailed, OTA_PAL_SUB_ERR( uxStatus ) );
++                    return false;
+                 }
+                 if( psa_fwu_clean( xOTAComponentID ) != PSA_SUCCESS )
+                 {
+-                    return OTA_PAL_COMBINE_ERR( OtaPalRejectFailed, 0 );
++                    return false;
+                 }
+                 break;
+             default:
+-                return OTA_PAL_COMBINE_ERR( OtaPalBadImageState, 0 );
++                return false;
+ 
+         /* The image is still downloading and the OTA process will not continue. The image is in
+          * the secondary slot and does not impact the later update process. So nothing to do in
+@@ -680,7 +682,7 @@ OtaPalStatus_t otaPal_SetPlatformImageState( OtaFileContext_t * const pFileConte
+          */
+         }
+     }
+-    return OTA_PAL_COMBINE_ERR( OtaPalSuccess, 0 );
++    return true;
+ }
+ 
+ /**
+@@ -706,13 +708,13 @@ OtaPalStatus_t otaPal_SetPlatformImageState( OtaFileContext_t * const pFileConte
+  *
+  *   NOTE: OtaPalImageStateUnknown should NEVER be returned and indicates an implementation error.
+  */
+-OtaPalImageState_t otaPal_GetPlatformImageState( OtaFileContext_t * const pFileContext )
++OtaPalImageState_t otaPal_GetPlatformImageState( AfrOtaJobDocumentFields_t * const pFileContext )
+ {
+     psa_status_t uxStatus;
+     psa_fwu_component_info_t xComponentInfo = { 0 };
+     psa_fwu_component_t uxComponent;
+ 
+-    if( PortConvertFilePathtoPSAComponentID( pFileContext, &uxComponent ) != OTA_PAL_COMBINE_ERR( OtaPalSuccess, 0 ) )
++    if( PortConvertFilePathtoPSAComponentID( pFileContext, &uxComponent ) != true )
+     {
+         return OtaPalImageStateInvalid;
+     }
+@@ -752,8 +754,8 @@ OtaPalImageState_t otaPal_GetPlatformImageState( OtaFileContext_t * const pFileC
+  *         the MCU specific sub error code. See ota_platform_interface.h for the OtaPalMainStatus_t
+  *         error codes and your specific PAL implementation for the sub error code.
+  */
+-OtaPalStatus_t otaPal_ResetDevice( OtaFileContext_t * const pFileContext )
++bool otaPal_ResetDevice( AfrOtaJobDocumentFields_t * const pFileContext )
+ {
+     psa_fwu_request_reboot();
+-    return OTA_PAL_COMBINE_ERR( OtaPalActivateFailed, 0 );
++    return false;
+ }
+diff --git a/ota_pal.h b/ota_pal.h
+index c530620..4c95bda 100644
+--- a/ota_pal.h
++++ b/ota_pal.h
+@@ -1,6 +1,8 @@
+ /*
+  * FreeRTOS V202107.00
+  * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
++ * Copyright 2024 Arm Limited and/or its affiliates
++ * <open-source-office@arm.com>
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy of
+  * this software and associated documentation files (the "Software"), to deal in
+@@ -31,7 +33,7 @@
+ #ifndef OTA_PAL_H_
+ #define OTA_PAL_H_
+ 
+-#include "ota.h"
++#include "job_parser.h"
+ 
+ /* OTA PAL signing algorithm configurations. */
+ #define OTA_PAL_CODE_SIGNING_RSA    ( 0 )
+@@ -54,6 +56,61 @@
+ #endif
+ 
+ 
++/**
++ * @ingroup ota_enum_types
++ * @brief OTA Image states.
++ *
++ * After an OTA update image is received and authenticated, it is logically moved to
++ * the Self Test state by the OTA agent pending final acceptance. After the image is
++ * activated and tested by your user code, you should put it into either the Accepted
++ * or Rejected state by calling @ref OTA_SetImageState ( OtaImageStateAccepted ) or
++ * @ref OTA_SetImageState ( OtaImageStateRejected ). If the image is accepted, it becomes
++ * the main firmware image to be booted from then on. If it is rejected, the image is
++ * no longer valid and shall not be used, reverting to the last known good image.
++ *
++ * If you want to abort an active OTA transfer, you may do so by calling the API
++ * @ref OTA_SetImageState ( OtaImageStateAborted ).
++ */
++typedef enum OtaImageState
++{
++    OtaImageStateUnknown = 0,  /*!< @brief The initial state of the OTA MCU Image. */
++    OtaImageStateTesting = 1,  /*!< @brief The state of the OTA MCU Image post successful download and reboot. */
++    OtaImageStateAccepted = 2, /*!< @brief The state of the OTA MCU Image post successful download and successful self_test. */
++    OtaImageStateRejected = 3, /*!< @brief The state of the OTA MCU Image when the job has been rejected. */
++    OtaImageStateAborted = 4,  /*!< @brief The state of the OTA MCU Image after a timeout publish to the stream request fails.
++                                *   Also if the OTA MCU image is aborted in the middle of a stream. */
++    OtaLastImageState = OtaImageStateAborted
++} OtaImageState_t;
++
++/**
++ * @ingroup ota_enum_types
++ * @brief OTA Platform Image State.
++ *
++ * The image state set by platform implementation.
++ */
++typedef enum OtaPalImageState
++{
++    OtaPalImageStateUnknown = 0,   /*!< @brief The initial state of the OTA PAL Image. */
++    OtaPalImageStatePendingCommit, /*!< @brief OTA PAL Image awaiting update. */
++    OtaPalImageStateValid,         /*!< @brief OTA PAL Image is valid. */
++    OtaPalImageStateInvalid        /*!< @brief OTA PAL Image is invalid. */
++} OtaPalImageState_t;
++
++/**
++ * @ingroup ota_enum_types
++ * @brief OTA Platform Image State.
++ *
++ * The image state set by platform implementation.
++ */
++typedef enum OtaPalJobDocProcessingResult
++{
++    OtaPalJobDocFileCreated = 0,
++	OtaPalJobDocFileCreateFailed,
++    OtaPalNewImageBooted,
++    OtaPalNewImageBootFailed,
++    OtaPalJobDocProcessingStateInvalid
++} OtaPalJobDocProcessingResult_t;
++
+ /**
+  * @brief Abort an OTA transfer.
+  *
+@@ -77,7 +134,7 @@
+  *   OtaPalSuccess: Aborting access to the open file was successful.
+  *   OtaPalFileAbort: Aborting access to the open file context was unsuccessful.
+  */
+-OtaPalStatus_t otaPal_Abort( OtaFileContext_t * const pFileContext );
++bool otaPal_Abort( AfrOtaJobDocumentFields_t * const pFileContext );
+ 
+ /**
+  * @brief Create a new receive file.
+@@ -107,7 +164,7 @@ OtaPalStatus_t otaPal_Abort( OtaFileContext_t * const pFileContext );
+  *                             non-volatile memory. If this error is returned, then the sub error
+  *                             should be set to the appropriate platform specific value.
+  */
+-OtaPalStatus_t otaPal_CreateFileForRx( OtaFileContext_t * const pFileContext );
++OtaPalJobDocProcessingResult_t otaPal_CreateFileForRx( AfrOtaJobDocumentFields_t * const pFileContext );
+ 
+ /**
+  * @brief Authenticate and close the underlying receive file in the specified OTA context.
+@@ -134,7 +191,7 @@ OtaPalStatus_t otaPal_CreateFileForRx( OtaFileContext_t * const pFileContext );
+  *   OtaPalBadSignerCert: The signer certificate was not readable or zero length.
+  *   OtaPalFileClose: Error in low level file close.
+  */
+-OtaPalStatus_t otaPal_CloseFile( OtaFileContext_t * const pFileContext );
++bool otaPal_CloseFile( AfrOtaJobDocumentFields_t * const pFileContext );
+ 
+ /**
+  * @brief Write a block of data to the specified file at the given offset.
+@@ -155,9 +212,9 @@ OtaPalStatus_t otaPal_CloseFile( OtaFileContext_t * const pFileContext );
+  * @return The number of bytes written successfully, or a negative error code from the platform
+  * abstraction layer.
+  */
+-int16_t otaPal_WriteBlock( OtaFileContext_t * const pFileContext,
++int16_t otaPal_WriteBlock( AfrOtaJobDocumentFields_t * const pFileContext,
+                            uint32_t ulOffset,
+-                           uint8_t * const pData,
++                           uint8_t * const pcData,
+                            uint32_t ulBlockSize );
+ 
+ /**
+@@ -180,7 +237,7 @@ int16_t otaPal_WriteBlock( OtaFileContext_t * const pFileContext,
+  *   OtaPalSuccess on success.
+  *   OtaPalActivateFailed: The activation of the new OTA image failed.
+  */
+-OtaPalStatus_t otaPal_ActivateNewImage( OtaFileContext_t * const pFileContext );
++bool otaPal_ActivateNewImage( AfrOtaJobDocumentFields_t * const pFileContext );
+ 
+ /**
+  * @brief Attempt to set the state of the OTA update image.
+@@ -203,7 +260,7 @@ OtaPalStatus_t otaPal_ActivateNewImage( OtaFileContext_t * const pFileContext );
+  *   OtaPalRejectFailed: failed to roll back the update image as requested by OtaImageStateRejected.
+  *   OtaPalCommitFailed: failed to make the update image permanent as requested by OtaImageStateAccepted.
+  */
+-OtaPalStatus_t otaPal_SetPlatformImageState( OtaFileContext_t * const pFileContext,
++bool otaPal_SetPlatformImageState( AfrOtaJobDocumentFields_t * const pFileContext,
+                                              OtaImageState_t eState );
+ 
+ /**
+@@ -229,7 +286,7 @@ OtaPalStatus_t otaPal_SetPlatformImageState( OtaFileContext_t * const pFileConte
+  *
+  *   NOTE: OtaPalImageStateUnknown should NEVER be returned and indicates an implementation error.
+  */
+-OtaPalImageState_t otaPal_GetPlatformImageState( OtaFileContext_t * const pFileContext );
++OtaPalImageState_t otaPal_GetPlatformImageState( AfrOtaJobDocumentFields_t * const pFileContext );
+ 
+ /**
+  * @brief Reset the device.
+@@ -245,5 +302,5 @@ OtaPalImageState_t otaPal_GetPlatformImageState( OtaFileContext_t * const pFileC
+  *         the MCU specific sub error code. See ota_platform_interface.h for the OtaPalMainStatus_t
+  *         error codes and your specific PAL implementation for the sub error code.
+  */
+-OtaPalStatus_t otaPal_ResetDevice( OtaFileContext_t * const pFileContext );
++bool otaPal_ResetDevice( AfrOtaJobDocumentFields_t * const pFileContext );
+ #endif /* ifndef OTA_PAL_H_ */
+diff --git a/version/application_version.c b/version/application_version.c
+index 7b38c6a..68c715f 100644
+--- a/version/application_version.c
++++ b/version/application_version.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2020-2022 Arm Limited. All rights reserved.
++ * Copyright (c) 2020-2024 Arm Limited. All rights reserved.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy of
+  * this software and associated documentation files (the "Software"), to deal in
+@@ -33,6 +33,42 @@
+ #include "FreeRTOS.h"
+ #include "application_version.h"
+ 
++/**
++ * @ingroup ota_struct_types
++ * @brief Application version structure.
++ *
++ */
++typedef struct
++{
++    /* MISRA Ref 19.2.1 [Unions] */
++    /* More details at: https://github.com/aws/ota-for-aws-iot-embedded-sdk/blob/main/MISRA.md#rule-192 */
++    /* coverity[misra_c_2012_rule_19_2_violation] */
++    union
++    {
++        #if ( defined( __BYTE_ORDER__ ) && defined( __ORDER_LITTLE_ENDIAN__ ) && ( __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ ) ) || ( __little_endian__ == 1 ) || WIN32 || ( __BYTE_ORDER == __LITTLE_ENDIAN )
++            struct version
++            {
++                uint16_t build; /*!< @brief Build of the firmware (Z in firmware version Z.Y.X). */
++                uint8_t minor;  /*!< @brief Minor version number of the firmware (Y in firmware version Z.Y.X). */
++
++                uint8_t major;  /*!< @brief Major version number of the firmware (X in firmware version Z.Y.X). */
++            } x;                /*!< @brief Version number of the firmware. */
++        #elif ( defined( __BYTE_ORDER__ ) && defined( __ORDER_BIG_ENDIAN__ ) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ) || ( __big_endian__ == 1 ) || ( __BYTE_ORDER == __BIG_ENDIAN )
++            struct version
++            {
++                uint8_t major;  /*!< @brief Major version number of the firmware (X in firmware version X.Y.Z). */
++                uint8_t minor;  /*!< @brief Minor version number of the firmware (Y in firmware version X.Y.Z). */
++
++                uint16_t build; /*!< @brief Build of the firmware (Z in firmware version X.Y.Z). */
++            } x;                /*!< @brief Version number of the firmware. */
++        #else /* if ( defined( __BYTE_ORDER__ ) && defined( __ORDER_LITTLE_ENDIAN__ ) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ ) || ( __little_endian__ == 1 ) || WIN32 || ( __BYTE_ORDER == __LITTLE_ENDIAN ) */
++        #error "Unable to determine byte order!"
++        #endif /* if ( defined( __BYTE_ORDER__ ) && defined( __ORDER_LITTLE_ENDIAN__ ) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ ) || ( __little_endian__ == 1 ) || WIN32 || ( __BYTE_ORDER == __LITTLE_ENDIAN ) */
++        uint32_t unsignedVersion32;
++        int32_t signedVersion32;
++    } u; /*!< @brief Version based on configuration in big endian or little endian. */
++} AppVersion32_t;
++
+ AppVersion32_t appFirmwareVersion;
+ 
+ int GetImageVersionPSA( psa_fwu_component_t uxComponent )
+diff --git a/version/application_version.h b/version/application_version.h
+index 7775910..a790df7 100644
+--- a/version/application_version.h
++++ b/version/application_version.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2020-2022 Arm Limited. All rights reserved.
++ * Copyright (c) 2020-2024 Arm Limited. All rights reserved.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy of
+  * this software and associated documentation files (the "Software"), to deal in
+@@ -24,7 +24,6 @@
+ #define APPLICATION_VERSION_H_
+ 
+ #include "ota_config.h"
+-#include "ota_appversion32.h"
+ #include "psa/update.h"
+ 
+ /**
+-- 
+2.47.0
+

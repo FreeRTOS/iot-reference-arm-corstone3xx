@@ -1,0 +1,42 @@
+From 6ea98c733a2ea3c9d8cfdf4d3b689598ffdf8d54 Mon Sep 17 00:00:00 2001
+From: Chuyue Luo <Chuyue.Luo@arm.com>
+Date: Wed, 4 Dec 2024 15:20:34 +0000
+Subject: [PATCH 1/2] Check for RSA signature instead of ECDSA
+
+The Jobs-for-AWS-IoT-embedded-sdk library assumes the OTA job is signed
+using ECDSA, but we currently use RSA. Thus, change the check for an
+ECDSA signature to a check for an RSA signature.
+
+Signed-off-by: Chuyue Luo <Chuyue.Luo@arm.com>
+---
+ source/otaJobParser/job_parser.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/source/otaJobParser/job_parser.c b/source/otaJobParser/job_parser.c
+index 4a1da8a..8638dc0 100644
+--- a/source/otaJobParser/job_parser.c
++++ b/source/otaJobParser/job_parser.c
+@@ -1,6 +1,9 @@
+ /*
+  * AWS IoT Jobs v1.5.1
+  * Copyright (C) 2023 Amazon.com, Inc. and its affiliates. All Rights Reserved.
++ * Copyright 2024 Arm Limited and/or its affiliates
++ * <open-source-office@arm.com>
++ *
+  * SPDX-License-Identifier: MIT
+  *
+  * Licensed under the MIT License. See the LICENSE accompanying this file
+@@ -263,8 +266,8 @@ static JSONStatus_t populateCommonFields( const char * jobDoc,
+     if( jsonResult == JSONSuccess )
+     {
+         buildIndexedFileQueryString( fileIndex,
+-                                     "sig-sha256-ecdsa",
+-                                     16U,
++                                     "sig-sha256-rsa",
++                                     14U,
+                                      queryString,
+                                      &queryStringLength );
+         jsonResult = JSON_SearchConst( jobDoc,
+-- 
+2.47.0
+

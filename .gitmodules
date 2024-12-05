@@ -43,9 +43,6 @@
 [submodule "open_iot_sdk_toolchain"]
 	path = components/tools/open_iot_sdk_toolchain/library
 	url = https://git.gitlab.arm.com/iot/open-iot-sdk/toolchain.git
-[submodule "ota_for_aws_iot_embedded_sdk"]
-	path = components/aws_iot/ota_for_aws_iot_embedded_sdk/library
-	url = https://github.com/aws/ota-for-aws-iot-embedded-sdk.git
 [submodule "tinycbor"]
 	path = components/aws_iot/tinycbor/library
 	url = https://github.com/intel/tinycbor.git
@@ -76,3 +73,9 @@
 [submodule "googletest"]
 	path = components/tools/googletest/library
 	url = https://github.com/google/googletest.git
+[submodule "components/aws_iot/jobs_for_aws_iot_embedded_sdk/library"]
+	path = components/aws_iot/jobs_for_aws_iot_embedded_sdk/library
+	url = https://github.com/aws/Jobs-for-AWS-IoT-embedded-sdk.git
+[submodule "components/aws_iot/aws_iot_core_mqtt_file_streams_embedded_c/library"]
+	path = components/aws_iot/aws_iot_core_mqtt_file_streams_embedded_c/library
+	url = https://github.com/aws/aws-iot-core-mqtt-file-streams-embedded-c/
