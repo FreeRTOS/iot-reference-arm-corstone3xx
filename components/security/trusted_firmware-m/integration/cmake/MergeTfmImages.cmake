@@ -1,4 +1,4 @@
-# Copyright 2023-2024, Arm Limited and/or its affiliates
+# Copyright 2023-2025, Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -68,6 +68,7 @@ function(iot_reference_arm_corstone3xx_tf_m_merge_images target)
                     ${BINARY_DIR}/api_ns/bin/bl2_signed.bin -Binary -offset ${BL2_IMAGE_LOAD_ADDRESS}
                     ${BINARY_DIR}/api_ns/bin/tfm_s_signed.bin -Binary -offset ${S_IMAGE_LOAD_ADDRESS}
                     $<TARGET_FILE_DIR:${target}>/${target}_signed.bin -Binary -offset ${NS_IMAGE_LOAD_ADDRESS}
+                    ${model_binary_param}
                     ${ddr_binary_param}
                     ${ns_provisioning_data_param}
                     -o $<TARGET_FILE_DIR:${target}>/${target}_merged.hex

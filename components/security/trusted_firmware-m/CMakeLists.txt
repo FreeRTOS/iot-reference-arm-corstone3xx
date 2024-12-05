@@ -22,6 +22,7 @@ else()
         set(PATCH_FILES
             "${PATCH_FILES_DIRECTORY}/0001-corstone300-Add-ML-model-component.patch"
             "${PATCH_FILES_DIRECTORY}/0002-corstone310-Add-ML-model-component.patch"
+            "${PATCH_FILES_DIRECTORY}/0003-mps4-Add-ML-model-component.patch"
         )
         iot_reference_arm_corstone3xx_apply_patches("${trusted_firmware-m_SOURCE_DIR}" "${PATCH_FILES}")
     endif()
