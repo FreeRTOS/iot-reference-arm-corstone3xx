@@ -230,6 +230,14 @@ def fvp_process(
         cmdline.extend(frm_options)
     if pythonhome_path != "":
         fvp_env["PYTHONHOME"] = pythonhome_path
+
+    # Log FVP version
+    command = [fvp_path, "--version"]
+    fvp_version_proc = subprocess.run(
+        command, env=fvp_env, capture_output=True, text=True
+    )
+    print(fvp_version_proc.stdout)
+
     proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, env=fvp_env)
     yield proc
     proc.terminate()
