@@ -161,6 +161,7 @@ target_link_libraries(speech-recognition
         toolchain-override
         asr_api
         asr_model
+        helpers-logging
 )
 
 include(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/cmake/SetLinkerOptions.cmake)

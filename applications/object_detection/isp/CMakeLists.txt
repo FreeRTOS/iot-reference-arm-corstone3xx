@@ -19,5 +19,4 @@ target_sources(isp-config
 target_link_libraries(isp-config
     INTERFACE
         isp_control
-        helpers-logging
 )
