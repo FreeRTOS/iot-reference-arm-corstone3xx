@@ -18,6 +18,7 @@ else()
     )
 
     target_link_libraries(ota-update
+    PUBLIC
         jobs-for-aws-iot-embedded-sdk
         aws-iot-core-mqtt-file-streams-embedded-c
         freertos_kernel
@@ -29,5 +30,7 @@ else()
         helpers-events
         backoff-algorithm
         crt-helpers
+    PRIVATE
+        helpers-logging
     )
 endif()

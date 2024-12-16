@@ -30,6 +30,18 @@
 
 #include "FreeRTOSConfig.h"
 
+/* Include header that defines log levels. */
+#include "logging_levels.h"
+
+/* Configure name and log level for the OTA library. */
+#ifndef LIBRARY_LOG_NAME
+    #define LIBRARY_LOG_NAME     "main"
+#endif
+#ifndef LIBRARY_LOG_LEVEL
+    #define LIBRARY_LOG_LEVEL    LOG_INFO
+#endif
+#include "logging_stack.h"
+
 #ifdef AUDIO_VSI
     #include "Driver_SAI.h"
 #endif

@@ -141,6 +141,7 @@ target_link_libraries(keyword-detection
         fri-bsp
         helpers-device-advisor
         helpers-events
+        helpers-logging
         mbedtls
         ota-update
         provisioning-lib

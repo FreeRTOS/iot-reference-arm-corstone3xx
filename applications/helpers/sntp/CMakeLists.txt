@@ -20,11 +20,13 @@ else()
     )
 
     target_link_libraries(helpers-sntp
+    PUBLIC
         backoff-algorithm
         connectivity-stack
         corepkcs11
         coresntp
-        helpers-logging
         mbedtls
+    PRIVATE
+        helpers-logging
     )
 endif()

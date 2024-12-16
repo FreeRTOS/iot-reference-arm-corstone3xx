@@ -14,6 +14,18 @@
 #include "ota_register_callback.h"
 #include "ota_types_definitions.h"
 
+/* Include header that defines log levels. */
+#include "logging_levels.h"
+
+/* Configure name and log level for the OTA library. */
+#ifndef LIBRARY_LOG_NAME
+    #define LIBRARY_LOG_NAME     "OTA"
+#endif
+#ifndef LIBRARY_LOG_LEVEL
+    #define LIBRARY_LOG_LEVEL    LOG_INFO
+#endif
+#include "logging_stack.h"
+
 /* Provides external linkage only when running unit test */
 #ifdef UNIT_TESTING
     #define STATIC    /* as nothing */

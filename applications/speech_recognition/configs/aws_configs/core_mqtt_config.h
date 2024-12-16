@@ -25,19 +25,6 @@
 #ifndef CORE_MQTT_CONFIG_H
 #define CORE_MQTT_CONFIG_H
 
-#include "logging_levels.h"
-
-/* Logging configuration for the MQTT library. */
-#ifndef LIBRARY_LOG_NAME
-    #define LIBRARY_LOG_NAME    "MQTT"
-#endif
-
-#ifndef LIBRARY_LOG_LEVEL
-    #define LIBRARY_LOG_LEVEL    LOG_INFO
-#endif
-
-#include "logging_stack.h"
-
 /**
  * @brief The maximum number of MQTT PUBLISH messages that may be pending
  * acknowledgment at any time.

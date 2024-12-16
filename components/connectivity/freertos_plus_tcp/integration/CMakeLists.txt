@@ -27,6 +27,7 @@ else ()
         PRIVATE
             coremqtt
             helpers-events
+            helpers-logging
             iot-tls
     )
 

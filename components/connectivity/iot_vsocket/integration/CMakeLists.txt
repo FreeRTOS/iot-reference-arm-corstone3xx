@@ -22,6 +22,7 @@ else()
         PRIVATE
             coremqtt
             helpers-events
+            helpers-logging
             fri-bsp
             iot-socket-api
             iot-tls

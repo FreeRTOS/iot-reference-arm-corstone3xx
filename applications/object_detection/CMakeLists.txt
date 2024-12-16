@@ -134,6 +134,7 @@ target_link_libraries(object-detection
         toolchain-override
         object_detection_api
         object_detection_model
+        helpers-logging
 )
 
 include(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/cmake/SetLinkerOptions.cmake)

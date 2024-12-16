@@ -7,11 +7,6 @@ target_include_directories(coremqtt-config
         .
 )
 
-target_link_libraries(coremqtt-config
-    INTERFACE
-        helpers-logging
-)
-
 target_compile_definitions(coremqtt-agent-config
     INTERFACE
         MQTT_AGENT_DO_NOT_USE_CUSTOM_CONFIG
