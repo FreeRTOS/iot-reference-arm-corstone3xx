@@ -88,7 +88,7 @@ dependencies:
     license: "MIT"
     tpip-category: "category-2"
     security-risk: "low"
-    version: "v2.1.1"
+    version: "v2.3.1"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/coreMQTT.git"
@@ -97,7 +97,7 @@ dependencies:
     license: "MIT"
     tpip-category: "category-2"
     security-risk: "low"
-    version: "v3.2.0"
+    version: "v3.3.0"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/coreJSON.git"
@@ -115,7 +115,7 @@ dependencies:
     license: "MIT"
     tpip-category: "category-2"
     security-risk: "low"
-    version: "v1.2.0"
+    version: "v1.3.1"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/coreSNTP.git"
@@ -124,7 +124,7 @@ dependencies:
     license: "MIT"
     tpip-category: "category-2"
     security-risk: "low"
-    version: "v1.3.0"
+    version: "v1.4.1"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/backoffAlgorithm.git"
@@ -169,7 +169,7 @@ dependencies:
     license: "MIT"
     tpip-category: "category-2"
     security-risk: "low"
-    version: "ba4e25c350020abcb787a3a319fdf991bef70538"
+    version: "V4.2.2"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/FreeRTOS-Plus-TCP.git"
