@@ -269,6 +269,16 @@ STATIC bool activateImage( void );
 STATIC bool sendSuccessMessage( void );
 
 /**
+ * @brief Print the OTA job document metadata.
+ *
+ * @param[in] jobId String containing the job ID.
+ * @param[in] jobFields Pointer to the parameters extracted from the OTA job
+ * document.
+ */
+STATIC void printJobParams( const char * jobId,
+                            AfrOtaJobDocumentFields_t jobFields );
+
+/**
  * @brief Send the necessary message to request a job document.
  */
 STATIC void requestJobDocumentHandler( void );
@@ -485,6 +495,40 @@ STATIC bool sendSuccessMessage( void )
     globalJobId[ 0 ] = 0U;
 }
 
+STATIC void printJobParams( const char * jobId,
+                            AfrOtaJobDocumentFields_t jobFields )
+{
+    char streamName[ jobFields.imageRefLen ];
+    char filePath[ jobFields.filepathLen ];
+    char certFile[ jobFields.certfileLen ];
+    char sig[ jobFields.signatureLen ];
+
+    LogInfo( ( "Extracted parameter: [jobid: %s]\n", jobId ) );
+
+    /*
+     * Strings in the jobFields structure are not null terminated so copy them
+     * to a buffer and null terminate them for printing.
+     */
+    ( void ) memcpy( streamName, jobFields.imageRef, jobFields.imageRefLen );
+    streamName[ jobFields.imageRefLen ] = '\0';
+    LogInfo( ( "Extracted parameter: [streamname: %s]\n", streamName ) );
+
+    ( void ) memcpy( filePath, jobFields.filepath, jobFields.filepathLen );
+    filePath[ jobFields.filepathLen ] = '\0';
+    LogInfo( ( "Extracted parameter: [filepath: %s]\n", filePath ) );
+
+    LogInfo( ( "Extracted parameter: [filesize: %u]\n", jobFields.fileSize ) );
+    LogInfo( ( "Extracted parameter: [fileid: %u]\n", jobFields.fileId ) );
+
+    ( void ) memcpy( certFile, jobFields.certfile, jobFields.certfileLen );
+    certFile[ jobFields.certfileLen ] = '\0';
+    LogInfo( ( "Extracted parameter: [certfile: %s]\n", certFile ) );
+
+    ( void ) memcpy( sig, jobFields.signature, jobFields.signatureLen );
+    sig[ jobFields.signatureLen ] = '\0';
+    LogInfo( ( "Extracted parameter: [sig-sha256-rsa: %s]\n", sig ) );
+}
+
 /* -------------------------------------------------------------------------- */
 
 /*
@@ -686,6 +730,8 @@ STATIC OtaPalJobDocProcessingResult_t receivedJobDocumentHandler( OtaJobEventDat
 
         if( handled )
         {
+            printJobParams( globalJobId, jobFields );
+
             initMqttDownloader( &jobFields );
 
             /* AWS IoT core returns the signature in a PEM format. We need to
