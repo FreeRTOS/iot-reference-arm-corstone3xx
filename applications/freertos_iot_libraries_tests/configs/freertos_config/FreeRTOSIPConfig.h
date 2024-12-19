@@ -301,7 +301,7 @@ extern void vLoggingPrintf( const char * pcFormatString,
 
 /* Include support for TCP keep-alive messages. */
 #define ipconfigTCP_KEEP_ALIVE              ( 1 )
-#define ipconfigTCP_KEEP_ALIVE_INTERVAL     ( 20 ) /* in seconds */
+#define ipconfigTCP_KEEP_ALIVE_INTERVAL     ( 300 ) /* in seconds */
 
 /* Include all API's and code that is needed for the IPv4 protocol.
  * When defined as zero, the application should uses IPv6. */
