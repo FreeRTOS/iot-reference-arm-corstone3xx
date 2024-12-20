@@ -71,7 +71,7 @@
 #define NUM_OF_BLOCKS_REQUESTED    1U
 #define START_JOB_MSG_LENGTH       147U
 #define MAX_JOB_ID_LENGTH          64U
-#define UPDATE_JOB_MSG_LENGTH      48U
+#define UPDATE_JOB_MSG_LENGTH      128U
 
 extern void vOtaNotActiveHook( void );
 extern void vOtaActiveHook( void );
@@ -178,6 +178,8 @@ char globalJobId[ MAX_JOB_ID_LENGTH ] = { 0 };
  */
 static AfrOtaJobDocumentFields_t jobFields = { 0 };
 
+static AfrOtaJobDocumentStatusDetails_t jobStatusDetails = { 0 };
+
 /**
  * @brief Structure used to hold data from a job document.
  */
@@ -252,9 +254,16 @@ STATIC bool closeFile( void );
 STATIC bool activateImage( void );
 
 /**
- * @brief Send a message to notify that the firmware image was accepted.
+ * @brief Send a message to the cloud to update the statusDetails field of the
+ * job.
  */
-STATIC bool sendSuccessMessage( void );
+STATIC void sendStatusDetailsMessage( void );
+
+/**
+ * @brief Send a message to notify the cloud of the job's final status (i.e.
+ * accepted or failed).
+ */
+STATIC void sendFinalJobStatusMessage( JobCurrentStatus_t status );
 
 /**
  * @brief Print the OTA job document metadata.
@@ -449,7 +458,66 @@ STATIC bool activateImage( void )
     return otaPal_ActivateNewImage( &jobFields );
 }
 
-STATIC bool sendSuccessMessage( void )
+STATIC void sendStatusDetailsMessage( void )
+{
+    char topicBuffer[ TOPIC_BUFFER_SIZE + 1 ] = { 0 };
+    size_t topicBufferLength = 0U;
+    char messageBuffer[ UPDATE_JOB_MSG_LENGTH ] = { 0 };
+
+    /*
+     * AWS IoT Jobs library:
+     * Creating the MQTT topic to update the status of OTA job.
+     */
+    Jobs_Update( topicBuffer,
+                 TOPIC_BUFFER_SIZE,
+                 OTA_THING_NAME,
+                 ( uint16_t ) app_strnlen( OTA_THING_NAME, 1000U ),
+                 globalJobId,
+                 ( uint16_t ) app_strnlen( globalJobId, 1000U ),
+                 &topicBufferLength );
+
+    /*
+     * Convert the current app firmware version to a string and send it to the
+     * the cloud
+     */
+
+    /*
+     * Calling snprintf() with NULL and 0 as first two parameters gives the
+     * required length of the destination string.
+     */
+    int updatedByBufferLength = snprintf( NULL,
+                                          0,
+                                          "%u",
+                                          appFirmwareVersion.u.x.build );
+
+    char updatedByBuffer[ updatedByBufferLength + 1 ];
+
+    ( void ) snprintf( updatedByBuffer,
+                       updatedByBufferLength + 1,
+                       "%u",
+                       appFirmwareVersion.u.x.build );
+
+    /*
+     * AWS IoT Jobs library:
+     * Creating the message which contains the status of OTA job.
+     * It will be published on the topic created in the previous step.
+     */
+    size_t messageBufferLength = Jobs_UpdateMsg( InProgress,
+                                                 "2",
+                                                 1U,
+                                                 updatedByBuffer,
+                                                 updatedByBufferLength,
+                                                 messageBuffer,
+                                                 UPDATE_JOB_MSG_LENGTH );
+
+    prvMQTTPublish( topicBuffer,
+                    topicBufferLength,
+                    messageBuffer,
+                    messageBufferLength,
+                    0 );
+}
+
+STATIC void sendFinalJobStatusMessage( JobCurrentStatus_t status )
 {
     char topicBuffer[ TOPIC_BUFFER_SIZE + 1 ] = { 0 };
     size_t topicBufferLength = 0U;
@@ -472,15 +540,21 @@ STATIC bool sendSuccessMessage( void )
      * Creating the message which contains the status of OTA job.
      * It will be published on the topic created in the previous step.
      */
-    size_t messageBufferLength = Jobs_UpdateMsg( Succeeded,
-                                                 "2",
+    size_t messageBufferLength = Jobs_UpdateMsg( status,
+                                                 "3",
                                                  1U,
+                                                 jobStatusDetails.updatedBy,
+                                                 jobStatusDetails.updatedByLen,
                                                  messageBuffer,
                                                  UPDATE_JOB_MSG_LENGTH );
 
     prvMQTTPublish( topicBuffer, topicBufferLength, messageBuffer, messageBufferLength, 0 );
-    LogInfo( ( "OTA update completed successfully.\n" ) );
     globalJobId[ 0 ] = 0U;
+
+    if( status == Succeeded )
+    {
+        LogInfo( ( "OTA update completed successfully.\n" ) );
+    }
 }
 
 STATIC void printJobParams( const char * jobId,
@@ -709,31 +783,83 @@ STATIC OtaPalJobDocProcessingResult_t receivedJobDocumentHandler( OtaJobEventDat
     {
         bool handled = jobDocumentParser( ( char * ) jobDoc->jobData, jobDoc->jobDataLength, &jobFields );
 
-        if( otaPal_GetPlatformImageState( &jobFields ) == OtaPalImageStatePendingCommit )
-        {
-            ( void ) sendSuccessMessage();
-
-            otaAgentShutdown();
-        }
+        populateJobStatusDetailsFields( ( char * ) jobDoc->jobData, jobDoc->jobDataLength, &jobStatusDetails );
 
         if( handled )
         {
             printJobParams( globalJobId, jobFields );
 
-            initMqttDownloader( &jobFields );
-
-            /* AWS IoT core returns the signature in a PEM format. We need to
-             * convert it to DER format for image signature verification. */
-
-            handled = convertSignatureToDER( OtaImageSignatureDecoded, sizeof( OtaImageSignatureDecoded ), &jobFields );
-
-            if( handled )
+            /*In pending commit state, the device is in self test mode */
+            if( otaPal_GetPlatformImageState( &jobFields ) == OtaPalImageStatePendingCommit )
             {
-                xResult = otaPal_CreateFileForRx( &jobFields );
+                /*
+                 * Convert the updatedBy string to an integer so the updatedBy
+                 * version can be compared to the update firmware version.
+                 */
+                char updatedByBuffer[ jobStatusDetails.updatedByLen ];
+                char * endPtr;
+
+                /*
+                 * updatedBy string is not null terminated so copy it to a
+                 * temporary string and null terminate.
+                 */
+                ( void ) memcpy( updatedByBuffer,
+                                 jobStatusDetails.updatedBy,
+                                 jobStatusDetails.updatedByLen );
+
+                updatedByBuffer[ jobStatusDetails.updatedByLen ] = '\0';
+
+                uint16_t updatedByVer = ( uint16_t ) strtoul( updatedByBuffer,
+                                                              &endPtr,
+                                                              10 );
+
+                if( updatedByVer < appFirmwareVersion.u.x.build )
+                {
+                    LogInfo( ( "New image has a higher version number than the current image: "
+                               "New image version=%u"
+                               ", Previous image version=%u",
+                               appFirmwareVersion.u.x.build,
+                               updatedByVer ) );
+
+                    otaPal_SetPlatformImageState( &jobFields, OtaImageStateAccepted );
+                    ( void ) sendFinalJobStatusMessage( Succeeded );
+
+                    xResult = OtaPalNewImageBooted;
+                }
+                else
+                {
+                    LogInfo( ( "Application version of the new image is not higher than the current image: "
+                               "New images are expected to have a higher version number." ) );
+
+                    otaPal_SetPlatformImageState( &jobFields, OtaImageStateRejected );
+
+                    /*
+                     * Mark the job as FAILED (AWS Job Service will not allow
+                     * the job to be set to REJECTED if the job has been
+                     * started already).
+                     */
+                    ( void ) sendFinalJobStatusMessage( Failed );
+
+                    xResult = OtaPalNewImageBootFailed;
+                }
             }
             else
             {
-                LogError( ( "Failed to decode the image signature to DER format." ) );
+                initMqttDownloader( &jobFields );
+
+                /* AWS IoT core returns the signature in a PEM format. We need to
+                 * convert it to DER format for image signature verification. */
+
+                handled = convertSignatureToDER( OtaImageSignatureDecoded, sizeof( OtaImageSignatureDecoded ), &jobFields );
+
+                if( handled )
+                {
+                    xResult = otaPal_CreateFileForRx( &jobFields );
+                }
+                else
+                {
+                    LogError( ( "Failed to decode the image signature to DER format." ) );
+                }
             }
         }
     }
@@ -908,6 +1034,11 @@ STATIC void processOTAEvents()
                     vOtaActiveHook();
                     break;
 
+                case OtaPalNewImageBooted:
+                    LogInfo( ( "New firmware image booted.\n" ) );
+                    vOtaNotActiveHook();
+                    break;
+
                 case OtaPalJobDocFileCreateFailed:
                 case OtaPalNewImageBootFailed:
                 case OtaPalJobDocProcessingStateInvalid:
@@ -1003,6 +1134,8 @@ STATIC void processOTAEvents()
 
         case OtaAgentEventActivateImage:
             LogInfo( ( "Attempting to activate image.\n" ) );
+
+            sendStatusDetailsMessage();
 
             if( activateImage() == true )
             {
