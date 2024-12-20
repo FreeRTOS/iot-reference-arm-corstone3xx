@@ -1,7 +1,7 @@
 From 02b777ed41b393163c3f793d8ff3b608ac0b9634 Mon Sep 17 00:00:00 2001
 From: Chuyue Luo <Chuyue.Luo@arm.com>
 Date: Wed, 4 Dec 2024 15:24:44 +0000
-Subject: [PATCH 2/2] Use custom `strnlen` implementation
+Subject: [PATCH 2/3] Use custom `strnlen` implementation
 
 The Arm Compiler for Embedded (v6.21) does not support the `strnlen`
 function. Therefore, use our own implementation (`app_strnlen`) instead.
