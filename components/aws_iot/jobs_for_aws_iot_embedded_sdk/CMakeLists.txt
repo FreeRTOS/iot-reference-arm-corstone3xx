@@ -17,6 +17,7 @@ else()
     set(PATCH_FILES
         "${PATCH_FILES_DIRECTORY}/0001-Check-for-RSA-signature-instead-of-ECDSA.patch"
         "${PATCH_FILES_DIRECTORY}/0002-Use-custom-strnlen-implementation.patch"
+        "${PATCH_FILES_DIRECTORY}/0003-Add-functionality-for-sending-and-retrieving-updated.patch"
     )
     iot_reference_arm_corstone3xx_apply_patches("${jobs-for-aws-iot-embedded-sdk_SOURCE_DIR}" "${PATCH_FILES}")
 

@@ -1,0 +1,183 @@
+From b2eb23684950fb835cc77ad852a3a4e37ac43f39 Mon Sep 17 00:00:00 2001
+From: Chuyue Luo <Chuyue.Luo@arm.com>
+Date: Fri, 10 Jan 2025 11:50:45 +0000
+Subject: [PATCH 3/3] Add functionality for sending and retrieving updatedBy
+ version
+
+An OTA image should be accepted only if the update firmware version is
+higher than the current firmware version. This patch adds functionality
+for sending the updatedBy version to the cloud and retrieving it when
+the device reboots.
+
+Signed-off-by: Chuyue Luo <Chuyue.Luo@arm.com>
+---
+ source/include/jobs.h                    |  6 +++++
+ source/jobs.c                            |  6 ++++-
+ source/otaJobParser/include/job_parser.h | 33 ++++++++++++++++++++++++
+ source/otaJobParser/job_parser.c         | 32 +++++++++++++++++++++++
+ 4 files changed, 76 insertions(+), 1 deletion(-)
+
+diff --git a/source/include/jobs.h b/source/include/jobs.h
+index 11caba6..9a04cb9 100644
+--- a/source/include/jobs.h
++++ b/source/include/jobs.h
+@@ -1,6 +1,8 @@
+ /*
+  * AWS IoT Jobs v1.5.1
+  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
++ * Copyright 2024 Arm Limited and/or its affiliates
++ * <open-source-office@arm.com>
+  *
+  * SPDX-License-Identifier: MIT
+  *
+@@ -841,6 +843,8 @@ JobsStatus_t Jobs_Update( char * buffer,
+  * @param status Current status of the job
+  * @param expectedVersion The version that is expected
+  * @param expectedVersionLength The length of the expectedVersion string
++ * @param updatedBy The app firmware version before the update
++ * @param updatedByLength The length of the updatedBy string
+  * @param buffer The buffer to be written to
+  * @param bufferSize the size of the buffer
+  *
+@@ -878,6 +882,8 @@ JobsStatus_t Jobs_Update( char * buffer,
+ size_t Jobs_UpdateMsg( JobCurrentStatus_t status,
+                        const char * expectedVersion,
+                        size_t expectedVersionLength,
++                       const char * updatedBy,
++                       size_t updatedByLength,
+                        char * buffer,
+                        size_t bufferSize );
+ /* @[declare_jobs_updatemsg] */
+diff --git a/source/jobs.c b/source/jobs.c
+index 0f83c27..0281008 100644
+--- a/source/jobs.c
++++ b/source/jobs.c
+@@ -820,6 +820,8 @@ JobsStatus_t Jobs_Update( char * buffer,
+ size_t Jobs_UpdateMsg( JobCurrentStatus_t status,
+                        const char * expectedVersion,
+                        size_t expectedVersionLength,
++                       const char * updatedBy,
++                       size_t updatedByLength,
+                        char * buffer,
+                        size_t bufferSize )
+ {
+@@ -853,7 +855,9 @@ size_t Jobs_UpdateMsg( JobCurrentStatus_t status,
+         ( void ) strnAppend( buffer, &start, bufferSize, jobStatusString[ status ], jobStatusStringLengths[ status ] );
+         ( void ) strnAppend( buffer, &start, bufferSize, JOBS_API_EXPECTED_VERSION, JOBS_API_EXPECTED_VERSION_LENGTH );
+         ( void ) strnAppend( buffer, &start, bufferSize, expectedVersion, expectedVersionLength );
+-        ( void ) strnAppend( buffer, &start, bufferSize, "\"}", ( CONST_STRLEN( "\"}" ) ) );
++        ( void ) strnAppend( buffer, &start, bufferSize, "\",\"statusDetails\":{\"updatedBy\":\"", ( CONST_STRLEN( "\",\"statusDetails\":{\"updatedBy\":\"" ) ));
++        ( void ) strnAppend( buffer, &start, bufferSize, updatedBy, updatedByLength );
++        ( void ) strnAppend( buffer, &start, bufferSize, "\"}}", ( CONST_STRLEN( "\"}}" ) ) );
+     }
+ 
+     return start;
+diff --git a/source/otaJobParser/include/job_parser.h b/source/otaJobParser/include/job_parser.h
+index 3fcf537..7e87d3b 100644
+--- a/source/otaJobParser/include/job_parser.h
++++ b/source/otaJobParser/include/job_parser.h
+@@ -1,6 +1,9 @@
+ /*
+  * AWS IoT Jobs v1.5.1
+  * Copyright (C) 2023 Amazon.com, Inc. and its affiliates. All Rights Reserved.
++ * Copyright 2024 Arm Limited and/or its affiliates
++ * <open-source-office@arm.com>
++ *
+  * SPDX-License-Identifier: MIT
+  *
+  * Licensed under the MIT License. See the LICENSE accompanying this file
+@@ -61,6 +64,20 @@ typedef struct
+     uint32_t fileType;
+ } AfrOtaJobDocumentFields_t;
+ 
++/**
++ * @ingroup jobs_structs
++ * @brief struct containing the entries within the statusDetails field of an AFR
++ * OTA Job Document
++ */
++typedef struct
++{
++    /** @brief The app firmware version prior to the update */
++    const char * updatedBy;
++
++    /** @brief Length of updatedBy string */
++    size_t updatedByLen;
++} AfrOtaJobDocumentStatusDetails_t;
++
+ /**
+  * @brief Populate the fields of 'result', returning
+  * true if successful.
+@@ -79,4 +96,20 @@ bool populateJobDocFields( const char * jobDoc,
+                            AfrOtaJobDocumentFields_t * result );
+ /* @[declare_populatejobdocfields] */
+ 
++/**
++ * @brief Populate the fields of 'result', returning true if successful.
++ *
++ * @param jobDoc FreeRTOS OTA job document
++ * @param jobDocLength OTA job document length
++ * @param result Job document statusDetails structure to populate
++ * @return true Job document statusDetails fields were parsed from the document
++ * @return false Job document statusDetails fields were not parsed from the
++ * document
++ */
++/* @[declare_populatejobstatusdetailsfields] */
++bool populateJobStatusDetailsFields( const char * jobDoc,
++                                     const size_t jobDocLength,
++                                     AfrOtaJobDocumentStatusDetails_t * result );
++/* @[declare_populatejobstatusdetailsfields] */
++
+ #endif /* JOB_PARSER_H */
+diff --git a/source/otaJobParser/job_parser.c b/source/otaJobParser/job_parser.c
+index 8638dc0..eb63777 100644
+--- a/source/otaJobParser/job_parser.c
++++ b/source/otaJobParser/job_parser.c
+@@ -19,6 +19,11 @@
+ #include "core_json.h"
+ #include "job_parser.h"
+ 
++/**
++ * @brief Get the length of a string literal.
++ */
++#define CONST_STRLEN( x )    ( sizeof( ( x ) ) - 1U )
++
+ /**
+  * @brief Populates common job document fields in result
+  *
+@@ -184,6 +189,33 @@ bool populateJobDocFields( const char * jobDoc,
+     return populatedJobDocFields;
+ }
+ 
++bool populateJobStatusDetailsFields( const char * jobDoc,
++                                     const size_t jobDocLength,
++                                     AfrOtaJobDocumentStatusDetails_t * result )
++{
++    bool populatedJobStatusDetailsFields = false;
++    JSONStatus_t jsonResult = JSONNotFound;
++    const char * jsonValue = NULL;
++    size_t jsonValueLength = 0U;
++
++    jsonResult = JSON_SearchConst( jobDoc,
++                                   jobDocLength,
++                                   "execution.statusDetails.updatedBy",
++                                   CONST_STRLEN("execution.statusDetails.updatedBy"),
++                                   &jsonValue,
++                                   &jsonValueLength,
++                                   NULL );
++
++    if( jsonResult == JSONSuccess )
++    {
++        result->updatedBy = jsonValue;
++        result->updatedByLen = ( uint32_t ) jsonValueLength;
++        populatedJobStatusDetailsFields = true;
++    }
++
++    return populatedJobStatusDetailsFields;
++}
++
+ static JSONStatus_t populateCommonFields( const char * jobDoc,
+                                           const size_t jobDocLength,
+                                           int32_t fileIndex,
+-- 
+2.47.1
+
