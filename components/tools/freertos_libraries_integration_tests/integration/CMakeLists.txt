@@ -28,7 +28,7 @@ target_link_libraries(freertos-libraries-integration-tests-mqtt
 # reset request when the device is busy.
 target_compile_definitions(freertos-libraries-integration-tests-mqtt
     PRIVATE
-        MQTT_KEEP_ALIVE_INTERVAL_SECONDS=60
+        MQTT_KEEP_ALIVE_INTERVAL_SECONDS=300
 )
 
 add_library(freertos-libraries-integration-tests-pkcs11
