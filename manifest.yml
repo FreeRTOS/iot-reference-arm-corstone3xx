@@ -196,7 +196,7 @@ dependencies:
     license: "Apache-2.0"
     tpip-category: "category-2"
     security-risk: "low"
-    version: "v1.1.5"
+    version: "v1.2.1"
     repository:
       type: "git"
       url: "https://github.com/ARM-software/Arm-2D.git"

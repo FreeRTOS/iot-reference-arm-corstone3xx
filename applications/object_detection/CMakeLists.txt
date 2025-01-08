@@ -4,6 +4,8 @@
 
 cmake_minimum_required(VERSION 3.21.0 FATAL_ERROR)
 
+# NS target name the TF-M api_ns CMakeLists.txt uses
+set(NS_TARGET_NAME object-detection)
 set(ML_INFERENCE_ENGINE     "ETHOS" CACHE STRING "Machine Learning inference engine (ETHOS)")
 set(AUDIO_SOURCE            "ROM"   CACHE STRING "Source of audio data (ROM | VSI)")
 set(APPLICATION_PATH        "${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/object_detection" CACHE STRING "Path to the application folder")
@@ -22,10 +24,8 @@ set(AWS_OTA_SIGNATURE_TYPE  "RSA-3072" CACHE STRING "Supported algorithms for si
 # Because of this, if only PATCH version is changed then the OTA will be rejected
 # due to same firmware version.
 # We will therefore change the build version from TF-M.
-set(MCUBOOT_IMAGE_VERSION_NS "0.0.1+10")
+# MCUBOOT_IMAGE_VERSION_NS is passed to the TF-M build in TfmInitialCache.cmake
 set(MCUBOOT_IMAGE_VERSION_NS_UPDATE "0.0.1+20")
-set(MCUBOOT_IMAGE_NUMBER 2 CACHE STRING "Total number of firmware images")
-set(DEFAULT_MCUBOOT_FLASH_MAP ON)
 
 if (${ML_INFERENCE_ENGINE} STREQUAL "ETHOS")
     set(ETHOS_U_NPU_ENABLED ON)
@@ -36,31 +36,15 @@ endif()
 set(ML_USE_CASE "object_detection")
 set(ML_MODEL "GenerateObjectDetectionModel")
 set(ML_USE_CASE_RESOURCES_FILE "${CMAKE_CURRENT_LIST_DIR}/resources/use_case_resources.json")
-set(TFM_PLATFORM_UPGRADE_STRATEGY "SWAP_USING_SCRATCH")
-set(TFM_PLATFORM_CONFIRM_IMAGE ON)
 
-# Trusted Firmware-M setup
-set(TFM_CMAKE_APP_ARGS
-    -DPROJECT_CONFIG_HEADER_FILE=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/object_detection/configs/tfm_config/project_config.h
-    -DMCUBOOT_CONFIRM_IMAGE=${TFM_PLATFORM_CONFIRM_IMAGE}
-    -DMCUBOOT_UPGRADE_STRATEGY=${TFM_PLATFORM_UPGRADE_STRATEGY}
-    -DMCUBOOT_IMAGE_VERSION_NS=${MCUBOOT_IMAGE_VERSION_NS}
-    -DCONFIG_TFM_HALT_ON_CORE_PANIC=ON
-    -DMCUBOOT_DATA_SHARING=ON
-    -DPLATFORM_HAS_FIRMWARE_UPDATE_SUPPORT=ON
-    -DTFM_PARTITION_FIRMWARE_UPDATE=ON
-    -DTFM_PARTITION_LOG_LEVEL=TFM_PARTITION_LOG_LEVEL_INFO
-)
+# Toolchain file has to be included before the very first project() call
+include(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/components/security/trusted_firmware-m/integration/cmake/TfmNsToolchain.cmake)
+
 
 project(object-detection LANGUAGES C CXX)
 
-# Set global optimization level to reduce code size while keeping the debug experience.
-if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
-    add_compile_options(-Og)
-elseif(${CMAKE_C_COMPILER_ID} STREQUAL "ARMClang")
-    add_compile_options(-O1)
-endif()
-
+set_compiler_and_linker_flags()
+include(${CONFIG_SPE_PATH}/config/cp_check.cmake)
 
 add_subdirectory(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR} ${CMAKE_BINARY_DIR}/iot_reference_arm_corstone3xx)
 
@@ -81,6 +65,7 @@ add_executable(object-detection
     blink_task.c
     main.c
     ml_interface.cc
+    ${CONFIG_SPE_PATH}/interface/src/os_wrapper/tfm_ns_interface_rtos.c
 )
 
 target_include_directories(object-detection
@@ -106,10 +91,6 @@ target_compile_definitions(arm-corstone-platform-bsp
         RTE_USART1=1
 )
 
-# Trusted Firmware-M must be built before the application, because
-# the application depends on the NS interface and the BL2 signing scripts,
-# both of which are generated as parts of the Trusted Firmware-M build process.
-add_dependencies(object-detection trusted_firmware-m-build)
 # The provision data must be built before the application because
 # it provides credentials to connect to AWS.
 add_dependencies(object-detection provisioning_data_bin)
@@ -132,11 +113,13 @@ target_link_libraries(object-detection
         mbedtls
         ota-update
         provisioning-lib
-        tfm-ns-interface
+        tfm_api_ns
         toolchain-override
         object_detection_api
         object_detection_model
         helpers-logging
+        # FRI always uses TrustZone
+        tfm_api_ns_tz
 )
 
 include(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/cmake/SetLinkerOptions.cmake)
@@ -144,8 +127,6 @@ set_linker_script(object-detection)
 
 list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/tools/cmake)
 include(ConvertElfToBin)
-include(ExternalProject)
-ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
 
 extract_sections_from_axf(
     object-detection
@@ -153,15 +134,18 @@ extract_sections_from_axf(
     OUTPUT_BIN_NAME  "ns_image"
 )
 
-# The non-secure application image should be padded while being signed
-# Hence, passing "TRUE" as the input parameter to the pad option of sign function.
-iot_reference_arm_corstone3xx_tf_m_sign_image(
-    object-detection
-    "ns_image"
-    object-detection_signed
-    ${MCUBOOT_IMAGE_VERSION_NS}
-    "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o"
-    TRUE
+# Copy the binary flash content to the location expected by default signing
+# Signing is implemented in the exported TF-M NS CMakeLists.txt (in the
+# ${CONFIG_SPE_PATH} directory)
+add_custom_target(object-detection_bin
+    SOURCES ${CMAKE_BINARY_DIR}/object-detection.bin
+    DEPENDS object-detection
+)
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/object-detection.bin
+    DEPENDS object-detection
+    COMMAND ${CMAKE_COMMAND}
+        -E copy ${SECTORS_BIN_DIR}/ns_image.bin
+        ${CMAKE_BINARY_DIR}/object-detection.bin
 )
 
 # The update image is not padded to fill the whole slot (no --pad), because
@@ -173,7 +157,7 @@ iot_reference_arm_corstone3xx_tf_m_sign_image(
     "ns_image"
     object-detection-update_signed
     ${MCUBOOT_IMAGE_VERSION_NS_UPDATE}
-    "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o"
+    "${CONFIG_SPE_PATH}/image_signing/layout_files/signing_layout_ns.o"
     FALSE
 )
 
