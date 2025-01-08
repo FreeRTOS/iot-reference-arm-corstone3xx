@@ -43,22 +43,18 @@ target_compile_definitions(arm-corstone-platform-bsp
 )
 
 if(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone300")
-    set(TFM_PLATFORM_LOCAL_PATH "arm/mps3/corstone300/fvp" CACHE STRING "TFM Platform local path")
-    set(TFM_FLASH_S_PARTITION_SIZE "0x40000")
     # These variables are only defined in case of building keyword_detection application with GNU toolchain
     # as it is currently the only application that utilises the ML Model component OTA update feature
     # where these variables are needed.
     if((${APPLICATION_PATH} MATCHES ".*keyword_detection") AND (${CMAKE_C_COMPILER_ID} STREQUAL "GNU"))
-        set(TFM_FLASH_NS_PARTITION_SIZE "0x240000")
-        set(TFM_FLASH_NS_ML_MODEL_PARTITION_SIZE "0x100000")
         set(NS_DDR4_IMAGE_LOAD_ADDRESS 0x60100000 CACHE STRING "Non-Secure Double Data Rate RAM image loading address")
         set(NS_ML_MODEL_IMAGE_LOAD_ADDRESS 0x28280000 CACHE STRING "Non-Secure ML model image loading address")
         set(NS_ML_MODEL_IMAGE_EXECUTION_ADDRESS 0x60000000 CACHE STRING "Non-Secure ML model image runtime address")
         set(NS_ML_MODEL_IMAGE_SIZE 0x100000 CACHE STRING "Non-Secure ML model image size")
     else()
-        set(TFM_FLASH_NS_PARTITION_SIZE "0x340000")
         set(NS_DDR4_IMAGE_LOAD_ADDRESS 0x60000000 CACHE STRING "Non-Secure Double Data Rate RAM image loading address")
     endif()
+
     set(BL2_IMAGE_LOAD_ADDRESS 0x00000000 CACHE STRING "Bootload image loading address")
     set(S_IMAGE_LOAD_ADDRESS 0x38000000 CACHE STRING "Secure TF-M firmware loading address")
     set(NS_IMAGE_LOAD_ADDRESS 0x28040000 CACHE STRING "Non-secure user application loading address")
@@ -82,20 +78,15 @@ if(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone300")
         "ethos-u65-512"
     )
 elseif(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone310")
-    set(TFM_PLATFORM_LOCAL_PATH "arm/mps3/corstone310/fvp" CACHE STRING "TFM Platform local path")
-    set(TFM_FLASH_S_PARTITION_SIZE "0x40000")
     # These variables are only defined in case of building keyword_detection application with GNU toolchain
     # as it is currently the only application that utilises the ML Model component OTA update feature
     # where these variables are needed.
     if((${APPLICATION_PATH} MATCHES ".*keyword_detection") AND (${CMAKE_C_COMPILER_ID} STREQUAL "GNU"))
-        set(TFM_FLASH_NS_PARTITION_SIZE "0x240000")
-        set(TFM_FLASH_NS_ML_MODEL_PARTITION_SIZE "0x100000")
         set(NS_DDR4_IMAGE_LOAD_ADDRESS 0x60100000 CACHE STRING "Non-Secure Double Data Rate RAM image loading address")
         set(NS_ML_MODEL_IMAGE_LOAD_ADDRESS 0x28280000 CACHE STRING "Non-Secure ML model image loading address")
         set(NS_ML_MODEL_IMAGE_EXECUTION_ADDRESS 0x60000000 CACHE STRING "Non-Secure ML model image runtime address")
         set(NS_ML_MODEL_IMAGE_SIZE 0x100000 CACHE STRING "Non-Secure ML model image size")
     else()
-        set(TFM_FLASH_NS_PARTITION_SIZE "0x340000")
         set(NS_DDR4_IMAGE_LOAD_ADDRESS 0x60000000 CACHE STRING "Non-Secure Double Data Rate RAM image loading address")
     endif()
 
@@ -122,20 +113,15 @@ elseif(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone310")
         "ethos-u65-512"
     )
 elseif(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone315")
-    set(TFM_PLATFORM_LOCAL_PATH "arm/mps4/corstone315" CACHE STRING "TFM Platform local path")
-    set(TFM_FLASH_S_PARTITION_SIZE "0x40000")
     # These variables are only defined in case of building keyword_detection application with GNU toolchain
     # as it is currently the only application that utilises the ML Model component OTA update feature
     # where these variables are needed.
     if((${APPLICATION_PATH} MATCHES ".*keyword_detection") AND (${CMAKE_C_COMPILER_ID} STREQUAL "GNU"))
-        set(TFM_FLASH_NS_PARTITION_SIZE "0x240000")
-        set(TFM_FLASH_NS_ML_MODEL_PARTITION_SIZE "0x100000")
         set(NS_DDR4_IMAGE_LOAD_ADDRESS 0x60100000 CACHE STRING "Non-Secure Double Data Rate RAM image loading address")
         set(NS_ML_MODEL_IMAGE_LOAD_ADDRESS 0x28280000 CACHE STRING "Non-Secure ML model image loading address")
         set(NS_ML_MODEL_IMAGE_EXECUTION_ADDRESS 0x60000000 CACHE STRING "Non-Secure ML model image runtime address")
         set(NS_ML_MODEL_IMAGE_SIZE 0x100000 CACHE STRING "Non-Secure ML model image size")
     else()
-        set(TFM_FLASH_NS_PARTITION_SIZE "0x340000")
         set(NS_DDR4_IMAGE_LOAD_ADDRESS 0x60000000 CACHE STRING "Non-Secure Double Data Rate RAM image loading address")
     endif()
 
@@ -158,28 +144,19 @@ elseif(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone315")
         "ethos-u65-512"
     )
 
-    list(APPEND TFM_CMAKE_APP_ARGS
-        -DTFM_BL1_LOGGING=ON
-    )
-
     set(ISP_MVE_FP ON CACHE BOOL "MVE FP is used by ISP driver" FORCE)
 
     add_subdirectory(isp_mali-c55)
 elseif(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone320")
-    set(TFM_PLATFORM_LOCAL_PATH "arm/mps4/corstone320" CACHE STRING "TFM Platform local path")
-    set(TFM_FLASH_S_PARTITION_SIZE "0x40000")
     # These variables are only defined in case of building keyword_detection application with GNU toolchain
     # as it is currently the only application that utilises the ML Model component OTA update feature
     # where these variables are needed.
     if((${APPLICATION_PATH} MATCHES ".*keyword_detection") AND (${CMAKE_C_COMPILER_ID} STREQUAL "GNU"))
-        set(TFM_FLASH_NS_PARTITION_SIZE "0x240000")
-        set(TFM_FLASH_NS_ML_MODEL_PARTITION_SIZE "0x100000")
         set(NS_DDR4_IMAGE_LOAD_ADDRESS 0x60100000 CACHE STRING "Non-Secure Double Data Rate RAM image loading address")
         set(NS_ML_MODEL_IMAGE_LOAD_ADDRESS 0x28280000 CACHE STRING "Non-Secure ML model image loading address")
         set(NS_ML_MODEL_IMAGE_EXECUTION_ADDRESS 0x60000000 CACHE STRING "Non-Secure ML model image runtime address")
         set(NS_ML_MODEL_IMAGE_SIZE 0x100000 CACHE STRING "Non-Secure ML model image size")
     else()
-        set(TFM_FLASH_NS_PARTITION_SIZE "0x340000")
         set(NS_DDR4_IMAGE_LOAD_ADDRESS 0x60000000 CACHE STRING "Non-Secure Double Data Rate RAM image loading address")
     endif()
 
@@ -205,10 +182,6 @@ elseif(ARM_CORSTONE_BSP_TARGET_PLATFORM STREQUAL "corstone320")
         "ethos-u85-2048"
     )
 
-    list(APPEND TFM_CMAKE_APP_ARGS
-        -DTFM_BL1_LOGGING=ON
-    )
-
     set(ISP_MVE_FP ON CACHE BOOL "MVE FP is used by ISP driver" FORCE)
 
     add_subdirectory(isp_mali-c55)
@@ -222,40 +195,6 @@ build_ethosu_target_npu_config_values(${ETHOS_U_NPU_ID} ${ETHOS_U_NPU_NUM_MACS})
 if(NOT ETHOSU_TARGET_NPU_CONFIG IN_LIST VALID_ETHOSU_TARGET_NPU_CONFIGS)
     message(FATAL_ERROR "Invalid ETHOSU target configuration '${ETHOSU_TARGET_NPU_CONFIG}' for '${ARM_CORSTONE_BSP_TARGET_PLATFORM}'. "
                         "Choose from: ${VALID_ETHOSU_TARGET_NPU_CONFIGS}")
-endif()
-
-set(ARM_CORSTONE_BSP_TARGET_PLATFORM_TFM_CMAKE_ARGS
-    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-    -DCONFIG_TFM_ENABLE_CP10CP11=ON
-    -DMCUBOOT_GENERATE_SIGNING_KEYPAIR=ON
-    -DMCUBOOT_LOG_LEVEL=INFO
-    -DNS=ON
-    -DPLATFORM_DEFAULT_PROVISIONING=OFF
-    -DPLATFORM_DEFAULT_UART_STDOUT=ON
-    -DTFM_DUMMY_PROVISIONING=OFF
-    -DTFM_EXCEPTION_INFO_DUMP=ON
-    -DTFM_PARTITION_CRYPTO=ON
-    -DTFM_PARTITION_INITIAL_ATTESTATION=ON
-    -DTFM_PARTITION_INTERNAL_TRUSTED_STORAGE=ON
-    -DTFM_PARTITION_PLATFORM=ON
-    -DTFM_PARTITION_PROTECTED_STORAGE=ON
-    -DTFM_SPM_LOG_LEVEL=TFM_SPM_LOG_LEVEL_INFO
-    -DTFM_PLATFORM=${TFM_PLATFORM_LOCAL_PATH}
-    -DFLASH_S_PARTITION_SIZE=${TFM_FLASH_S_PARTITION_SIZE}
-    -DFLASH_NS_PARTITION_SIZE=${TFM_FLASH_NS_PARTITION_SIZE}
-    -DMCUBOOT_IMAGE_NUMBER=${MCUBOOT_IMAGE_NUMBER}
-    -DDEFAULT_MCUBOOT_FLASH_MAP=${DEFAULT_MCUBOOT_FLASH_MAP}
-    ${TFM_CMAKE_APP_ARGS}
-    CACHE STRING "TFM CMake arguments" FORCE
-)
-
-# This variable is only defined in case of building keyword_detection application with GNU toolchain
-# as it is currently the only application that utilises the ML Model component OTA update feature
-# where this variable is needed.
-if((${APPLICATION_PATH} MATCHES ".*keyword_detection") AND (${CMAKE_C_COMPILER_ID} STREQUAL "GNU"))
-    list(APPEND ARM_CORSTONE_BSP_TARGET_PLATFORM_TFM_CMAKE_ARGS
-    -DFLASH_NS_ML_MODEL_PARTITION_SIZE=${TFM_FLASH_NS_ML_MODEL_PARTITION_SIZE}
-    )
 endif()
 
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")

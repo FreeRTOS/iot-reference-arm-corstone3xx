@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2023-2024 Arm Limited and/or its affiliates
+# Copyright 2023-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -12,6 +12,7 @@ ROOT="$(realpath $HERE/../..)"
 EXAMPLE=""
 CLEAN=0
 BUILD_PATH="$(realpath $ROOT/build)"
+TFM_BUILD_PATH="$(realpath $ROOT/build_tfm)"
 TARGET="corstone320"
 TARGET_PROCESSOR=""
 ML_INFERENCE_ENGINE="ETHOS"
@@ -19,7 +20,6 @@ ETHOS_U_NPU_ID=""
 ETHOS_U_NPU_NUM_MACS=""
 AUDIO_SOURCE="ROM"
 TOOLCHAIN="GNU"
-TOOLCHAIN_FILE=""
 BUILD=1
 CERTIFICATE_PATH=""
 PRIVATE_KEY_PATH=""
@@ -38,6 +38,7 @@ function build_with_cmake {
     if [[ $CLEAN -ne 0 ]]; then
         echo "Clean building $EXAMPLE" >&2
         rm -rf $BUILD_PATH
+        rm -rf $TFM_BUILD_PATH
     else
         echo "Building $EXAMPLE" >&2
     fi
@@ -45,11 +46,28 @@ function build_with_cmake {
     (
         set -ex
 
-        # Note: A bug in CMake force us to set the toolchain here
         cmake_args=()
-        cmake_args+=(-G Ninja --toolchain=$TOOLCHAIN_FILE)
+        cmake_args+=(-G Ninja)
+        cmake_args+=(-B $TFM_BUILD_PATH)
+        cmake_args+=(-S $ROOT/components/security/trusted_firmware-m/library)
+        cmake_args+=(-DTOOLCHAIN=$TOOLCHAIN)
+        cmake_args+=(-DROOT=$ROOT)
+        cmake_args+=(-DEXAMPLE=$EXAMPLE)
+        # TARGET_NAME is used, becasue TARGET is a cmake keyword
+        cmake_args+=(-DTARGET_NAME="$TARGET")
+        # Toolchain and the cache entries are used in initial cache file so should
+        # appear before it on the command line
+        cmake_args+=(-C $PATH_TO_SOURCE/TfmInitialCache.cmake)
+        # Building TF-M
+        cmake "${cmake_args[@]}"
+        cmake --build $TFM_BUILD_PATH -- install
+
+        cmake_args=()
+        cmake_args+=(-G Ninja)
         cmake_args+=(-B $BUILD_PATH)
         cmake_args+=(-S $PATH_TO_SOURCE)
+        cmake_args+=(-DCONFIG_SPE_PATH=$TFM_BUILD_PATH/api_ns)
+        cmake_args+=(-DTOOLCHAIN=$TOOLCHAIN)
         cmake_args+=(-DCMAKE_SYSTEM_PROCESSOR=$TARGET_PROCESSOR)
         cmake_args+=(-DARM_CORSTONE_BSP_TARGET_PLATFORM=$TARGET)
         cmake_args+=(-DAWS_CLIENT_PRIVATE_KEY_PEM_PATH=$PRIVATE_KEY_PATH)
@@ -73,7 +91,7 @@ function build_with_cmake {
         cmake "${cmake_args[@]}"
 
         echo "Building $EXAMPLE" >&2
-        cmake --build $BUILD_PATH --target "$EXAMPLE"
+        cmake --build $BUILD_PATH --target "${EXAMPLE}_merged"
     )
 }
 
@@ -266,10 +284,8 @@ esac
 
 case "$TOOLCHAIN" in
     ARMCLANG )
-      TOOLCHAIN_FILE="$ROOT/components/tools/open_iot_sdk_toolchain/library/toolchain-armclang.cmake"
       ;;
     GNU )
-      TOOLCHAIN_FILE="$ROOT/components/tools/open_iot_sdk_toolchain/library/toolchain-arm-none-eabi-gcc.cmake"
       ;;
     * )
       echo "Invalid toolchain <ARMCLANG|GNU>"
