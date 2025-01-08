@@ -40,9 +40,6 @@
 [submodule "mbedtls"]
 	path = components/security/mbedtls/library
 	url = https://github.com/Mbed-TLS/mbedtls.git
-[submodule "open_iot_sdk_toolchain"]
-	path = components/tools/open_iot_sdk_toolchain/library
-	url = https://git.gitlab.arm.com/iot/open-iot-sdk/toolchain.git
 [submodule "tinycbor"]
 	path = components/aws_iot/tinycbor/library
 	url = https://github.com/intel/tinycbor.git
