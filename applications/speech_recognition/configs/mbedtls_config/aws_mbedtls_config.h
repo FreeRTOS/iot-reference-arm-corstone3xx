@@ -11,7 +11,7 @@
 /*
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
- *  Copyright 2024 Arm Limited and/or its affiliates
+ *  Copyright 2024-2025 Arm Limited and/or its affiliates
  *  <open-source-office@arm.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -26,6 +26,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
+#ifndef DOMAIN_NS
+    /* Set if this config file is currently used for TF-M secure clients */
+    #define PSA_CRYPTO_TFM_SECURE_CONFIG
+#endif /* DOMAIN_NS == 1 */
 
 /**
  * This is an optional version symbol that enables compatibility handling of
@@ -1158,7 +1163,7 @@ void mbedtls_platform_free( void * ptr );
  * \warning This interface is experimental and may change or be removed
  * without notice.
  */
-#ifdef PSA_CRYPTO_IMPLEMENTATION_TFM
+#if defined( PSA_CRYPTO_IMPLEMENTATION_TFM ) || defined( PSA_CRYPTO_TFM_SECURE_CONFIG )
     #define MBEDTLS_PSA_CRYPTO_CLIENT
 #endif
 
@@ -1758,7 +1763,9 @@ void mbedtls_platform_free( void * ptr );
  * This feature is still experimental and is not ready for production since
  * it is not completed.
  */
-/*#define MBEDTLS_PSA_CRYPTO_CONFIG */
+#ifdef PSA_CRYPTO_TFM_SECURE_CONFIG
+    #define MBEDTLS_PSA_CRYPTO_CONFIG
+#endif
 
 /**
  * \def MBEDTLS_VERSION_FEATURES
