@@ -1,4 +1,4 @@
-// Copyright 2021-2024 Arm Limited and/or its affiliates
+// Copyright 2021-2025 Arm Limited and/or its affiliates
 // <open-source-office@arm.com>
 // SPDX-License-Identifier: MIT
 
@@ -15,8 +15,8 @@
             "overrideLaunchCommands": [
                 "-enable-pretty-printing",
                 "break main.c:main",
-                "add-symbol-file iot_reference_arm_corstone3xx/components/security/trusted_firmware-m/integration/trusted_firmware-m-build-prefix/src/trusted_firmware-m-build-build/api_ns/bin/bl2.axf",
-                "add-symbol-file iot_reference_arm_corstone3xx/components/security/trusted_firmware-m/integration/trusted_firmware-m-build-prefix/src/trusted_firmware-m-build-build/api_ns/bin/tfm_s.axf",
+                "add-symbol-file ${workspaceFolder}/build_tfm/api_ns/bin/bl2.axf",
+                "add-symbol-file ${workspaceFolder}/build_tfm/api_ns/bin/tfm_s.axf",
             ],
             "preLaunchTask": "Debug Arm Featured Reference Integration applications",
             "showDevDebugOutput": "raw"
