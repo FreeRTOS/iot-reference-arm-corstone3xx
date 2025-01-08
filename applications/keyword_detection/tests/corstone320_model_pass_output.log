@@ -1,12 +1,12 @@
 Waiting for DM provisioning bundle
 Running DM provisioning bundle
-Secure Component (ID 0) version=2.1.0
+Secure Component (ID 0) version=2.1.1
 Non-Secure Component (ID 1) version=0.0.10
 ML Model Component (ID 2) version=0.0.11
 Starting bootloader
-Booting TF-M v2.1.0
+Booting TF-M v2.1.1
 PSA Framework version is: 257
-Secure Component (ID 0) version=2.1.0
+Secure Component (ID 0) version=2.1.1
 Non-Secure Component (ID 1) version=0.0.10
 ML Model Component (ID 2) version=0.0.42
 ML interface initialised

@@ -81,7 +81,7 @@ To run the Speech-Recognition example, run the following command:
 [INF] Bootloader chainload address offset: 0x0
 [INF] Jumping to the first image slot
 [1;34m[Sec Thread] Secure image initializing![0m
-<NUL>[1;34mBooting TF-M v2.1.0[0m
+<NUL>[1;34mBooting TF-M v2.1.1[0m
 <NUL>Creating an empty ITS flash layout.
 Creating an empty PS flash layout.
 [INF][Crypto] Provisioning entropy seed... [0;32mcomplete.[0m
@@ -229,7 +229,7 @@ Follow the instructions described in the [Firmware update with AWS](./aws_iot/aw
 [INF] Bootloader chainload address offset: 0x0
 [INF] Jumping to the first image slot
 [1;34m[Sec Thread] Secure image initializing![0m
-<NUL>[1;34mBooting TF-M v2.1.0[0m
+<NUL>[1;34mBooting TF-M v2.1.1[0m
 <NUL>Creating an empty ITS flash layout.
 Creating an empty PS flash layout.
 [INF][Crypto] Provisioning entropy seed... [0;32mcomplete.[0m
@@ -300,7 +300,7 @@ Creating an empty PS flash layout.
 [INF] Bootloader chainload address offset: 0x0
 [INF] Jumping to the first image slot
 [1;34m[Sec Thread] Secure image initializing![0m
-<NUL>[1;34mBooting TF-M v2.1.0[0m
+<NUL>[1;34mBooting TF-M v2.1.1[0m
 <NUL>[INF][Crypto] Provisioning entropy seed... [0;32mcomplete.[0m
 0 0 [None] [INFO] PSA Framework version is: 257
 1 0 [None] Write certificate...
