@@ -2,48 +2,24 @@
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
-project(tfm-ns-interface)
-
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
-include(BuildTfm)
+# Use different startup and driver files than TF-M defaults
+set(PLATFORM_CUSTOM_NS_FILES TRUE)
+# The exported TF-M interfaces
+add_subdirectory(${CONFIG_SPE_PATH} ${CMAKE_BINARY_DIR}/spe)
 
-# TF-M NS interface for the non-secure side
-
-add_library(tfm-ns-interface ${tfm_ns_interface_generated})
-add_dependencies(tfm-ns-interface trusted_firmware-m-build)
-
-target_include_directories(tfm-ns-interface
-    PUBLIC
-        ${BINARY_DIR}/api_ns/interface/include
-        ${BINARY_DIR}/api_ns/platform/include
-)
-
-target_link_libraries(tfm-ns-interface
+target_link_libraries(tfm_api_ns
     PRIVATE
-        ${s_veneers_generated}
         tfm-ns-interface-mbedtls-config
-)
-
-target_compile_definitions(tfm-ns-interface
-    PUBLIC
-        BL2
-        # Corstone-315 is not using the default crypto keys, it is defined in the TF-M platform port
-        $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone300>:PLATFORM_DEFAULT_CRYPTO_KEYS>
-        $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone310>:PLATFORM_DEFAULT_CRYPTO_KEYS>
 )
 
 add_library(tfm-ns-interface-mbedtls-config INTERFACE)
 
 if(APPLICATION_PATH MATCHES ".*blinky")
-    # TODO: These compile definitions shouldn't be defined explicitly for `blinky` application as
-    # they should have been defined by `psa_crypto_config` library which should be linked
-    # to `tfm-ns-interface-mbedtls-config` library. However, since we are not using TF-M split-build feature,
-    # the exported library `psa_crypto_config` is not used by the non-secure side and these definitions are missing.
-    target_compile_definitions(tfm-ns-interface-mbedtls-config
-        INTERFACE
-            MBEDTLS_CONFIG_FILE="${trusted_firmware-m_SOURCE_DIR}/lib/ext/mbedcrypto/mbedcrypto_config/tfm_mbedcrypto_config_client.h"
-            MBEDTLS_PSA_CRYPTO_CONFIG_FILE="${trusted_firmware-m_SOURCE_DIR}/lib/ext/mbedcrypto/mbedcrypto_config/crypto_config_default.h"
+    target_link_libraries(tfm-ns-interface-mbedtls-config
+            INTERFACE
+                psa_crypto_config
     )
 else()
     target_link_libraries(tfm-ns-interface-mbedtls-config
@@ -52,9 +28,13 @@ else()
     )
     target_compile_definitions(tfm-ns-interface-mbedtls-config
         INTERFACE
-            MBEDTLS_CONFIG_FILE="${APPLICATION_PATH}/configs/mbedtls_config/aws_mbedtls_config.h"
             -DPSA_CRYPTO_IMPLEMENTATION_TFM
     )
+    # Change PUBLIC sources to PRIVATE:
+    # PUBLIC sources are added to both INTERFACE_SOURCES and SOURCES property,
+    # so removing from interface makes them PRIVATE (only use them when
+    # building tfm_api_ns, not consuming targets)
+    set_target_properties(tfm_api_ns PROPERTIES INTERFACE_SOURCES "")
     # In case of using Mbed TLS library to provide the PSA Crypto APIs
     # implementation, the PSA Crypto APIs implemented and provided by
     # TF-M shall be renamed to start with a prefix of tfm_crypto__
