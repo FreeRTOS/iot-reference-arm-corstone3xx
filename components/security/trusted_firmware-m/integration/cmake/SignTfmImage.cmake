@@ -4,9 +4,6 @@
 
 list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/tools/cmake)
 include(ConvertElfToBin)
-include(ExternalProject)
-
-ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
 
 # This function is documented under `Image signing` section in `trusted_firmware-m.md` document located at
 # `${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/docs/components/security/` directory.
@@ -25,10 +22,10 @@ function(iot_reference_arm_corstone3xx_tf_m_sign_image target unsigned_image_bin
             $<TARGET_FILE_DIR:${target}>/${target}.bin
         COMMAND
             # Sign the non-secure (application) image for TF-M bootloader (BL2)
-            python3 ${BINARY_DIR}/api_ns/image_signing/scripts/wrapper/wrapper.py
+            python3 ${CONFIG_SPE_PATH}/image_signing/scripts/wrapper/wrapper.py
                 -v ${signed_bin_version}
                 --layout ${signature_layout_file}
-                -k ${BINARY_DIR}/api_ns/image_signing/keys/image_ns_signing_private_key.pem
+                -k ${CONFIG_SPE_PATH}/image_signing/keys/image_ns_signing_private_key.pem
                 --public-key-format full
                 --align 1 --pad-header ${pad_option} -H 0x400 -s auto
                 --measured-boot-record

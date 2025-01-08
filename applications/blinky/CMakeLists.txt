@@ -4,23 +4,17 @@
 
 cmake_minimum_required(VERSION 3.21.0 FATAL_ERROR)
 
+# NS target name the TF-M api_ns CMakeLists.txt uses
+set(NS_TARGET_NAME blinky)
 set(APPLICATION_PATH "${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/blinky" CACHE STRING "Path to the application folder")
 
-# Trusted Firmware-M setup
-set(TFM_CMAKE_APP_ARGS
-    -DPROJECT_CONFIG_HEADER_FILE=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/blinky/configs/tfm_config/project_config.h
-)
-set(MCUBOOT_IMAGE_NUMBER 2 CACHE STRING "Total number of firmware images")
-set(DEFAULT_MCUBOOT_FLASH_MAP ON)
+# Toolchain file has to be included before the very first project() call
+include(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/components/security/trusted_firmware-m/integration/cmake/TfmNsToolchain.cmake)
 
 project(blinky-example LANGUAGES C)
 
-# Set global optimization level to reduce code size while keeping the debug experience.
-if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
-    add_compile_options(-Og)
-elseif(${CMAKE_C_COMPILER_ID} STREQUAL "ARMClang")
-    add_compile_options(-O1)
-endif()
+set_compiler_and_linker_flags()
+include(${CONFIG_SPE_PATH}/config/cp_check.cmake)
 
 add_subdirectory(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR} ${CMAKE_BINARY_DIR}/iot_reference_arm_corstone3xx)
 
@@ -32,24 +26,24 @@ include(SignTfmImage)
 
 add_subdirectory(configs)
 
-add_executable(blinky main.c)
-# Trusted Firmware-M must be built before the application, because
-# the application depends on the NS interface and the BL2 signing scripts,
-# both of which are generated as parts of the Trusted Firmware-M build process.
-add_dependencies(blinky trusted_firmware-m-build)
+add_executable(blinky
+    main.c
+    ${CONFIG_SPE_PATH}/interface/src/os_wrapper/tfm_ns_interface_rtos.c
+)
+
 target_link_libraries(blinky
     freertos_kernel
     fri-bsp
-    tfm-ns-interface
+    tfm_api_ns
     toolchain-override
+    # FRI always uses TrustZone
+    tfm_api_ns_tz
 )
 
 set_linker_script(blinky)
 
 list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/tools/cmake)
 include(ConvertElfToBin)
-include(ExternalProject)
-ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
 
 extract_sections_from_axf(
     blinky
@@ -57,15 +51,18 @@ extract_sections_from_axf(
     OUTPUT_BIN_NAME  "ns_image"
 )
 
-# The non-secure application image should be padded while being signed
-# Hence, passing "TRUE" as the input parameter to the pad option of sign function.
-iot_reference_arm_corstone3xx_tf_m_sign_image(
-    blinky
-    "ns_image"
-    blinky_signed
-    0.0.1
-    "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o"
-    TRUE
+# Copy the binary flash content to the location expected by default signing
+# Signing is implemented in the exported TF-M NS CMakeLists.txt (in the
+# ${CONFIG_SPE_PATH} directory)
+add_custom_target(blinky_bin
+    SOURCES ${CMAKE_BINARY_DIR}/blinky.bin
+    DEPENDS blinky
+)
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/blinky.bin
+    DEPENDS blinky
+    COMMAND ${CMAKE_COMMAND}
+        -E copy ${SECTORS_BIN_DIR}/ns_image.bin
+        ${CMAKE_BINARY_DIR}/blinky.bin
 )
 
 # A user project that consumes the ARM FRI needs to explicitly provide
