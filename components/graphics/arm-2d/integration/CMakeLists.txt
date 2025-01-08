@@ -1,4 +1,4 @@
-# Copyright 2024 Arm Limited and/or its affiliates
+# Copyright 2024-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -11,7 +11,7 @@ target_include_directories(arm-2d
 )
 
 target_sources(arm-2d
-    PUBLIC
+    PRIVATE
         ${arm-2d_SOURCE_DIR}/Library/Source/arm_2d.c
         ${arm-2d_SOURCE_DIR}/Library/Source/__arm_2d_tile.c
         ${arm-2d_SOURCE_DIR}/Library/Source/arm_2d_draw.c
