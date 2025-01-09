@@ -4,33 +4,18 @@
 
 cmake_minimum_required(VERSION 3.21.0 FATAL_ERROR)
 
+set(NS_TARGET_NAME freertos-iot-libraries-tests)
+set(APPLICATION_PATH "${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/freertos_iot_libraries_tests" CACHE STRING "Path to the application folder")
 set(AWS_OTA_SIGNATURE_TYPE  "RSA-3072" CACHE STRING "Supported algorithms for signature validation [RSA-2048, RSA-3072, EC-P256, EC-P384]")
 
-set(MCUBOOT_IMAGE_VERSION_NS "0.0.1+10")
-set(MCUBOOT_IMAGE_NUMBER 2 CACHE STRING "Total number of firmware images")
-set(DEFAULT_MCUBOOT_FLASH_MAP ON)
+# Toolchain file has to be included before the very first project() call
+include(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/components/security/trusted_firmware-m/integration/cmake/TfmNsToolchain.cmake)
 
-set(APPLICATION_PATH "${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/freertos_iot_libraries_tests" CACHE STRING "Path to the application folder")
-
-# Trusted Firmware-M setup
-set(TFM_CMAKE_APP_ARGS
-    -DPROJECT_CONFIG_HEADER_FILE=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/freertos_iot_libraries_tests/configs/tfm_config/project_config.h
-    -DMCUBOOT_DATA_SHARING=ON
-    -DMCUBOOT_CONFIRM_IMAGE=ON
-    -DMCUBOOT_UPGRADE_STRATEGY=SWAP_USING_SCRATCH
-    -DMCUBOOT_IMAGE_VERSION_NS=${MCUBOOT_IMAGE_VERSION_NS}
-    -DPLATFORM_HAS_FIRMWARE_UPDATE_SUPPORT=ON
-    -DTFM_PARTITION_FIRMWARE_UPDATE=ON
-)
 
 project(freertos-iot-libraries-tests LANGUAGES C)
 
-# Set global optimization level to reduce code size while keeping the debug experience.
-if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
-    add_compile_options(-Og)
-elseif(${CMAKE_C_COMPILER_ID} STREQUAL "ARMClang")
-    add_compile_options(-O1)
-endif()
+set_compiler_and_linker_flags()
+include(${CONFIG_SPE_PATH}/config/cp_check.cmake)
 
 # This variable is checked to apply configurations specific to FreeRTOS Libraries Integrations Tests
 set(FREERTOS_LIBRARIES_INTEGRATION_TESTS 1)
@@ -74,15 +59,13 @@ target_link_libraries(freertos-libraries-integration-tests-config
 add_executable(${CMAKE_PROJECT_NAME}
     main.c
     integration_tests_platform_function.c
+    ${CONFIG_SPE_PATH}/interface/src/os_wrapper/tfm_ns_interface_rtos.c
 )
 
-# Trusted Firmware-M must be built before the application, because
-# the application depends on the NS interface and the BL2 signing scripts,
-# both of which are generated as parts of the Trusted Firmware-M build process.
-add_dependencies(${CMAKE_PROJECT_NAME} trusted_firmware-m-build)
 # The provision data must be built before the application because
 # it provides credentials to connect to AWS
 add_dependencies(${CMAKE_PROJECT_NAME} provisioning_data_bin)
+
 target_link_libraries(${CMAKE_PROJECT_NAME}
     PRIVATE
         backoff-algorithm
@@ -97,15 +80,16 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         helpers-events
         provisioning-lib
         mbedtls
-        tfm-ns-interface
+        toolchain-override
+        tfm_api_ns
+        # FRI always uses TrustZone
+        tfm_api_ns_tz
 )
 
 set_linker_script(${CMAKE_PROJECT_NAME})
 
 list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/tools/cmake)
 include(ConvertElfToBin)
-include(ExternalProject)
-ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
 
 extract_sections_from_axf(
     ${CMAKE_PROJECT_NAME}
@@ -113,14 +97,18 @@ extract_sections_from_axf(
     OUTPUT_BIN_NAME  "ns_image"
 )
 
-# The non-secure application image should be padded while being signed
-iot_reference_arm_corstone3xx_tf_m_sign_image(
-    ${CMAKE_PROJECT_NAME}
-    "ns_image"
-    ${CMAKE_PROJECT_NAME}_signed
-    ${MCUBOOT_IMAGE_VERSION_NS}
-    "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o"
-    TRUE
+# Copy the binary flash content to the location expected by default signing
+# Signing is implemented in the exported TF-M NS CMakeLists.txt (in the
+# ${CONFIG_SPE_PATH} directory)
+add_custom_target(freertos-iot-libraries-tests_bin
+    SOURCES ${CMAKE_BINARY_DIR}/freertos-iot-libraries-tests.bin
+    DEPENDS freertos-iot-libraries-tests
+)
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/freertos-iot-libraries-tests.bin
+    DEPENDS freertos-iot-libraries-tests
+    COMMAND ${CMAKE_COMMAND}
+        -E copy ${SECTORS_BIN_DIR}/ns_image.bin
+        ${CMAKE_BINARY_DIR}/freertos-iot-libraries-tests.bin
 )
 
 # A user project that consumes the ARM FRI needs to explicitly provide
