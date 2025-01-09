@@ -1043,7 +1043,6 @@ STATIC void processOTAEvents()
                 case OtaPalNewImageBootFailed:
                 case OtaPalJobDocProcessingStateInvalid:
                     LogInfo( ( "No OTA job available. \n" ) );
-                    otaAgentShutdown();
                     break;
             }
 
