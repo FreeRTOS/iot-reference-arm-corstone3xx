@@ -1075,6 +1075,7 @@ STATIC void processOTAEvents()
                 case OtaPalNewImageBootFailed:
                 case OtaPalJobDocProcessingStateInvalid:
                     LogInfo( ( "No OTA job available. \n" ) );
+                    vOtaNotActiveHook();
                     break;
             }
 
@@ -1171,11 +1172,11 @@ STATIC void processOTAEvents()
             if( activateImage() == true )
             {
                 LogInfo( ( "Activated image.\n" ) );
-                nextEvent.eventId = OtaAgentEventActivateImage;
+
+                nextEvent.eventId = OtaAgentEventRequestJobDocument;
                 OtaSendEvent_FreeRTOS( &nextEvent );
             }
 
-            otaAgentState = OtaAgentStateStopped;
             break;
 
 

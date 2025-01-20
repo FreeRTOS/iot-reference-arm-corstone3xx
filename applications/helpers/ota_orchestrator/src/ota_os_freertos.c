@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. and its affiliates. All Rights Reserved.
- * Copyright 2024 Arm Limited and/or its affiliates
+ * Copyright 2024-2025 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: MIT
@@ -67,14 +67,14 @@ OtaOsStatus_t OtaInitEvent_FreeRTOS()
     {
         otaOsStatus = OtaOsEventQueueCreateFailed;
 
-        LogInfo( ( "Failed to create OTA Event queue: "
-                   "xQueueCreateStatic returned error: "
-                   "OtaOsStatus_t=%d \n",
-                   ( int ) otaOsStatus ) );
+        LogError( ( "Failed to create OTA Event queue: "
+                    "xQueueCreateStatic returned error: "
+                    "OtaOsStatus_t=%d \n",
+                    ( int ) otaOsStatus ) );
     }
     else
     {
-        LogInfo( ( "OTA Event Queue created.\n" ) );
+        LogDebug( ( "OTA Event Queue created.\n" ) );
     }
 
     return otaOsStatus;
@@ -90,16 +90,16 @@ OtaOsStatus_t OtaSendEvent_FreeRTOS( const void * pEventMsg )
 
     if( retVal == pdTRUE )
     {
-        LogInfo( ( "OTA Event sent.\n" ) );
+        LogDebug( ( "OTA Event sent.\n" ) );
     }
     else
     {
         otaOsStatus = OtaOsEventQueueSendFailed;
 
-        LogInfo( ( "Failed to send event to OTA Event Queue: "
-                   "xQueueSendToBack returned error: "
-                   "OtaOsStatus_t=%d \n",
-                   ( int ) otaOsStatus ) );
+        LogError( ( "Failed to send event to OTA Event Queue: "
+                    "xQueueSendToBack returned error: "
+                    "OtaOsStatus_t=%d \n",
+                    ( int ) otaOsStatus ) );
     }
 
     return otaOsStatus;
@@ -114,16 +114,16 @@ OtaOsStatus_t OtaReceiveEvent_FreeRTOS( void * pEventMsg )
 
     if( retVal == pdTRUE )
     {
-        LogInfo( ( "OTA Event received \n" ) );
+        LogDebug( ( "OTA Event received \n" ) );
     }
     else
     {
         otaOsStatus = OtaOsEventQueueReceiveFailed;
 
-        LogInfo( ( "Failed to receive event or timeout from OTA Event Queue: "
-                   "xQueueReceive returned error: "
-                   "OtaOsStatus_t=%d \n",
-                   ( int ) otaOsStatus ) );
+        LogDebug( ( "Failed to receive event or timeout from OTA Event Queue: "
+                    "xQueueReceive returned error: "
+                    "OtaOsStatus_t=%d \n",
+                    ( int ) otaOsStatus ) );
     }
 
     return otaOsStatus;
@@ -133,5 +133,5 @@ void OtaDeinitEvent_FreeRTOS()
 {
     vQueueDelete( otaEventQueue );
 
-    LogInfo( ( "OTA Event Queue Deleted. \n" ) );
+    LogDebug( ( "OTA Event Queue Deleted. \n" ) );
 }
