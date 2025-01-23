@@ -19,7 +19,7 @@ improve the user experience of developing of reference applications.
 ## Supported operation systems
 
 * Linux
-  * Ubuntu 20.04
+  * Ubuntu 22.04
 * Windows 11
 * Mac OS 14.x
 
