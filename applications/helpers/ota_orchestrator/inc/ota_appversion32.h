@@ -1,7 +1,7 @@
 /*
  * AWS IoT Over-the-air Update v3.4.0
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- * Copyright 2024 Arm Limited and/or its affiliates
+ * Copyright 2024-2025 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: MIT
@@ -76,8 +76,6 @@ typedef struct
         int32_t signedVersion32;
     } u; /*!< @brief Version based on configuration in big endian or little endian. */
 } AppVersion32_t;
-
-extern AppVersion32_t appFirmwareVersion; /*!< @brief Making the version number available globally through external linkage. */
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus

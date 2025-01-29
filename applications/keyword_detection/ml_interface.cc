@@ -1,4 +1,4 @@
-/* Copyright 2021-2024 Arm Limited and/or its affiliates
+/* Copyright 2021-2025 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  * SPDX-License-Identifier: MIT
  */
@@ -1060,6 +1060,12 @@ static int prvMlInterfaceInit()
 void vMlTask( void * arg )
 {
     ( void ) arg;
+
+    #if defined( NS_ML_MODEL_IMAGE_LOAD_ADDRESS )
+        /* Copy the entire model from the boot image @ 0x28280000 to execution area in DDR @ 0x60000000. */
+        LogInfo( ( "Copying the ML model data from FLASH to DDR memory" ) );
+        memcpy( reinterpret_cast<void *>( NS_ML_MODEL_IMAGE_EXECUTION_ADDRESS ), reinterpret_cast<void *>( NS_ML_MODEL_IMAGE_LOAD_ADDRESS ), static_cast<size_t>( NS_ML_MODEL_IMAGE_SIZE ) );
+    #endif
 
     EventBits_t flags = xEventGroupWaitBits( xSystemEvents, ( EventBits_t ) EVENT_MASK_ML_START, pdTRUE, pdFAIL, portMAX_DELAY );
 

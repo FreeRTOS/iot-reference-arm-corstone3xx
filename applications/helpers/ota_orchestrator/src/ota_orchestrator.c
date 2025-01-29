@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. and its affiliates. All Rights Reserved.
- * Copyright 2023-2024 Arm Limited and/or its affiliates
+ * Copyright 2023-2025 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: MIT
@@ -475,6 +475,16 @@ STATIC void sendStatusDetailsMessage( void )
     char topicBuffer[ TOPIC_BUFFER_SIZE + 1 ] = { 0 };
     size_t topicBufferLength = 0U;
     char messageBuffer[ UPDATE_JOB_MSG_LENGTH ] = { 0 };
+    bool palStatus;
+    AppVersion32_t version;
+
+    /* Call the platform specific code to get the image version. */
+    palStatus = otaPal_GetPlatformImageVersion( &jobFields, &version );
+
+    if( palStatus != true )
+    {
+        LogError( ( "Error: Couldn't fetch platform image version.\n" ) );
+    }
 
     /*
      * AWS IoT Jobs library:
@@ -500,14 +510,14 @@ STATIC void sendStatusDetailsMessage( void )
     int updatedByBufferLength = snprintf( NULL,
                                           0,
                                           "%u",
-                                          appFirmwareVersion.u.x.build );
+                                          version.u.signedVersion32 );
 
     char updatedByBuffer[ updatedByBufferLength + 1 ];
 
     ( void ) snprintf( updatedByBuffer,
                        updatedByBufferLength + 1,
                        "%u",
-                       appFirmwareVersion.u.x.build );
+                       version.u.signedVersion32 );
 
     /*
      * AWS IoT Jobs library:
@@ -810,6 +820,16 @@ STATIC OtaPalJobDocProcessingResult_t receivedJobDocumentHandler( OtaJobEventDat
                  */
                 char updatedByBuffer[ jobStatusDetails.updatedByLen ];
                 char * endPtr;
+                bool palStatus;
+                AppVersion32_t version;
+
+                /* Call the platform specific code to get the image version. */
+                palStatus = otaPal_GetPlatformImageVersion( &jobFields, &version );
+
+                if( palStatus != true )
+                {
+                    LogError( ( "Error: Couldn't fetch platform image version.\n" ) );
+                }
 
                 /*
                  * updatedBy string is not null terminated so copy it to a
@@ -825,12 +845,12 @@ STATIC OtaPalJobDocProcessingResult_t receivedJobDocumentHandler( OtaJobEventDat
                                                               &endPtr,
                                                               10 );
 
-                if( updatedByVer < appFirmwareVersion.u.x.build )
+                if( updatedByVer < version.u.unsignedVersion32 )
                 {
                     LogInfo( ( "New image has a higher version number than the current image: "
                                "New image version=%u"
                                ", Previous image version=%u",
-                               appFirmwareVersion.u.x.build,
+                               version.u.unsignedVersion32,
                                updatedByVer ) );
 
                     otaPal_SetPlatformImageState( &jobFields, OtaImageStateAccepted );
@@ -1295,17 +1315,27 @@ STATIC BaseType_t prvRunOTADemo( void )
 STATIC void vOtaDemoTask( void * pvParam )
 {
     ( void ) pvParam;
+    AppVersion32_t xComponentVersion;
 
-    if( GetImageVersionPSA( FWU_COMPONENT_ID_NONSECURE ) == 0 )
+    configASSERT( ( sizeof xFwComponents / sizeof xFwComponents[ 0 ] ) == FWU_COMPONENT_NUMBER );
+
+    LogInfo( ( "OTA over MQTT, firmware versions:" ) );
+
+    for( size_t i = 0; i < FWU_COMPONENT_NUMBER; ++i )
     {
-        LogInfo( ( "OTA over MQTT, Application version from appFirmwareVersion %u.%u.%u\n",
-                   appFirmwareVersion.u.x.major,
-                   appFirmwareVersion.u.x.minor,
-                   appFirmwareVersion.u.x.build ) );
-    }
-    else
-    {
-        LogError( ( "OTA over MQTT, unable to get application versions" ) );
+        int status = GetImageVersionPSA( xFwComponents[ i ].id, &xComponentVersion );
+
+        if( status == 0 )
+        {
+            LogInfo( ( "%s Component (ID %u) version=%u.%u.%u",
+                       xFwComponents[ i ].name, xFwComponents[ i ].id,
+                       xComponentVersion.u.x.major, xComponentVersion.u.x.minor, xComponentVersion.u.x.build ) );
+        }
+        else
+        {
+            LogError( ( "Getting %s Component (ID %u) version failed with %d",
+                        xFwComponents[ i ].name, xFwComponents[ i ].id, status ) );
+        }
     }
 
     /* Initialize semaphore for buffer operations. */

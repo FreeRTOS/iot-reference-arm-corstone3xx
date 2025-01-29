@@ -1,7 +1,8 @@
-From 2352b60b03042fc9ea2d9cf9ce861d8e87341e32 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Gergely=20Korcs=C3=A1k?= <gergely.korcsak@arm.com>
-Date: Mon, 12 Aug 2024 15:43:48 +0200
-Subject: [PATCH] Patch tensorflow
+From 15c53b15b6588c104081656a98be986e3f91670a Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Thu, 28 Nov 2024 16:16:01 +0000
+Subject: [PATCH] Patch tensorflow MIME-Version: 1.0 Content-Type: text/plain;
+ charset=UTF-8 Content-Transfer-Encoding: 8bit
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -12,10 +13,10 @@ Signed-off-by: Gergely Korcsák <gergely.korcsak@arm.com>
  1 file changed, 4 insertions(+)
 
 diff --git a/tensorflow/lite/micro/tools/make/ext_libs/ethos_u.inc b/tensorflow/lite/micro/tools/make/ext_libs/ethos_u.inc
-index c61aaff3..81066237 100644
+index 73447cd7..4ef80aec 100644
 --- a/tensorflow/lite/micro/tools/make/ext_libs/ethos_u.inc
 +++ b/tensorflow/lite/micro/tools/make/ext_libs/ethos_u.inc
-@@ -64,6 +64,10 @@ else ifeq ($(ETHOSU_ARCH), u65)
+@@ -74,6 +74,10 @@ else ifeq ($(ETHOSU_ARCH), u65)
    ETHOSU_FLAGS += \
      -DETHOSU_ARCH=u65 \
      -DETHOSU65

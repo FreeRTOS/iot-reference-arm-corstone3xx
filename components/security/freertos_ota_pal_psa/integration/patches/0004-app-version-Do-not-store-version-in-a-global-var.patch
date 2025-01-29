@@ -1,0 +1,98 @@
+From 61b9e8cc2595a551d6bedd0f50fa87d78e1dc63d Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Tue, 14 Jan 2025 17:22:04 +0000
+Subject: [PATCH 4/5] app-version: Do not store version in a global var
+
+Storing the component image version in a single variable makes
+multi-component setup impossible to handle correctly.
+
+Update the image version getter to write the component version to an
+output param.
+
+Signed-off-by: Filip Jagodzinski <filip.jagodzinski@arm.com>
+---
+ version/application_version.c | 16 ++++++++--------
+ version/application_version.h | 25 ++++++++++++-------------
+ 2 files changed, 20 insertions(+), 21 deletions(-)
+
+diff --git a/version/application_version.c b/version/application_version.c
+index 7b38c6a..a44d284 100644
+--- a/version/application_version.c
++++ b/version/application_version.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2020-2022 Arm Limited. All rights reserved.
++ * Copyright (c) 2020-2024 Arm Limited. All rights reserved.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy of
+  * this software and associated documentation files (the "Software"), to deal in
+@@ -33,24 +33,24 @@
+ #include "FreeRTOS.h"
+ #include "application_version.h"
+ 
+-AppVersion32_t appFirmwareVersion;
+-
+-int GetImageVersionPSA( psa_fwu_component_t uxComponent )
++int GetImageVersionPSA( psa_fwu_component_t uxComponent, AppVersion32_t *pxVersion )
+ {
+     psa_fwu_component_info_t xComponentInfo = { 0 };
+     psa_status_t uxStatus;
+ 
++    configASSERT( pxVersion != NULL );
++
+     uxStatus = psa_fwu_query( uxComponent, &xComponentInfo );
+     if( uxStatus == PSA_SUCCESS )
+     {
+-        appFirmwareVersion.u.x.major = xComponentInfo.version.major;
+-        appFirmwareVersion.u.x.minor = xComponentInfo.version.minor;
+-        appFirmwareVersion.u.x.build = (uint16_t)xComponentInfo.version.build;
++        pxVersion->u.x.major = xComponentInfo.version.major;
++        pxVersion->u.x.minor = xComponentInfo.version.minor;
++        pxVersion->u.x.build = (uint16_t)xComponentInfo.version.build;
+         return 0;
+     }
+     else
+     {
+-        appFirmwareVersion.u.signedVersion32 = 0;
++        pxVersion->u.signedVersion32 = 0;
+         return -1;
+     }
+ }
+diff --git a/version/application_version.h b/version/application_version.h
+index 7775910..fcd8b85 100644
+--- a/version/application_version.h
++++ b/version/application_version.h
+@@ -28,18 +28,17 @@
+ #include "psa/update.h"
+ 
+ /**
+- * @brief Get the running image version of the given component.
+- *
+- * Get the image version by PSA Firmware update service API and assign it to xAppFirmwareVersion
+- * which is use in the ota agent.
+- *
+- * @note portALLOCATE_SECURE_CONTEXT( 0 ) should be called before this function, otherwise this function
+- * will always fail.
+- * @param[in] N/A.
+- *
+- * @return 0 on success and the xAppFirmwareVersion is assigned with the value read from the Firmware
+- * update service. -1 on failure and the xAppFirmwareVersion is 0.
+- */
+-int GetImageVersionPSA( psa_fwu_component_t uxComponent );
++* @brief Get the running image version of the given component.
++*
++* Get the image version by PSA Firmware update service API and assign it to pxVersion.
++*
++* @note portALLOCATE_SECURE_CONTEXT( 0 ) should be called before this function, otherwise this function
++* will always fail.
++* @param[in] uxComponent Firmware component for which information is requested.
++* @param[out] pxVersion Output parameter for version information. On failure this is set to 0.
++*
++* @return 0 on success and -1 on failure.
++*/
++int GetImageVersionPSA( psa_fwu_component_t uxComponent, AppVersion32_t *pxVersion );
+ 
+ #endif
+-- 
+2.34.1
+

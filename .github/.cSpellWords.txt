@@ -168,6 +168,7 @@ NVIC
 ohmyzsh
 Onoa
 OPTIM
+optimise
 OPTIMISED
 otaexample
 otapalconfig
@@ -202,6 +203,7 @@ RSASSA
 rtrack
 SBCON
 SECP
+smsc
 sntp
 Sntp
 SNTP
@@ -219,6 +221,7 @@ suppr
 SYSWDOG
 TALGORITHMS
 testThing
+tflite
 TGENERAL
 THEIGHT
 tinycbor
@@ -239,11 +242,13 @@ uncrustify
 unusued
 utilises
 USART
+utilises
 UYVY
 Vbex
 VCLK
 VECTACTIVE
 venv
+visualisation
 vmean
 vsocket
 vsync

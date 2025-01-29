@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2023-2024 Arm Limited and/or its affiliates
+# Copyright 2023-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -199,7 +199,6 @@ case "$TARGET" in
       -C mps3_board.telnetterminal0.start_telnet=0 \
       -C mps3_board.uart0.out_file="-" \
       -C mps3_board.uart0.unbuffered_output=1 \
-      -C ethosu.extra_args="--fast" \
       --stat \
       -C mps3_board.DISABLE_GATING=1"
       ;;
@@ -212,7 +211,6 @@ case "$TARGET" in
       -C mps4_board.telnetterminal0.start_telnet=0 \
       -C mps4_board.uart0.out_file="-" \
       -C mps4_board.uart0.unbuffered_output=1 \
-      -C mps4_board.subsystem.ethosu.extra_args="--fast" \
       -C mps4_board.isp_c55_capture_ds.do_capture=0 \
       -C mps4_board.isp_c55_capture_fr.do_capture=0 \
       -C mps4_board.isp_c55_camera.image_file=${FRAMES} \

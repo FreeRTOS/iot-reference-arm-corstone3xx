@@ -1,0 +1,34 @@
+From abc28629fb60834dd85bc9065132d413e416a4c0 Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Tue, 14 Jan 2025 17:20:31 +0000
+Subject: [PATCH 3/5] component ID: Add ML model file path
+
+Update the PortConvertFilePathtoPSAComponentID function to support the
+ML model image file path, to enable the model-only OTA update.
+
+Signed-off-by: Filip Jagodzinski <filip.jagodzinski@arm.com>
+---
+ ota_pal.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/ota_pal.c b/ota_pal.c
+index 9b7e6f4..9641106 100644
+--- a/ota_pal.c
++++ b/ota_pal.c
+@@ -228,6 +228,13 @@ static bool PortConvertFilePathtoPSAComponentID ( AfrOtaJobDocumentFields_t * co
+         return true;
+     }
+ #endif
++#ifdef FWU_COMPONENT_ID_ML_MODEL
++    if( memcmp( pFileContext->filepath, "ml_model image", strlen("ml_model image") ) == 0 )
++    {
++        *pxComponent = FWU_COMPONENT_ID_ML_MODEL;
++        return true;
++    }
++#endif
+ #ifdef FWU_COMPONENT_ID_FULL
+     if( memcmp( pFileContext->filepath, "combined image", strlen("combined image") ) == 0 )
+     {
+-- 
+2.34.1
+

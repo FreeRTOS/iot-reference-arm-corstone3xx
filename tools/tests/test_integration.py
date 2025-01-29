@@ -1,10 +1,8 @@
-# Copyright (c) 2023-2024 Arm Limited. All rights reserved.
+# Copyright (c) 2023-2025 Arm Limited. All rights reserved.
 # SPDX-License-Identifier: MIT
 
 import subprocess
 from timeit import default_timer as timer
-from pytest import fixture
-from aws_test_util import Flags, create_aws_resources, cleanup_aws_resources
 import re
 
 # If you have failing test cases to ignore,
@@ -17,33 +15,7 @@ import re
 test_cases_to_ignore = {}
 
 
-@fixture(scope="function")
-def setup_resources(
-    build_artefacts_path: str,
-    credentials_path: str,
-    signed_update_bin_name: str,
-    signing_algo: str,
-):
-    """
-    Setup resources needed to run the test.
-
-    build_artefacts_path: Path to all the artefacts needed to create AWS resources.
-    credentials_path: Path to AWS credentials.
-    signed_update_bin_name: Name of the binary to be used for the OTA update.
-    """
-    flags = Flags(
-        build_artefacts_path, credentials_path, signed_update_bin_name, signing_algo
-    )
-    flags = create_aws_resources(flags)
-    try:
-        # Caller won't actually do anything with this, but we have to yield something.
-        yield flags
-    finally:
-        cleanup_aws_resources(flags)
-
-
 def test_integration(
-    setup_resources,
     fvp_process: subprocess.Popen,
     timeout_seconds: int,
 ):

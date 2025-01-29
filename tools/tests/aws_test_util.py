@@ -1,4 +1,4 @@
-# Copyright 2023-2024, Arm Limited and/or its affiliates
+# Copyright 2023-2025, Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -50,13 +50,21 @@ class Flags:
         self.OTA_S3_BUCKET = "iotmsw-ci-test-bucket-" + self.TEST_ID
         self.OTA_POLICY_NAME = "iotmsw-ci-test-policy-" + self.TEST_ID
         self.OTA_BINARY = signed_update_bin_name
+        self.FILE_NAME = ""
+        self.UPDATE_SIGNATURE = ""
+        if "model" in self.OTA_BINARY:
+            self.FILE_NAME = "ml_model image"
+            self.UPDATE_SIGNATURE = "model-update-signature.txt"
+        else:
+            self.FILE_NAME = "non_secure image"
+            self.UPDATE_SIGNATURE = "update-signature.txt"
         self.OTA_BINARY_PATH = Path(self.BUILD_ARTEFACTS_PATH) / self.OTA_BINARY
         self.OTA_ROLE_ARN = f"arn:aws:iam::{self.AWS_ACCOUNT}:role/{OTA_ROLE_NAME}"
         self.OTA_UPDATE_PROTOCOLS = ["MQTT"]
         self.OTA_UPDATE_TARGET_SELECTION = "SNAPSHOT"
         self.OTA_UPDATE_FILES = [
             {
-                "fileName": "non_secure image",
+                "fileName": self.FILE_NAME,
                 "fileLocation": {
                     "s3Location": {"bucket": self.OTA_S3_BUCKET, "key": self.OTA_BINARY}
                 },
@@ -67,7 +75,7 @@ class Flags:
                                 read_whole_file(
                                     (
                                         Path(self.BUILD_ARTEFACTS_PATH)
-                                        / "update-signature.txt"
+                                        / self.UPDATE_SIGNATURE
                                     )
                                 ).strip(),
                                 "utf-8",

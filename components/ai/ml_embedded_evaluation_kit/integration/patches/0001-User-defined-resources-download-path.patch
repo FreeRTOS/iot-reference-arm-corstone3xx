@@ -1,7 +1,7 @@
-From a7ad534ccceb84df589417feb5272b9f4cd3aeaa Mon Sep 17 00:00:00 2001
+From ef81e4d5aa2392c7b0558923932894c8117831d9 Mon Sep 17 00:00:00 2001
 From: Ahmed Ismail <Ahmed.Ismail@arm.com>
-Date: Fri, 28 Jun 2024 15:49:31 +0100
-Subject: [PATCH 1/2] User defined resources download path
+Date: Thu, 28 Nov 2024 16:11:58 +0000
+Subject: [PATCH 1/4] User defined resources download path
 
 The location of the downloaded resources can be specified
 to allow users to place them wherever they require. Such location
@@ -10,11 +10,11 @@ is required if different model resources need to be downloaded.
 
 Signed-off-by: Ahmed Ismail <Ahmed.Ismail@arm.com>
 ---
- set_up_default_resources.py | 21 ++++++++++++++-------
- 1 file changed, 14 insertions(+), 7 deletions(-)
+ set_up_default_resources.py | 19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
 
 diff --git a/set_up_default_resources.py b/set_up_default_resources.py
-index 2ce972a..85c02ea 100755
+index a33c8f3..e4518ec 100755
 --- a/set_up_default_resources.py
 +++ b/set_up_default_resources.py
 @@ -157,12 +157,14 @@ class PathsConfig:

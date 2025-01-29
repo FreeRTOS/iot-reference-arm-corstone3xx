@@ -1,0 +1,100 @@
+From 3c82d8c479d0690815cfeb63aaa2c27a8ec406a3 Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Tue, 14 Jan 2025 17:22:46 +0000
+Subject: [PATCH 5/5] PAL: Implement component version getter
+
+Multi-component setup requires independent version handling for each
+component. Add an implementation for the extended API used for reading
+OTA update image version.
+
+Signed-off-by: Filip Jagodzinski <filip.jagodzinski@arm.com>
+---
+ ota_pal.c | 40 ++++++++++++++++++++++++++++++++++++++++
+ ota_pal.h | 13 +++++++++++++
+ 2 files changed, 53 insertions(+)
+
+diff --git a/ota_pal.c b/ota_pal.c
+index 9641106..7dc9574 100644
+--- a/ota_pal.c
++++ b/ota_pal.c
+@@ -747,6 +747,46 @@ OtaPalImageState_t otaPal_GetPlatformImageState( AfrOtaJobDocumentFields_t * con
+     /* It should never goes here. But just for coding safety. */
+     return OtaPalImageStateInvalid;
+ }
++
++/**
++ * @brief Get the version of the OTA update image.
++ *
++ * @param[in] pFileContext File context of type AfrOtaJobDocumentFields_t.
++ * @param[out] pxVersion Output parameter for version information.
++ *
++ * @return true in case the platform image version is fetched successfully.
++ *         false in case the platform image version is not fetched successfully.
++ */
++bool otaPal_GetPlatformImageVersion( AfrOtaJobDocumentFields_t * const pFileContext,
++                                     AppVersion32_t * pxVersion )
++{
++    psa_fwu_component_t uxComponent;
++    psa_status_t uxStatus;
++    psa_fwu_component_info_t xComponentInfo = { 0 };
++
++    if( pFileContext == NULL || pxVersion == NULL )
++    {
++        return false;
++    }
++
++    if( PortConvertFilePathtoPSAComponentID( pFileContext, &uxComponent ) != true )
++    {
++        return false;
++    }
++
++    uxStatus = psa_fwu_query( uxComponent, &xComponentInfo );
++    if( uxStatus != PSA_SUCCESS )
++    {
++        return false;
++    }
++
++    pxVersion->u.x.major = xComponentInfo.version.major;
++    pxVersion->u.x.minor = xComponentInfo.version.minor;
++    pxVersion->u.x.build = (uint16_t)xComponentInfo.version.build;
++
++    return true;
++}
++
+ /**
+  * @brief Reset the device.
+  *
+diff --git a/ota_pal.h b/ota_pal.h
+index 4c95bda..724cf77 100644
+--- a/ota_pal.h
++++ b/ota_pal.h
+@@ -34,6 +34,7 @@
+ #define OTA_PAL_H_
+ 
+ #include "job_parser.h"
++#include "ota_appversion32.h"
+ 
+ /* OTA PAL signing algorithm configurations. */
+ #define OTA_PAL_CODE_SIGNING_RSA    ( 0 )
+@@ -288,6 +289,18 @@ bool otaPal_SetPlatformImageState( AfrOtaJobDocumentFields_t * const pFileContex
+  */
+ OtaPalImageState_t otaPal_GetPlatformImageState( AfrOtaJobDocumentFields_t * const pFileContext );
+ 
++/**
++ * @brief Get the version of the OTA update image.
++ *
++ * @param[in] pFileContext File context of type AfrOtaJobDocumentFields_t.
++ * @param[out] pxVersion Output parameter for version information.
++ *
++ * @return true in case the platform image version is fetched successfully.
++ *         false in case the platform image version is not fetched successfully.
++ */
++bool otaPal_GetPlatformImageVersion( AfrOtaJobDocumentFields_t * const pFileContext,
++                                     AppVersion32_t * pxVersion );
++
+ /**
+  * @brief Reset the device.
+  *
+-- 
+2.34.1
+

@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Arm Limited and/or its affiliates
+# Copyright 2023-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -10,6 +10,8 @@ set(APPLICATION_PATH "${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/b
 set(TFM_CMAKE_APP_ARGS
     -DPROJECT_CONFIG_HEADER_FILE=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/blinky/configs/tfm_config/project_config.h
 )
+set(MCUBOOT_IMAGE_NUMBER 2 CACHE STRING "Total number of firmware images")
+set(DEFAULT_MCUBOOT_FLASH_MAP ON)
 
 project(blinky-example LANGUAGES C)
 
@@ -44,9 +46,27 @@ target_link_libraries(blinky
 
 set_linker_script(blinky)
 
+list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/tools/cmake)
+include(ConvertElfToBin)
+include(ExternalProject)
+ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
+
+extract_sections_from_axf(
+    blinky
+    SECTIONS_NAMES   "ddr.bin"
+    OUTPUT_BIN_NAME  "ns_image"
+)
+
 # The non-secure application image should be padded while being signed
 # Hence, passing "TRUE" as the input parameter to the pad option of sign function.
-iot_reference_arm_corstone3xx_tf_m_sign_image(blinky blinky_signed 0.0.1 TRUE)
+iot_reference_arm_corstone3xx_tf_m_sign_image(
+    blinky
+    "ns_image"
+    blinky_signed
+    0.0.1
+    "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o"
+    TRUE
+)
 
 # A user project that consumes the ARM FRI needs to explicitly provide
 # addresses in order to merge images for TF-M. The addresses cannot

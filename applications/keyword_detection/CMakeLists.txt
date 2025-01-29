@@ -1,8 +1,9 @@
-# Copyright 2023-2024 Arm Limited and/or its affiliates
+# Copyright 2023-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
 cmake_minimum_required(VERSION 3.21.0 FATAL_ERROR)
+project(keyword-detection LANGUAGES C CXX)
 
 set(ML_INFERENCE_ENGINE     "ETHOS" CACHE STRING "Machine Learning inference engine (ETHOS | SOFTWARE)")
 set(AUDIO_SOURCE            "ROM"   CACHE STRING "Source of audio data (ROM | VSI)")
@@ -25,6 +26,19 @@ set(AWS_OTA_SIGNATURE_TYPE  "RSA-3072" CACHE STRING "Supported algorithms for si
 set(MCUBOOT_IMAGE_VERSION_NS "0.0.1+10")
 set(MCUBOOT_IMAGE_VERSION_NS_UPDATE "0.0.1+20")
 
+# These variables are only defined in case of GNU toolchain as it is currently the only toolchain
+# that supports the ML Model component OTA update feature where these variables are needed.
+if (${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+    set(MCUBOOT_IMAGE_VERSION_NS_ML_MODEL "0.0.1+11")
+    set(MCUBOOT_IMAGE_VERSION_NS_ML_MODEL_UPDATE "0.0.1+42")
+    set(MCUBOOT_IMAGE_NUMBER 3 CACHE STRING "Total number of firmware images")
+    set(MCUBOOT_NS_ML_MODEL_IMAGE_FLASH_AREA_NUM "1_0")
+    set(DEFAULT_MCUBOOT_FLASH_MAP OFF)
+else()
+    set(DEFAULT_MCUBOOT_FLASH_MAP ON)
+    set(MCUBOOT_IMAGE_NUMBER 2 CACHE STRING "Total number of firmware images")
+endif()
+
 if (${ML_INFERENCE_ENGINE} STREQUAL "ETHOS")
     set(ETHOS_U_NPU_ENABLED ON)
     set(ETHOS_U_NPU_TIMING_ADAPTER_ENABLED OFF)
@@ -43,6 +57,9 @@ set(TFM_CMAKE_APP_ARGS
     -DMCUBOOT_CONFIRM_IMAGE=${TFM_PLATFORM_CONFIRM_IMAGE}
     -DMCUBOOT_UPGRADE_STRATEGY=${TFM_PLATFORM_UPGRADE_STRATEGY}
     -DMCUBOOT_IMAGE_VERSION_NS=${MCUBOOT_IMAGE_VERSION_NS}
+    -DMCUBOOT_IMAGE_VERSION_NS_ML_MODEL=${MCUBOOT_IMAGE_VERSION_NS_ML_MODEL}
+    -DMCUBOOT_NS_ML_MODEL_IMAGE_FLASH_AREA_NUM=${MCUBOOT_NS_ML_MODEL_IMAGE_FLASH_AREA_NUM}
+    -DMCUBOOT_SECURITY_COUNTER_NS_ML_MODEL=1
     -DCONFIG_TFM_HALT_ON_CORE_PANIC=ON
     -DMCUBOOT_DATA_SHARING=ON
     -DPLATFORM_HAS_FIRMWARE_UPDATE_SUPPORT=ON
@@ -50,7 +67,15 @@ set(TFM_CMAKE_APP_ARGS
     -DTFM_PARTITION_LOG_LEVEL=TFM_PARTITION_LOG_LEVEL_INFO
 )
 
-project(keyword-detection LANGUAGES C CXX)
+# These definitions are only defined in case of GNU toolchain as it is currently the only toolchain
+# that supports the ML Model component OTA update feature where these definitions are needed.
+if (${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+    list(APPEND TFM_CMAKE_APP_ARGS
+    -DMCUBOOT_IMAGE_VERSION_NS_ML_MODEL=${MCUBOOT_IMAGE_VERSION_NS_ML_MODEL}
+    -DMCUBOOT_NS_ML_MODEL_IMAGE_FLASH_AREA_NUM=${MCUBOOT_NS_ML_MODEL_IMAGE_FLASH_AREA_NUM}
+    -DMCUBOOT_SECURITY_COUNTER_NS_ML_MODEL=1
+    )
+endif()
 
 # Set global optimization level to reduce code size while keeping the debug experience.
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
@@ -81,6 +106,17 @@ add_executable(keyword-detection
     ml_interface.cc
     model_config.cc
 )
+
+# These definitions are only defined in case of GNU toolchain as it is currently the only toolchain
+# that supports the ML Model component OTA update feature where these definitions are needed.
+if (${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+    target_compile_definitions(keyword-detection
+        PRIVATE
+            -DNS_ML_MODEL_IMAGE_LOAD_ADDRESS=${NS_ML_MODEL_IMAGE_LOAD_ADDRESS}
+            -DNS_ML_MODEL_IMAGE_SIZE=${NS_ML_MODEL_IMAGE_SIZE}
+            -DNS_ML_MODEL_IMAGE_EXECUTION_ADDRESS=${NS_ML_MODEL_IMAGE_EXECUTION_ADDRESS}
+        )
+endif()
 
 target_include_directories(keyword-detection
     PUBLIC
@@ -165,26 +201,74 @@ endif()
 include(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/cmake/SetLinkerOptions.cmake)
 set_linker_script(keyword-detection)
 
-# The non-secure application image should be padded while being signed
+list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/tools/cmake)
+include(ConvertElfToBin)
+include(ExternalProject)
+ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
+
+# The ML Model is only extracted in case of GNU toolchain as it is currently the only toolchain
+# that supports the ML Model component OTA update feature.
+if (${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+    set(SECTIONS_NAMES "ddr.bin" "model.bin")
+else()
+    set(SECTIONS_NAMES "ddr.bin")
+endif()
+
+extract_sections_from_axf(
+    keyword-detection
+    SECTIONS_NAMES   ${SECTIONS_NAMES}
+    OUTPUT_BIN_NAME  "ns_image"
+)
+
+# The non-secure application, and ML model images should be padded while being signed
 # Hence, passing "TRUE" as the input parameter to the pad option of sign function.
 iot_reference_arm_corstone3xx_tf_m_sign_image(
     keyword-detection
+    "ns_image"
     keyword-detection_signed
     ${MCUBOOT_IMAGE_VERSION_NS}
+    "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o"
     TRUE
 )
 
-# The update image is not padded to fill the whole slot (no --pad), because
+# The ML Model image is only signed in case of GNU toolchain as it is currently the only toolchain
+# that supports the ML Model component OTA update feature.
+if (${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+    iot_reference_arm_corstone3xx_tf_m_sign_image(
+        keyword-detection
+        "model"
+        keyword-detection-model_signed
+        ${MCUBOOT_IMAGE_VERSION_NS_ML_MODEL}
+        "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns_ml_model.o"
+        TRUE
+    )
+endif()
+
+# The non-secure application, and ML model update images are not padded to fill the whole slot (no --pad), because
 # 1) the image to download is smaller without padding
 # 2) the trailer that keeps track of boot and update statuses should not be overwritten
 # Hence, passing "FALSE" as the input parameter for the pad option to the sign function.
 iot_reference_arm_corstone3xx_tf_m_sign_image(
     keyword-detection
+    "ns_image"
     keyword-detection-update_signed
     ${MCUBOOT_IMAGE_VERSION_NS_UPDATE}
+    "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o"
     FALSE
 )
 
+# The ML Model update image is only extracted in case of GNU toolchain as it is
+# currently the only toolchain that supports the ML Model component OTA update feature.
+if (${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+    iot_reference_arm_corstone3xx_tf_m_sign_image(
+        keyword-detection
+        "model"
+        keyword-detection-model-update_signed
+        ${MCUBOOT_IMAGE_VERSION_NS_ML_MODEL_UPDATE}
+        "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns_ml_model.o"
+        FALSE
+    )
+endif()
 
 # A user project that consumes the ARM FIR needs to explicitly provide
 # addresses in order to merge images for TF-M. The addresses cannot
@@ -196,6 +280,8 @@ iot_reference_arm_corstone3xx_tf_m_merge_images(
     ${CMAKE_BINARY_DIR}/helpers/provisioning/provisioning_data.bin
     ${NS_DDR4_IMAGE_LOAD_ADDRESS}
     ${SECTORS_BIN_DIR}/ddr.bin
+    ${NS_ML_MODEL_IMAGE_LOAD_ADDRESS}
+    ${CMAKE_BINARY_DIR}/keyword-detection-model_signed.bin
 )
 
 iot_reference_arm_corstone3xx_generate_aws_update_digest_and_signature(
@@ -204,3 +290,14 @@ iot_reference_arm_corstone3xx_generate_aws_update_digest_and_signature(
     update-digest
     update-signature
 )
+
+# The AWS update digest and signature are only extracted in case of GNU toolchain as it is
+# currently the only toolchain that supports the ML Model component OTA update feature.
+if (${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+    iot_reference_arm_corstone3xx_generate_aws_update_digest_and_signature(
+        keyword-detection
+        keyword-detection-model-update_signed
+        model-update-digest
+        model-update-signature
+    )
+endif()

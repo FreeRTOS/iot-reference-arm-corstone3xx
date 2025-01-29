@@ -1,4 +1,4 @@
-# Copyright 2021-2024 Arm Limited and/or its affiliates
+# Copyright 2021-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -52,6 +52,7 @@ function(extract_sections_from_axf target)
         find_program(objcopy NAMES arm-none-eabi-objcopy objcopy REQUIRED)
         list(LENGTH PARSED_SECTIONS_NAMES N_SECTIONS)
         math(EXPR MAX_IDX "${N_SECTIONS} - 1")
+        set(RM_SECTION_ARG_LIST "")
 
         foreach(IDX RANGE ${MAX_IDX})
             list(GET PARSED_SECTIONS_NAMES ${IDX} SECTION_NAME)
@@ -67,13 +68,22 @@ function(extract_sections_from_axf target)
                     --only-section ${SECTION_NAME}
                     $<TARGET_FILE:${target}>
                     ${SECTORS_BIN_DIR}/${SECTION_NAME}
-                COMMAND
-                    ${objcopy} -O binary
-                    --remove-section ${SECTION_NAME}
-                    $<TARGET_FILE:${target}>
-                    ${SECTORS_BIN_DIR}/${PARSED_OUTPUT_BIN_NAME}.bin
             )
+            list(APPEND RM_SECTION_ARG_LIST "--remove-section" "${SECTION_NAME}")
         endforeach()
+
+        add_custom_command(
+            TARGET
+                ${target}
+            POST_BUILD
+            DEPENDS
+                $<TARGET_FILE:${target}>
+            COMMAND
+                ${objcopy} -O binary
+                ${RM_SECTION_ARG_LIST}
+                $<TARGET_FILE:${target}>
+                ${SECTORS_BIN_DIR}/${PARSED_OUTPUT_BIN_NAME}.bin
+        )
 
     elseif(CMAKE_C_COMPILER_ID STREQUAL "ARMClang")
         find_program(fromelf NAMES fromelf REQUIRED)

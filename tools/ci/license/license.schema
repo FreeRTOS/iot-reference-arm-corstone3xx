@@ -92,7 +92,7 @@
               "properties": {
                 "path": {
                   "type": "string",
-                  "pattern": "(gitmodules|CODEOWNERS|doxyfile_options|gitlint|license\\.schema|^(?!CMakeLists).+\\.txt|.gitkeep|.astylerc)$"
+                  "pattern": "(gitmodules|CODEOWNERS|doxyfile_options|gitlint|license\\.schema|^(?!CMakeLists).+\\.txt|.gitkeep|.astylerc|.tflite)$"
                 },
                 "type": {
                   "type": "string",

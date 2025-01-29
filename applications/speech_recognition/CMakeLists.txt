@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Arm Limited and/or its affiliates
+# Copyright 2023-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -24,6 +24,8 @@ set(AWS_OTA_SIGNATURE_TYPE  "RSA-3072" CACHE STRING "Supported algorithms for si
 # We will therefore change the build version from TF-M.
 set(MCUBOOT_IMAGE_VERSION_NS "0.0.1+10")
 set(MCUBOOT_IMAGE_VERSION_NS_UPDATE "0.0.1+20")
+set(MCUBOOT_IMAGE_NUMBER 2 CACHE STRING "Total number of firmware images")
+set(DEFAULT_MCUBOOT_FLASH_MAP ON)
 
 if (${ML_INFERENCE_ENGINE} STREQUAL "ETHOS")
     set(ETHOS_U_NPU_ENABLED ON)
@@ -167,12 +169,25 @@ target_link_libraries(speech-recognition
 include(${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/cmake/SetLinkerOptions.cmake)
 set_linker_script(speech-recognition)
 
+list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/tools/cmake)
+include(ConvertElfToBin)
+include(ExternalProject)
+ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
+
+extract_sections_from_axf(
+    speech-recognition
+    SECTIONS_NAMES   "ddr.bin"
+    OUTPUT_BIN_NAME  "ns_image"
+)
+
 # The non-secure application image should be padded while being signed
 # Hence, passing "TRUE" as the input parameter to the pad option of sign function.
 iot_reference_arm_corstone3xx_tf_m_sign_image(
     speech-recognition
+    "ns_image"
     speech-recognition_signed
     ${MCUBOOT_IMAGE_VERSION_NS}
+    "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o"
     TRUE
 )
 
@@ -182,8 +197,10 @@ iot_reference_arm_corstone3xx_tf_m_sign_image(
 # Hence, passing "FALSE" as the input parameter for the pad option to the sign function.
 iot_reference_arm_corstone3xx_tf_m_sign_image(
     speech-recognition
+    "ns_image"
     speech-recognition-update_signed
     ${MCUBOOT_IMAGE_VERSION_NS_UPDATE}
+    "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o"
     FALSE
 )
 

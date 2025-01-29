@@ -1,4 +1,4 @@
-# Copyright 2021-2024, Arm Limited and/or its affiliates
+# Copyright 2021-2025, Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -31,7 +31,6 @@ target_compile_definitions(tfm-ns-interface
         # Corstone-315 is not using the default crypto keys, it is defined in the TF-M platform port
         $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone300>:PLATFORM_DEFAULT_CRYPTO_KEYS>
         $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone310>:PLATFORM_DEFAULT_CRYPTO_KEYS>
-        MCUBOOT_IMAGE_NUMBER=2
 )
 
 add_library(tfm-ns-interface-mbedtls-config INTERFACE)

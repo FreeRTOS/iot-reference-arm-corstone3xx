@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Arm Limited and/or its affiliates
+# Copyright 2023-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -6,21 +6,9 @@ cmake_minimum_required(VERSION 3.21.0 FATAL_ERROR)
 
 set(AWS_OTA_SIGNATURE_TYPE  "RSA-3072" CACHE STRING "Supported algorithms for signature validation [RSA-2048, RSA-3072, EC-P256, EC-P384]")
 
-# From: ota-for-aws-iot-embedded-sdk/source/include/ota_appversion32.h
-# struct version
-# {
-#     uint8_t major;  /*!< @brief Major version number of the firmware (X in firmware version X.Y.Z). */
-#     uint8_t minor;  /*!< @brief Minor version number of the firmware (Y in firmware version X.Y.Z). */
-#
-#     uint16_t build; /*!< @brief Build of the firmware (Z in firmware version X.Y.Z). */
-# } x;                /*!< @brief Version number of the firmware. */
-
-# AWS OTA client does not use the SemVer PATCH version.
-# Because of this, if only PATCH version is changed then the OTA will be rejected
-# due to same firmware version.
-# We will therefore change the build version from TF-M.
 set(MCUBOOT_IMAGE_VERSION_NS "0.0.1+10")
-set(MCUBOOT_IMAGE_VERSION_NS_UPDATE "0.0.1+20")
+set(MCUBOOT_IMAGE_NUMBER 2 CACHE STRING "Total number of firmware images")
+set(DEFAULT_MCUBOOT_FLASH_MAP ON)
 
 set(APPLICATION_PATH "${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/applications/freertos_iot_libraries_tests" CACHE STRING "Path to the application folder")
 
@@ -54,7 +42,6 @@ list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/compon
 list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/components/security/trusted_firmware-m/integration/cmake)
 include(SetLinkerOptions)
 include(AWSIoTHelpers)
-include(GenerateAWSUpdateDigestAndSignature)
 include(MergeTfmImages)
 include(SignTfmImage)
 
@@ -108,7 +95,6 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         freertos-ota-pal-psa
         fri-bsp
         helpers-events
-        ota-update
         provisioning-lib
         mbedtls
         tfm-ns-interface
@@ -116,22 +102,25 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 
 set_linker_script(${CMAKE_PROJECT_NAME})
 
+list(APPEND CMAKE_MODULE_PATH ${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/tools/cmake)
+include(ConvertElfToBin)
+include(ExternalProject)
+ExternalProject_Get_Property(trusted_firmware-m-build BINARY_DIR)
+
+extract_sections_from_axf(
+    ${CMAKE_PROJECT_NAME}
+    SECTIONS_NAMES   "ddr.bin"
+    OUTPUT_BIN_NAME  "ns_image"
+)
+
 # The non-secure application image should be padded while being signed
 iot_reference_arm_corstone3xx_tf_m_sign_image(
     ${CMAKE_PROJECT_NAME}
+    "ns_image"
     ${CMAKE_PROJECT_NAME}_signed
     ${MCUBOOT_IMAGE_VERSION_NS}
+    "${BINARY_DIR}/api_ns/image_signing/layout_files/signing_layout_ns.o"
     TRUE
-)
-
-# The update image is not padded to fill the whole slot (no --pad), because
-# 1) the image to download is smaller without padding
-# 2) the trailer that keeps track of boot and update statuses should not be overwritten
-iot_reference_arm_corstone3xx_tf_m_sign_image(
-    ${CMAKE_PROJECT_NAME}
-    ${CMAKE_PROJECT_NAME}-update_signed
-    ${MCUBOOT_IMAGE_VERSION_NS_UPDATE}
-    FALSE
 )
 
 # A user project that consumes the ARM FRI needs to explicitly provide
@@ -142,12 +131,4 @@ iot_reference_arm_corstone3xx_tf_m_merge_images(
     ${CMAKE_PROJECT_NAME}
     ${NS_PROVISIONING_BUNDLE_LOAD_ADDRESS}
     ${CMAKE_BINARY_DIR}/helpers/provisioning/provisioning_data.bin
-)
-
-# Generate the AWS OTA update digest and signature
-iot_reference_arm_corstone3xx_generate_aws_update_digest_and_signature(
-    ${CMAKE_PROJECT_NAME}
-    ${CMAKE_PROJECT_NAME}-update_signed
-    update-digest
-    update-signature
 )
