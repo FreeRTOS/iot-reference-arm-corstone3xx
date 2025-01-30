@@ -1,7 +1,7 @@
 /*
  * FreeRTOS V202012.00
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- * Copyright 2023-2024 Arm Limited and/or its affiliates
+ * Copyright 2023-2025 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -141,7 +141,7 @@
  *  absence of sending any other Control Packets, the Client MUST send a
  *  PINGREQ Packet.
  */
-#define MQTT_AGENT_KEEP_ALIVE_INTERVAL_SECONDS       ( 60U )
+#define MQTT_AGENT_KEEP_ALIVE_INTERVAL_SECONDS       ( 100U )
 
 /**
  * @brief Socket send and receive timeouts to use.  Specified in milliseconds.
