@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 Arm Limited and/or its affiliates
+# Copyright (c) 2023-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -85,9 +85,9 @@ jobs:
           build/${{ matrix.application }}-update_signed.bin \
           build/update-signature.txt
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: FRI-build-logs
+          name: FRI-build-logs-${{ strategy.job-index }}
           path: |
             ${{ github.workspace }}/${{ matrix.application }}_gnu_build.tar.gz
           retention-days: 5
