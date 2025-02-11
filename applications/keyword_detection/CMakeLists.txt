@@ -31,12 +31,12 @@ set(AWS_OTA_SIGNATURE_TYPE  "RSA-3072" CACHE STRING "Supported algorithms for si
 # due to same firmware version.
 # We will therefore change the build version from TF-M.
 # MCUBOOT_IMAGE_VERSION_NS is passed to the TF-M build in TfmInitialCache.cmake
-set(MCUBOOT_IMAGE_VERSION_NS_UPDATE "0.0.1+20")
+set(MCUBOOT_IMAGE_VERSION_NS_UPDATE "0.0.20+0")
 
 # This variable is only defined in case of GNU toolchain as it is currently the only toolchain
 # that supports the ML Model component OTA update feature where this variable is needed.
 if (${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
-    set(MCUBOOT_IMAGE_VERSION_NS_ML_MODEL_UPDATE "0.0.1+42")
+    set(MCUBOOT_IMAGE_VERSION_NS_ML_MODEL_UPDATE "0.0.42+0")
 endif()
 
 if (${ML_INFERENCE_ENGINE} STREQUAL "ETHOS")
