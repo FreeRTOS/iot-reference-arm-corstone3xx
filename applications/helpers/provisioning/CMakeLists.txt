@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Arm Limited and/or its affiliates
+# Copyright 2023-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -19,9 +19,8 @@ else()
             ${CMAKE_CURRENT_LIST_DIR}/inc
     )
 
-    target_link_libraries(provisioning_data PRIVATE
-        fri-bsp
-    )
+    # Only use interface includes for fri-bsp for provisioning config, public sources are not needed
+    target_include_directories(provisioning_data PRIVATE $<TARGET_PROPERTY:fri-bsp,INTERFACE_INCLUDE_DIRECTORIES>)
 
     set(
         CODE_SIGNING_PUBLIC_KEY_PEM_PATH
@@ -45,13 +44,14 @@ else()
             ${CMAKE_CURRENT_BINARY_DIR}/aws_clientcredential_keys.h
     )
 
-    add_dependencies(aws_clientcredential_keys_header trusted_firmware-m-build)
     add_dependencies(provisioning_data aws_clientcredential_keys_header)
 
     if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
         target_link_options(provisioning_data
             PRIVATE
-                "-nostartfiles"
+            # We should define an entry point to override the default Reset_Handler
+            "--entry=provisioningBundle"
+            "-nostartfiles"
         )
         target_add_scatter_file(provisioning_data ${CMAKE_CURRENT_LIST_DIR}/provisioning_data.ld)
     else()

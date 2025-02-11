@@ -1,13 +1,12 @@
-# Copyright 2023 Arm Limited and/or its affiliates
+# Copyright 2023-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
 macro(target_add_scatter_file target)
     add_library(${target}_scatter OBJECT)
 
-    target_link_libraries(${target}_scatter PRIVATE
-        fri-bsp
-    )
+    # Only use interface includes for fri-bsp, the linker script does not need public sources
+    target_include_directories(${target}_scatter PRIVATE $<TARGET_PROPERTY:fri-bsp,INTERFACE_INCLUDE_DIRECTORIES>)
 
     if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
         target_link_options(${target}
