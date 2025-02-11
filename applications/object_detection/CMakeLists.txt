@@ -25,7 +25,7 @@ set(AWS_OTA_SIGNATURE_TYPE  "RSA-3072" CACHE STRING "Supported algorithms for si
 # due to same firmware version.
 # We will therefore change the build version from TF-M.
 # MCUBOOT_IMAGE_VERSION_NS is passed to the TF-M build in TfmInitialCache.cmake
-set(MCUBOOT_IMAGE_VERSION_NS_UPDATE "0.0.1+20")
+set(MCUBOOT_IMAGE_VERSION_NS_UPDATE "0.0.20+0")
 
 if (${ML_INFERENCE_ENGINE} STREQUAL "ETHOS")
     set(ETHOS_U_NPU_ENABLED ON)

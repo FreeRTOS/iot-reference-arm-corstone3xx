@@ -29,7 +29,7 @@ index 7b38c6a..a44d284 100644
 @@ -33,24 +33,24 @@
  #include "FreeRTOS.h"
  #include "application_version.h"
- 
+
 -AppVersion32_t appFirmwareVersion;
 -
 -int GetImageVersionPSA( psa_fwu_component_t uxComponent )
@@ -37,7 +37,7 @@ index 7b38c6a..a44d284 100644
  {
      psa_fwu_component_info_t xComponentInfo = { 0 };
      psa_status_t uxStatus;
- 
+
 +    configASSERT( pxVersion != NULL );
 +
      uxStatus = psa_fwu_query( uxComponent, &xComponentInfo );
@@ -48,7 +48,7 @@ index 7b38c6a..a44d284 100644
 -        appFirmwareVersion.u.x.build = (uint16_t)xComponentInfo.version.build;
 +        pxVersion->u.x.major = xComponentInfo.version.major;
 +        pxVersion->u.x.minor = xComponentInfo.version.minor;
-+        pxVersion->u.x.build = (uint16_t)xComponentInfo.version.build;
++        pxVersion->u.x.build = (uint16_t)xComponentInfo.version.patch;
          return 0;
      }
      else
@@ -64,7 +64,7 @@ index 7775910..fcd8b85 100644
 +++ b/version/application_version.h
 @@ -28,18 +28,17 @@
  #include "psa/update.h"
- 
+
  /**
 - * @brief Get the running image version of the given component.
 - *
@@ -91,8 +91,8 @@ index 7775910..fcd8b85 100644
 +* @return 0 on success and -1 on failure.
 +*/
 +int GetImageVersionPSA( psa_fwu_component_t uxComponent, AppVersion32_t *pxVersion );
- 
+
  #endif
--- 
+--
 2.34.1
 
