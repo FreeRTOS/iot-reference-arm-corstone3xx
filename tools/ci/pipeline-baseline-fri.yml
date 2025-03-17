@@ -1,4 +1,4 @@
-# Copyright 2021-2024 Arm Limited and/or its affiliates
+# Copyright 2021-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -44,6 +44,10 @@ pre-commit:
     - .base-job-rules
   stage: quality-check
   script:
+    - python3 -m venv venv
+    - source venv/bin/activate
+    - pip install --upgrade pip setuptools
+    - pip install PyYAML click typing
     - pip install tools/ci -t $PWD
     - apt-get update -y
     - apt-get install fd-find -y
