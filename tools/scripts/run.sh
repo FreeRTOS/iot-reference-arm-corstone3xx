@@ -14,8 +14,8 @@ NPU_ID=""
 FVP_BIN="FVP_Corstone_SSE-320"
 FRAMES=""
 OPTIONS=""
-DISPLAY=true
-DISPLAY_OPTIONS=""
+HDLCD_GUI=false
+HDLCD_GUI_OPTIONS=""
 
 set -e
 
@@ -33,15 +33,15 @@ Options:
     -n,--npu-id     NPU ID to use (U55, U65)
     -f,--frames     Path to camera frames for the ISP to stream
     -d,--debug      Path to debugger plugin to start FVP
-    -D,--display    Is display (GUI) available
+    -G,--gui        Is HDLCD GUI enabled
 
 Examples:
     blinky, keyword-detection, speech-recognition, object-detection
 EOF
 }
 
-SHORT=t:,n:,s:,h,p:,f:,d:,D:
-LONG=target:,npu-id:,audio:,help,path:,frames:,debug:,display:
+SHORT=t:,n:,s:,h,p:,f:,d:,G:
+LONG=target:,npu-id:,audio:,help,path:,frames:,debug:,gui:
 OPTS=$(getopt -n run --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -81,8 +81,8 @@ do
       fi
       shift 2
       ;;
-    -D | --display )
-      DISPLAY=$2
+    -G | --gui )
+      HDLCD_GUI=$2
       shift 2
       ;;
     --)
@@ -185,8 +185,8 @@ if [ -f "$GDB_PLUGIN" ]; then
   OPTIONS="--allow-debug-plugin --plugin $GDB_PLUGIN"
 fi
 
-if [ "$DISPLAY" = false ]; then
-  DISPLAY_OPTIONS="-C vis_hdlcd.disable_visualisation=1"
+if [ "$HDLCD_GUI" = false ]; then
+  HDLCD_GUI_OPTIONS="-C vis_hdlcd.disable_visualisation=1"
 fi
 
 case "$TARGET" in
@@ -203,7 +203,7 @@ case "$TARGET" in
       -C mps3_board.DISABLE_GATING=1"
       ;;
     corstone315 | corstone320 )
-      OPTIONS="$OPTIONS $DISPLAY_OPTIONS \
+      OPTIONS="$OPTIONS $HDLCD_GUI_OPTIONS \
       -C mps4_board.visualisation.disable-visualisation=1 \
       -C core_clk.mul=200000000 \
       -C mps4_board.smsc_91c111.enabled=1 \
