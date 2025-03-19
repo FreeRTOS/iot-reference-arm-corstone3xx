@@ -172,7 +172,7 @@ dependencies:
     version: "ddb3ffdbcfc6f66dc3906e84158f235824536b4a"
     repository:
       type: "git"
-      url: "https://review.mlplatform.org/ml/ethos-u/ml-embedded-evaluation-kit.git"
+      url: "https://git.gitlab.arm.com/artificial-intelligence/ethos-u/ml-embedded-evaluation-kit.git"
       path: "components/ai/ml_embedded_evaluation_kit/library"
   - name: "speexdsp"
     license: "BSD-3-Clause"

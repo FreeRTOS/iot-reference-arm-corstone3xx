@@ -35,6 +35,6 @@ This is provided to the build system by setting the path to the JSON file with t
 
 For more information about the ML Embedded Evaluation Kit, see the [ML Embedded Evaluation Kit documentation].
 
-[Build options]: https://review.mlplatform.org/plugins/gitiles/ml/ethos-u/ml-embedded-evaluation-kit/+/HEAD/docs/sections/building.md#build-options
+[Build options]: https://gitlab.arm.com/artificial-intelligence/ethos-u/ml-embedded-evaluation-kit/-/blob/main/docs/sections/building.md#build-options
 [SetupMlEmbeddedEvaluationKitLibraries.cmake]: ../../../../components/ai/ml_embedded_evaluation_kit/integration/cmake/SetupMlEmbeddedEvaluationKitLibraries.cmake
-[ML Embedded Evaluation Kit documentation]: https://review.mlplatform.org/plugins/gitiles/ml/ethos-u/ml-embedded-evaluation-kit/+/HEAD/docs/documentation.md
+[ML Embedded Evaluation Kit documentation]: https://gitlab.arm.com/artificial-intelligence/ethos-u/ml-embedded-evaluation-kit/-/blob/main/docs/documentation.md
