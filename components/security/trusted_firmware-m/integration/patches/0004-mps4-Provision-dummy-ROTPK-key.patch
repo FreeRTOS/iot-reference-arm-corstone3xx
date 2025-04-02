@@ -1,0 +1,40 @@
+From 2cd52db0a37910cc97d508ee4349fa82479b4620 Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Thu, 10 Apr 2025 15:42:47 +0100
+Subject: [PATCH] mps4: Provision dummy ROTPK key
+
+The Dummy ROTPK is provisioned as there's a defect
+in TF-M v2.2.0 that the dummy ROTPK is used for the
+signing of the BL2 image even if TFM_DUMMY_PROVISIONING
+is disabled. Hence, we need to provision the dummy ROTPK
+in the device's memory for the signature validation to work.
+---
+ .../common/provisioning/bundle_dm/CMakeLists.txt     | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/platform/ext/target/arm/mps4/common/provisioning/bundle_dm/CMakeLists.txt b/platform/ext/target/arm/mps4/common/provisioning/bundle_dm/CMakeLists.txt
+index 5a8614b8e..2bcfd3057 100644
+--- a/platform/ext/target/arm/mps4/common/provisioning/bundle_dm/CMakeLists.txt
++++ b/platform/ext/target/arm/mps4/common/provisioning/bundle_dm/CMakeLists.txt
+@@ -9,6 +9,18 @@ find_package(Python3)
+ 
+ add_executable(dm_provisioning_bundle)
+ 
++# The Dummy ROTPK is provisioned as there's a defect in TF-M v2.2.0 that the dummy
++# ROTPK is used for the signing of the BL2 image even if TFM_DUMMY_PROVISIONING
++# is disabled. Hence, we need to provision the dummy ROTPK in the device's memory
++# for the signature validation to work.
++set(BL1_ROTPK_0 "0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00, 0x04, \
++0xb6, 0xb4, 0x44, 0xcb, 0x92, 0x58, 0x4e, 0xe0, \
++0x81, 0xb6, 0x78, 0xf3, 0x9a, 0x0d, 0xd7, 0x4e, \
++0x0c, 0xfd, 0x7e, 0x45, 0x01, 0x76, 0xdd, 0x0c, \
++0xb6, 0x54, 0xc9, 0xbb, 0xbf, 0x63, 0x2b, 0x14, \
++0xb2, 0xee, 0x00, 0x89, 0x63, 0xe0, 0x43, 0xaf, \
++0xeb, 0xe8, 0xac, 0x6c, 0x1d, 0x60, 0x5e, 0xbc," CACHE STRING "")
++
+ if(${TFM_DUMMY_PROVISIONING})
+     include(${CMAKE_SOURCE_DIR}/platform/ext/target/arm/mps4/common/provisioning/bundle_dm/dm_provisioning_config.cmake)
+ else()
+-- 
+2.34.1
+
