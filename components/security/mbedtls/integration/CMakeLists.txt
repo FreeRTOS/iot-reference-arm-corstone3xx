@@ -66,3 +66,27 @@ target_link_libraries(iot-tls
     PRIVATE
         helpers-logging
 )
+
+# The toolchain enables different warnings (ex. -Wswitch-default)
+# and MbedTLS enables -Werror on all its libraries. Some of the files
+# under the mbedcrypto, mbedtls, mbedx509, and everest third party library
+# violate these rules which result in compilation time errors.
+# Hence, disbaling errors on violated warnings for those libraries.
+target_compile_options(mbedcrypto
+    PRIVATE
+        -Wno-error=switch-default
+        -Wno-error=null-dereference
+)
+target_compile_options(mbedtls
+    PRIVATE
+        -Wno-error=switch-default
+        -Wno-error=null-dereference
+)
+target_compile_options(mbedx509
+    PRIVATE
+        -Wno-error=null-dereference
+)
+target_compile_options(everest
+    PRIVATE
+        -Wno-error=redundant-decls
+)

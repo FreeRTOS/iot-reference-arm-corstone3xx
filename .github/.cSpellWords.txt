@@ -254,6 +254,7 @@ vsocket
 vsync
 Vwij
 YPJLH
+Werror
 WGHT
 wght
 WLATENCY

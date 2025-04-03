@@ -1,4 +1,6 @@
  # Copyright (C) 2023 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ # Copyright 2025 Arm Limited and/or its affiliates
+ # <open-source-office@arm.com>
  #
  # Permission is hereby granted, free of charge, to any person obtaining a copy of
  # this software and associated documentation files (the "Software"), to deal in
@@ -38,7 +40,7 @@ jobs:
     if: ${{ github.event.issue.pull_request &&
         ( ( github.event.comment.body == '/bot run uncrustify' ) ||
           ( github.event.comment.body == '/bot run formatting' ) ) }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - name: Apply Formatting Fix
       uses: FreeRTOS/CI-CD-Github-Actions/formatting-bot@main
