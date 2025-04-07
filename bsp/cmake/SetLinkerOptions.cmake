@@ -32,6 +32,7 @@ macro(set_linker_script executable_target)
                 $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone315>:--scatter=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone315/corstone_315_ns.sct>
                 $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone320>:--scatter=${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone320/corstone_320_ns.sct>
                 --map
+                --list=${executable_target}.map
                 --strict
         )
     endif()
