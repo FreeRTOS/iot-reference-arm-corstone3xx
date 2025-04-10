@@ -93,6 +93,11 @@ RUN pip3 install \
 # This is needed to define where the libclang shared object is located
 ENV LD_LIBRARY_PATH="/usr/lib/llvm-14/lib:${LD_LIBRARY_PATH}"
 
+# This is needed for the GDB debugger to work
+RUN sudo add-apt-repository -y ppa:deadsnakes/ppa && \
+    sudo apt-get update && \
+    sudo apt-get -y install python3.8 libpython3.8 libpython3.8-dev
+
 # Create the user
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
