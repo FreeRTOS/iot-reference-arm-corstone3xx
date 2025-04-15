@@ -67,98 +67,91 @@ To run the Speech-Recognition example, run the following command:
 
 ```log
 [INF] Starting bootloader
-[INF] Beginning provisioning
-[INF] Waiting for provisioning bundle
-[INF] Running provisioning bundle
+[INF] PSA Crypto init done, sig_type: EC-P256, using builtin keys
 [INF] Primary image: magic=good, swap_type=0x1, copy_done=0x3, image_ok=0x1
 [INF] Scratch: magic=bad, swap_type=0x1, copy_done=0x2, image_ok=0x2
 [INF] Boot source: primary slot
-[INF] Image index: 1, Swap type: none
+[INF] Image index: 1, Swap type: test
+[INF] Starting swap using scratch algorithm.
 [INF] Primary image: magic=good, swap_type=0x1, copy_done=0x3, image_ok=0x1
-[INF] Scratch: magic=bad, swap_type=0x1, copy_done=0x2, image_ok=0x2
+[INF] Scratch: magic=unset, swap_type=0x1, copy_done=0x3, image_ok=0x3
 [INF] Boot source: primary slot
 [INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
+[INF] Image version: v2.2.0
 [INF] Jumping to the first image slot
-[1;34m[Sec Thread] Secure image initializing![0m
-<NUL>[1;34mBooting TF-M v2.1.1[0m
-<NUL>Creating an empty ITS flash layout.
-Creating an empty PS flash layout.
-[INF][Crypto] Provisioning entropy seed... [0;32mcomplete.[0m
+[1;34mBooting TF-M v2.2.0+gdd2b7de[0m
+<NUL>[1;34m[Sec Thread] Secure image initializing![0m
+<NUL>TF-M Float ABI: Hard
+<NUL>Lazy stacking enabled
+<NUL>[INF][PS] Encryption alg: 0x5500200
+[INF][Crypto] Provision entropy seed...
+[INF][Crypto] Provision entropy seed... [0;32mcomplete[0m.
 0 0 [None] [INFO] PSA Framework version is: 257
-1 0 [None] Write certificate...
-2 0 [None] [INFO] Device key provisioning succeeded
-3 0 [None] [INFO] OTA signing key provisioning succeeded
-4 0 [None] FreeRTOS_AddEndPoint: MAC: 44-21 IPv4: c0a80069ip
-5 34 [OTA Task ] [INFO] OTA over MQTT, Application version from appFirmwareVersion 0.0.10
-6 47 [DSP_TASK] [INFO] DSP start
-7 52 [BLINK_TASK ] [INFO] Blink task started
-8 1000 [IP-Task] DHCP-socket[44-21]: DHCP Socket Create
-9 1000 [IP-Task] prvCreateDHCPSocket[44-21]: open, user count 1
-10 1000 [IP-Task] vDHCP_RATimerReload: 250
-11 1250 [IP-Task] vDHCPProcess: offer ac143301ip for MAC address 44-21
-12 1260 [IP-Task] vDHCPProcess: offer ac143301ip for MAC address 44-21
-13 1260 [IP-Task] [INFO] Network is up
-14 1260 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
-15 1260 [IP-Task] vDHCP_RATimerReload: 8640000
-16 1291 [MQTT Agent Task] [INFO] Creating a TLS connection to <iot-core-endpoint>.amazonaws.com:8883.
-17 1307 [MQTT Agent Task] [INFO] Resolving host name: <iot-core-endpoint>.amazonaws.com.
-18 1322 [IP-Task] ipARP_REPLY from ac1433feip to ac143301ip end-point ac143301ip
-19 6333 [MQTT Agent Task] DNS_ReadReply returns -11
-20 6340 [MQTT Agent Task] prvIncreaseDNS4Index: from 0 to 0
-21 6356 [MQTT Agent Task] DNS[0x5946]: The answer to '<iot-core-endpoint>.amazonaws.com' (52.208.184.196) will be stored
-22 6375 [MQTT Agent Task] [INFO] Initiating TCP connection with host: <iot-core-endpoint>.amazonaws.com:8883
-23 6392 [MQTT Agent Task] FreeRTOS_connect: 45227 to 34d0b8c4ip:8883
-24 6505 [MQTT Agent Task] [INFO] Initiating TLS handshake with host: <iot-core-endpoint>.amazonaws.com:8883
-25 8791 [MQTT Agent Task] [INFO] Successfully created a TLS connection to <iot-core-endpoint>.amazonaws.com:8883.
-26 8808 [MQTT Agent Task] [INFO] Creating an MQTT connection to the broker.
-27 9243 [MQTT Agent Task] [INFO] MQTT connection established with the broker.
-28 9254 [MQTT Agent Task] [INFO] Successfully connected to the MQTT broker.
-29 9265 [MQTT Agent Task] [INFO] Session present: 0
-30 9272 [MQTT Agent Task] [INFO] Starting a clean MQTT Session.
-31 9281 [OTA Task ] [INFO]  Received: 0   Queued: 0   Processed: 0   Dropped: 0
-32 9292 [OTA Agent Task] [WARN] Index: 0. OTA event id: 0
-33 9300 [OTA Agent Task] [WARN] Index: 1. OTA event id: 2
-36 10857 [OTA Agent Task] [INFO] Subscribed to topic $aws/things/<mqtt-client-identifier>/jobs/notify-next.
-37 10876 [OTA Agent Task] [INFO] Subscribed to MQTT topic: $aws/things/<mqtt-client-identifier>/jobs/notify-next
-40 11844 [MQTT Agent Task] [INFO] De-serialized incoming PUBLISH packet: DeserializerResult=MQTTSuccess.
-41 11859 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
-42 11870 [MQTT Agent Task] [INFO] Received incoming publish message Task 0 publishing message 0
-44 12634 [MQTT Agent Task] [INFO] Publishing message to $aws/things/<mqtt-client-identifier>/jobs/$next/get.
-45 13021 [MQTT Agent Task] [INFO] Ack packet deserialized with result: MQTTSuccess.
-46 13032 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
-47 13044 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/<mqtt-client-identifier>/jobs/$next/get to broker.
-48 13066 [OTA Agent Task] [WARN] OTA Timer handle NULL for Timerid=0, can't stop.
-49 13121 [MQTT Agent Task] [INFO] De-serialized incoming PUBLISH packet: DeserializerResult=MQTTSuccess.
-50 13135 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
-51 13147 [MQTT Agent Task] [INFO] Received job message callback, size 1016.
-52 13157 [OTA Agent Task] [WARN] Index: 3. OTA event id: 3
-53 13166 [OTA Agent Task] [INFO] Extracted parameter: [key: value]=[execution.jobId: AFR_OTA-ota-test-update-id-6c887a31-0f18-42b0-977c-aae255199d36]
-54 13189 [OTA Agent Task] [INFO] Extracted parameter: [key: value]=[execution.jobDocument.afr_ota.streamname: AFR_OTA-c35caad0-f43b-4043-a7ca-5c60e27616d0]
-55 13211 [OTA Agent Task] [INFO] Extracted parameter: [key: value]=[execution.jobDocument.afr_ota.protocols: ["MQTT"]]
-56 13228 [OTA Agent Task] [INFO] Extracted parameter: [key: value]=[filepath: non_secure image]
-57 13242 [OTA Agent Task] [INFO] Extracted parameter: [key: value]=[filesize: 3081945]
-58 13254 [OTA Agent Task] [INFO] Extracted parameter: [key: value]=[fileid: 0]
-59 13265 [OTA Agent Task] [INFO] Extracted parameter: [key: value]=[certfile: 0]
-60 13277 [OTA Agent Task] [INFO] Extracted parameter [ sig-sha256-rsa: ORLHoYQfNvBa0Z+xLLi2IDSwTdmPRHNQ... ]
-61 13293 [OTA Agent Task] [INFO] Job document was accepted. Attempting to begin the update.
-62 13306 [OTA Agent Task] [INFO] Job parsing success: OtaJobParseErr_t=OtaJobParseErrNone, Job name=AFR_OTA-ota-test-update-id-6c887a31-0f18-42b0-977c-aae255199d36
-63 13328 [OTA Agent Task] [WARN] Received an unhandled callback event from OTA Agent, event = 6
-64 13342 [OTA Agent Task] [INFO] Signal task inference start
-65 13350 [OTA Agent Task] [INFO] DSP task start
-66 13357 [ML_TASK] [INFO] Initial start of audio processing
-67 13367 [ML_TASK] [INFO] Ethos-U55 device initialised
-68 13374 [DSP_TASK] [INFO] Init speex
-69 13381 [ML_TASK] [INFO] Ethos-U version info:
-70 13389 [ML_TASK] [INFO] 	Arch:       v1.1.0
-71 13397 [ML_TASK] [INFO] 	Driver:     v0.16.0
-72 13405 [ML_TASK] [INFO] 	MACs/cc:    256
-73 13413 [ML_TASK] [INFO] 	Cmd stream: v0
+1 0 [None] FreeRTOS_AddEndPoint: MAC: 44-21 IPv4: c0a80069ip
+2 0 [IP-Task] vIPSetDHCP_RATimerEnableState: Off
+3 0 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
+4 23 [OTA Task] [INFO] OTA over MQTT, firmware versions:
+5 29 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.0
+6 35 [OTA Task] [INFO] Non-Secure Component (ID 1) version=0.0.20
+7 42 [ML_TASK] [INFO] ML Task start
+8 46 [DSP_TASK] [INFO] DSP Task start
+9 50 [BLINK_TASK ] [INFO] Blink task started
+10 1000 [IP-Task] DHCP-socket[44-21]: DHCP Socket Create
+11 1000 [IP-Task] prvCreateDHCPSocket[44-21]: open, user count 1
+12 1000 [IP-Task] vDHCP_RATimerReload: 250
+13 1250 [IP-Task] vDHCPProcess: offer ac143301ip for MAC address 44-21
+14 1257 [IP-Task] vDHCPProcess: offer ac143301ip for MAC address 44-21
+15 1257 [IP-Task] [INFO] Network is up
+16 1257 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
+17 1257 [IP-Task] vDHCP_RATimerReload: 6480000
+18 1281 [MQTT Agent Task] [INFO] Creating a TLS connection to <iot-core-endpoint>.amazonaws.com:8883.
+19 1293 [MQTT Agent Task] [INFO] Resolving host name: <iot-core-endpoint>.amazonaws.com.
+20 6304 [MQTT Agent Task] DNS_ReadReply returns -11
+21 6309 [MQTT Agent Task] prvIncreaseDNS4Index: from 0 to 0
+22 6317 [MQTT Agent Task] DNS[0xAFCC]: The answer to '<iot-core-endpoint>.amazonaws.com' (34.255.26.134) will be stored
+23 6330 [MQTT Agent Task] [INFO] Initiating TCP connection with host: <iot-core-endpoint>.amazonaws.com:8883
+24 6344 [MQTT Agent Task] FreeRTOS_connect: 55808 to 22ff1a86ip:8883
+25 6417 [MQTT Agent Task] [INFO] Initiating TLS handshake with host: <iot-core-endpoint>.amazonaws.com:8883
+26 8242 [MQTT Agent Task] [INFO] Successfully created a TLS connection to <iot-core-endpoint>.amazonaws.com:8883.
+27 8256 [MQTT Agent Task] [INFO] Creating an MQTT connection to the broker.
+28 8444 [MQTT Agent Task] [INFO] Successfully connected to the MQTT broker.
+29 8452 [MQTT Agent Task] [INFO] Session present: 0
+30 8458 [MQTT Agent Task] [INFO] Starting a clean MQTT Session.
+31 8464 [OTA Agent Task] [INFO] Requesting job document.
+32 8472 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/<mqtt-client-identifier>/jobs/start-next to broker.
+33 8624 [MQTT Agent Task] [INFO] Received job message callback, size 1080.
+34 8634 [OTA Agent Task] [INFO] Extracted parameter: [jobid: AFR_OTA-ota-test-update-id-ca10de26-7243-4061-bba3-c4e850c328eb]
+35 8647 [OTA Agent Task] [INFO] Extracted parameter: [streamname: AFR_OTA-1f553cde-b6fa-4882-8c27-b4212683a29e]
+36 8659 [OTA Agent Task] [INFO] Extracted parameter: [filepath: non_secure image]
+37 8668 [OTA Agent Task] [INFO] Extracted parameter: [filesize: 592447]
+38 8675 [OTA Agent Task] [INFO] Extracted parameter: [fileid: 0]
+39 8682 [OTA Agent Task] [INFO] Extracted parameter: [certfile: 0]
+40 8689 [OTA Agent Task] [INFO] Extracted parameter: [sig-sha256-rsa: XmTvGHbk5N6UqdU1a0ZxOyxWP...]
+41 8750 [OTA Agent Task] [INFO] Application version of the new image is not higher than the current image: New images are expected to have a higher version number.
+42 9384 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/<mqtt-client-identifier>/jobs/AFR_OTA-ota-test-update-id-ca10de26-7243-4061-bba3-c4e850c328eb/update to broker.
+43 9407 [OTA Agent Task] [INFO] No OTA job available.
+44 9413 [OTA Agent Task] [INFO] Signal task inference start
+45 9419 [OTA Agent Task] [INFO] DSP task start
+46 9425 [ML_TASK] [INFO] Initial start of audio processing
+INFO -2 [DSP_TASK] [INFO] Initial start of aud47 9432 [DSP_TASK] [INFO] Initial start of audio processing
+INFO - E[DSP_TASK] [INFO] Init spe48 9443 [DSP_TASK] [INFO] Init speex
+INFO - Ethos-U version info:
+INFO - 	Arch:       v1.1.0
+INFO - 	Driver:     v0.16.0
+INFO - 	MACs/cc:    256
+INFO - 	Cmd stream: v0
+49 9466 [ML_TASK] [INFO] Ethos-U55 device initialised
+50 9472 [ML_TASK] [INFO] Ethos-U version info:
+51 9478 [ML_TASK] [INFO] 	Arch:       v1.1.0
+52 9483 [ML_TASK] [INFO] 	Driver:     v0.16.0
+53 9488 [ML_TASK] [INFO] 	MACs/cc:    256
+54 9493 [ML_TASK] [INFO] 	Cmd stream: v0
 INFO - Added ethos-u support to op resolver
-INFO - Creating allocask] [INFO] Setting OTA data interface74 13443 [OTA Agent Task] [INFO] Setting OTA data interface.
-INFO - A [OTA Agent Task] 75 13458 [OTA Agent Task] [INFO] Signal task inference start
-INFO - 1 [OTA Agent Task] [IN76 13471 [OTA Agent Task] [INFO] DSP task start
-INFO - 	 [OTA Agent Task] [W77 13482 [OTA Agent Task] [WARN] Index: 5. OTA event id: 4
+INFO - Creating allocator using tensor arena at 0x602633b0
+INFO - Allocating tensors
+INFO - Model INPUT tensors:
+INFO - 	tensor type is INT8
 INFO - 	tensor occupies 11544 bytes with dimensions
 INFO - 		0:   1
 INFO - 		1: 296
@@ -179,28 +172,24 @@ INFO - ZeroPoint[0] = 5
 INFO - Activation buffer (a.k.a tensor arena) size used: 436092
 INFO - Number of operators: 1
 INFO - 	Operator 0: ethos-u
-78 13628 [ML_TASK] [INFO] *** ML interface initialised
-79 14072 [OTA Agent Task] [INFO] Subscribed to topic $aws/things/<mqtt-client-identifier>/streams/AFR_OTA-c35caad0-f43b-4043-a7ca-5c60e27616d0/data/cbor.
-80 14099 [OTA Agent Task] [WARN] Index: 7. OTA event id: 5
-81 14240 [DSP_TASK] [INFO] ML Processing
-82 14246 [ML_TASK] [INFO] Inference 1/2
-83 14309 [ML_TASK] [INFO] Start running inference on an audio clip in local memory
-[warning ][main@0][3706 ns] TA0 is not enabled!
-[warning ][main@0][3706 ns] TA1 is not enabled!
-84 14342 [ML_TASK] [INFO] Inference done
-85 14490 [DSP_TASK] [INFO] ML Processing
-86 14648 [ML_TASK] [INFO] Inference 2/2
-87 14768 [ML_TASK] [INFO] Start running inference on an audio clip in local memory
-88 14801 [ML_TASK] [INFO] Inference done
-89 14807 [ML_TASK] [INFO] Final results:
-90 14814 [ML_TASK] [INFO] Total number of inferences: 2
-91 14822 [MQTT Agent Task] [INFO] Publishing message to $aws/things/<mqtt-client-identifier>/streams/AFR_OTA-c35caad0-f43b-4043-a7ca-5c60e27616d0/get/cbor.
-92 14848 [ML_TASK] [INFO] For timestamp: 0.100000 (inference #: 0); label: turn down the temperature in the bedroo
-93 14865 [ML_TASK] [INFO] For timestamp: 0.100000 (inference #: 1); label: om
-94 14877 [ML_TASK] [INFO] Complete recognition: turn down the temperature in the bedroom
-95 14890 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/<mqtt-client-identifier>/streams/AFR_OTA-c35caad0-f43b-4043-a7ca-5c60e27616d0/get/cbor to broker.
-96 14919 [ML_MQTT] [INFO] Attempting to publish (turn down the temperature in the bedroom) to the MQTT topic <mqtt-client-identifier>/ml/inference.
-97 14953 [DSP_TASK] [INFO] ML Processing
+55 9582 [ML_TASK] [INFO] *** ML interface initialised
+56 10138 [DSP_TASK] [INFO] ML Processing
+57 10143 [ML_TASK] [INFO] Inference 1/2
+58 10201 [ML_TASK] [INFO] Start running inference on an audio clip in local memory
+[warning ][main@0][4655 ns] TA0 is not enabled!
+[warning ][main@0][4655 ns] TA1 is not enabled!
+59 10226 [ML_TASK] [INFO] Inference done
+60 10383 [DSP_TASK] [INFO] ML Processing
+61 10530 [ML_TASK] [INFO] Inference 2/2
+62 10643 [ML_TASK] [INFO] Start running inference on an audio clip in local memory
+63 10669 [ML_TASK] [INFO] Inference done
+64 10674 [ML_TASK] [INFO] Final results:
+65 10679 [ML_TASK] [INFO] Total number of inferences: 2
+66 10685 [ML_TASK] [INFO] For timestamp: 0.100000 (inference #: 0); label: turn down the temperature in the bedroo
+67 10698 [ML_TASK] [INFO] For timestamp: 0.100000 (inference #: 1); label: om
+68 10707 [ML_TASK] [INFO] Complete recognition: turn down the temperature in the bedroom
+69 10718 [ML_MQTT] [INFO] Attempting to publish (turn down the temperature in the bedroom) to the MQTT topic <mqtt-client-identifier>/ml/inference.
+70 10762 [DSP_TASK] [INFO] ML Processing
 ```
 
 ## Observing MQTT connectivity
@@ -218,6 +207,7 @@ Follow the instructions described in the [Firmware update with AWS](./aws_iot/aw
 [INF] Beginning provisioning
 [INF] Waiting for provisioning bundle
 [INF] Running provisioning bundle
+[INF] PSA Crypto init done, sig_type: EC-P256, using builtin keys
 [INF] Primary image: magic=good, swap_type=0x1, copy_done=0x3, image_ok=0x1
 [INF] Scratch: magic=bad, swap_type=0x1, copy_done=0x2, image_ok=0x2
 [INF] Boot source: primary slot
@@ -227,85 +217,107 @@ Follow the instructions described in the [Firmware update with AWS](./aws_iot/aw
 [INF] Boot source: primary slot
 [INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
+[INF] Image version: v2.2.0
 [INF] Jumping to the first image slot
-[1;34m[Sec Thread] Secure image initializing![0m
-<NUL>[1;34mBooting TF-M v2.1.1[0m
+[1;34mBooting TF-M v2.2.0+gdd2b7de[0m
+<NUL>[1;34m[Sec Thread] Secure image initializing![0m
+<NUL>TF-M Float ABI: Hard
+<NUL>Lazy stacking enabled
 <NUL>Creating an empty ITS flash layout.
 Creating an empty PS flash layout.
-[INF][Crypto] Provisioning entropy seed... [0;32mcomplete.[0m
+[INF][PS] Encryption alg: 0x5500200
+[INF][Crypto] Provision entropy seed...
+[INF][Crypto] Provision entropy seed... [0;32mcomplete[0m.
 0 0 [None] [INFO] PSA Framework version is: 257
 1 0 [None] Write certificate...
 2 0 [None] [INFO] Device key provisioning succeeded
 3 0 [None] [INFO] OTA signing key provisioning succeeded
 4 0 [None] FreeRTOS_AddEndPoint: MAC: 44-21 IPv4: c0a80069ip
-5 34 [OTA Task ] [INFO] OTA over MQTT, Application version from appFirmwareVersion 0.0.10
-6 47 [DSP_TASK] [INFO] DSP start
-7 52 [BLINK_TASK ] [INFO] Blink task started
-8 1000 [IP-Task] DHCP-socket[44-21]: DHCP Socket Create
-9 1000 [IP-Task] prvCreateDHCPSocket[44-21]: open, user count 1
-10 1000 [IP-Task] vDHCP_RATimerReload: 250
-11 1250 [IP-Task] vDHCPProcess: offer ac143301ip for MAC address 44-21
-12 1260 [IP-Task] vDHCPProcess: offer ac143301ip for MAC address 44-21
-13 1260 [IP-Task] [INFO] Network is up
-14 1260 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
-15 1260 [IP-Task] vDHCP_RATimerReload: 8640000
-16 1291 [MQTT Agent Task] [INFO] Creating a TLS connection to <iot-core-endpoint>.amazonaws.com:8883.
-17 1307 [MQTT Agent Task] [INFO] Resolving host name: <iot-core-endpoint>.amazonaws.com.
-18 1322 [IP-Task] ipARP_REPLY from ac1433feip to ac143301ip end-point ac143301ip
-19 6333 [MQTT Agent Task] DNS_ReadReply returns -11
-20 6340 [MQTT Agent Task] prvIncreaseDNS4Index: from 0 to 0
-21 6356 [MQTT Agent Task] DNS[0x5946]: The answer to '<iot-core-endpoint>.amazonaws.com' (52.208.184.196) will be stored
-22 6375 [MQTT Agent Task] [INFO] Initiating TCP connection with host: <iot-core-endpoint>.amazonaws.com:8883
-23 6392 [MQTT Agent Task] FreeRTOS_connect: 45227 to 34d0b8c4ip:8883
-24 6505 [MQTT Agent Task] [INFO] Initiating TLS handshake with host: <iot-core-endpoint>.amazonaws.com:8883
-25 8791 [MQTT Agent Task] [INFO] Successfully created a TLS connection to <iot-core-endpoint>.amazonaws.com:8883.
-26 8808 [MQTT Agent Task] [INFO] Creating an MQTT connection to the broker.
+5 0 [IP-Task] vIPSetDHCP_RATimerEnableState: Off
+6 0 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
+7 38 [OTA Task] [INFO] OTA over MQTT, firmware versions:
+8 44 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.0
+9 50 [OTA Task] [INFO] Non-Secure Component (ID 1) version=0.0.10
+10 57 [ML_TASK] [INFO] ML Task start
+11 61 [DSP_TASK] [INFO] DSP Task start
+12 66 [BLINK_TASK ] [INFO] Blink task started
+13 1000 [IP-Task] DHCP-socket[44-21]: DHCP Socket Create
+14 1000 [IP-Task] prvCreateDHCPSocket[44-21]: open, user count 1
+15 1000 [IP-Task] vDHCP_RATimerReload: 250
+16 1250 [IP-Task] vDHCPProcess: offer ac143301ip for MAC address 44-21
+17 1257 [IP-Task] vDHCPProcess: offer ac143301ip for MAC address 44-21
+18 1257 [IP-Task] [INFO] Network is up
+19 1257 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
+20 1257 [IP-Task] vDHCP_RATimerReload: 6480000
+21 1281 [MQTT Agent Task] [INFO] Creating a TLS connection to <iot-core-endpoint>.amazonaws.com:8883.
+22 1293 [MQTT Agent Task] [INFO] Resolving host name: <iot-core-endpoint>.amazonaws.com.
+23 6304 [MQTT Agent Task] DNS_ReadReply returns -11
+24 6309 [MQTT Agent Task] prvIncreaseDNS4Index: from 0 to 0
+25 6317 [MQTT Agent Task] DNS[0xBDBD]: The answer to '<iot-core-endpoint>.amazonaws.com' (54.77.52.39) will be stored
+26 6330 [MQTT Agent Task] [INFO] Initiating TCP connection with host: <iot-core-endpoint>.amazonaws.com:8883
+27 6344 [MQTT Agent Task] FreeRTOS_connect: 13805 to 364d3427ip:8883
+28 6413 [MQTT Agent Task] [INFO] Initiating TLS handshake with host: <iot-core-endpoint>.amazonaws.com:8883
+29 8035 [MQTT Agent Task] [INFO] Successfully created a TLS connection to <iot-core-endpoint>.amazonaws.com:8883.
+30 8049 [MQTT Agent Task] [INFO] Creating an MQTT connection to the broker.
 
 ...
 
-49 13121 [MQTT Agent Task] [INFO] De-serialized incoming PUBLISH packet: DeserializerResult=MQTTSuccess.
-50 13135 [MQTT Agent Task] [INFO] State record updated. New state=MQTTPublishDone.
-51 13147 [MQTT Agent Task] [INFO] Received job message callback, size 1016.
-52 13157 [OTA Agent Task] [WARN] Index: 3. OTA event id: 3
-53 13166 [OTA Agent Task] [INFO] Extracted parameter: [key: value]=[execution.jobId: AFR_OTA-ota-test-update-id-6c887a31-0f18-42b0-977c-aae255199d36]
-54 13189 [OTA Agent Task] [INFO] Extracted parameter: [key: value]=[execution.jobDocument.afr_ota.streamname: AFR_OTA-c35caad0-f43b-4043-a7ca-5c60e27616d0]
-55 13211 [OTA Agent Task] [INFO] Extracted parameter: [key: value]=[execution.jobDocument.afr_ota.protocols: ["MQTT"]]
-56 13228 [OTA Agent Task] [INFO] Extracted parameter: [key: value]=[filepath: non_secure image]
-57 13242 [OTA Agent Task] [INFO] Extracted parameter: [key: value]=[filesize: 3081945]
-58 13254 [OTA Agent Task] [INFO] Extracted parameter: [key: value]=[fileid: 0]
-59 13265 [OTA Agent Task] [INFO] Extracted parameter: [key: value]=[certfile: 0]
-60 13277 [OTA Agent Task] [INFO] Extracted parameter [ sig-sha256-rsa: ORLHoYQfNvBa0Z+xLLi2IDSwTdmPRHNQ... ]
-61 13293 [OTA Agent Task] [INFO] Job document was accepted. Attempting to begin the update.
+36 8436 [MQTT Agent Task] [INFO] Received job message callback, size 1046.
+37 8447 [OTA Agent Task] [INFO] Extracted parameter: [jobid: AFR_OTA-ota-test-update-id-ca10de26-7243-4061-bba3-c4e850c328eb]
+38 8460 [OTA Agent Task] [INFO] Extracted parameter: [streamname: AFR_OTA-1f553cde-b6fa-4882-8c27-b4212683a29e]
+39 8472 [OTA Agent Task] [INFO] Extracted parameter: [filepath: non_secure image]
+40 8481 [OTA Agent Task] [INFO] Extracted parameter: [filesize: 592447]
+41 8488 [OTA Agent Task] [INFO] Extracted parameter: [fileid: 0]
+42 8495 [OTA Agent Task] [INFO] Extracted parameter: [certfile: 0]
+43 8502 [OTA Agent Task] [INFO] Extracted parameter: [sig-sha256-rsa: XmTvGHbk5N6UqdU1a0ZxOyxWP...]
+44 9398 [OTA Agent Task] [INFO] Subscribed to topic $aws/things/<mqtt-client-identifier>/streams/AFR_OTA-1f553cde-b6fa-4882-8c27-b4212683a29e/data/json.
+45 9444 [OTA Agent Task] [INFO] Received OTA job document.
+46 9450 [OTA Agent Task] [INFO] Signal task inference stop
+47 9456 [OTA Agent Task] [INFO] DSP task stop
+48 9461 [OTA Agent Task] [INFO] Requesting file block.
+49 9467 [OTA Agent Task] [INFO] Starting the download.
 
 ...
 
-8740 1522485 [MQTT Agent Task] [INFO] Received incoming publish message Task 0 publishing message 255
-8742 1522520 [OTA Agent Task] [WARN] Index: 9. OTA event id: 6
-8744 1522554 [OTA Agent Task] [INFO] Received final block of the update.
-8745 1524214 [OTA Agent Task] [INFO] Received entire update and validated the signature.
+766 217715 [MQTT Agent Task] [INFO] Received data message callback, size 5495.
+767 217723 [OTA Agent Task] [INFO] Received file block.
+768 217731 [OTA Agent Task] [INFO] Downloaded block 143 of 145.
+769 217738 [OTA Agent Task] [INFO] Requesting file block.
+770 218475 [OTA Agent Task] [INFO] Sent PUBLISH packet to broker $aws/things/<mqtt-client-identifier>/streams/AFR_OTA-1f553cde-b6fa-4882-8c27-b4212683a29e/get/json to broker.
+771 218853 [MQTT Agent Task] [INFO] Received data message callback, size 3531.
+772 218861 [OTA Agent Task] [INFO] Received file block.
+773 218868 [OTA Agent Task] [INFO] Downloaded block 144 of 145.
+774 218875 [OTA Agent Task] [INFO] Closing file.
+775 219155 [OTA Agent Task] [INFO] Attempting to activate image.
 
 ...
 
-8752 1525595 [OTA Agent Task] [INFO] Received OtaJobEventActivate callback from OTA Agent.
 [INF] Starting bootloader
+[INF] PSA Crypto init done, sig_type: EC-P256, using builtin keys
 [INF] Primary image: magic=good, swap_type=0x1, copy_done=0x3, image_ok=0x1
 [INF] Scratch: magic=bad, swap_type=0x1, copy_done=0x2, image_ok=0x2
 [INF] Boot source: primary slot
 [INF] Image index: 1, Swap type: test
 [INF] Starting swap using scratch algorithm.
 [INF] Primary image: magic=good, swap_type=0x1, copy_done=0x3, image_ok=0x1
-[INF] Scratch: magic=bad, swap_type=0x1, copy_done=0x2, image_ok=0x2
+[INF] Scratch: magic=unset, swap_type=0x1, copy_done=0x3, image_ok=0x3
 [INF] Boot source: primary slot
 [INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
+[INF] Image version: v2.2.0
 [INF] Jumping to the first image slot
-[1;34m[Sec Thread] Secure image initializing![0m
-<NUL>[1;34mBooting TF-M v2.1.1[0m
-<NUL>[INF][Crypto] Provisioning entropy seed... [0;32mcomplete.[0m
+[1;34mBooting TF-M v2.2.0+gdd2b7de[0m
+<NUL>[1;34m[Sec Thread] Secure image initializing![0m
+<NUL>TF-M Float ABI: Hard
+<NUL>Lazy stacking enabled
+<NUL>[INF][PS] Encryption alg: 0x5500200
+[INF][Crypto] Provision entropy seed...
+[INF][Crypto] Provision entropy seed... [0;32mcomplete[0m.
 0 0 [None] [INFO] PSA Framework version is: 257
-1 0 [None] Write certificate...
-2 0 [None] [INFO] Device key provisioning succeeded
-3 0 [None] [INFO] OTA signing key provisioning succeeded
-4 0 [None] FreeRTOS_AddEndPoint: MAC: 44-21 IPv4: c0a80069ip
-5 34 [OTA Task ] [INFO] OTA over MQTT, Application version from appFirmwareVersion 0.0.20
+1 0 [None] FreeRTOS_AddEndPoint: MAC: 44-21 IPv4: c0a80069ip
+2 0 [IP-Task] vIPSetDHCP_RATimerEnableState: Off
+3 0 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
+4 23 [OTA Task] [INFO] OTA over MQTT, firmware versions:
+5 29 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.0
+6 35 [OTA Task] [INFO] Non-Secure Component (ID 1) version=0.0.20
 ```
