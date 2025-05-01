@@ -45,6 +45,7 @@ Cqqpk
 CSRS
 ctest
 Customisation
+CYBW
 DACTIVATION
 DARM
 DCMAKE
@@ -165,6 +166,8 @@ nents
 NIOS
 NSPE
 NVIC
+Nyhq
+obec
 ohmyzsh
 Onoa
 OPTIM
@@ -258,6 +261,7 @@ Werror
 WGHT
 wght
 WLATENCY
+WZYKHR
 Xcycu
 xtea
 Xwzpc

@@ -1,7 +1,7 @@
 /*
  * FreeRTOS Kernel V10.4.1
  * Copyright (C) 2017 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- * Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -34,6 +34,12 @@
 /* #include "RTOS_config.h" */
 
 #include "app_config.h"
+
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    extern "C" {
+#endif
+/* *INDENT-ON* */
 
 #ifndef   __USED
     #define __USED    __attribute__( ( used ) )
@@ -233,5 +239,11 @@ void vLoggingPrintf( const char * pcFormat,
 #define configNET_MASK3               0
 
 #define democonfigNETWORK_TYPES       ( AWSIOT_NETWORK_TYPE_ETH )
+
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    }
+#endif
+/* *INDENT-ON* */
 
 #endif /* FREERTOS_CONFIG_H */

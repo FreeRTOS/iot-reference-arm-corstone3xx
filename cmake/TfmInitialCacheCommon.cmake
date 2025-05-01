@@ -8,7 +8,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/../tools/cmake/ApplyPatches.cmake)
 
 set(PATCH_FILES_DIRECTORY "${CMAKE_SOURCE_DIR}/../integration/patches")
 set(PATCH_FILES
-    "${PATCH_FILES_DIRECTORY}/0004-build-Enable-armclang-MVE.patch"
+    "${PATCH_FILES_DIRECTORY}/0004-mps4-Provision-dummy-ROTPK-key.patch"
 )
 # These patches are only applied in case of building keyword_detection application with GNU toolchain
 # as it is currently the only application that utilises the ML Model component OTA update feature
@@ -103,6 +103,8 @@ set(TFM_PARTITION_INTERNAL_TRUSTED_STORAGE ON CACHE BOOL "TFM_PARTITION_INTERNAL
 set(TFM_PARTITION_PLATFORM ON CACHE BOOL "TFM_PARTITION_PROTECTED_STORAGE" FORCE)
 set(TFM_PARTITION_PROTECTED_STORAGE ON CACHE BOOL "TFM_PARTITION_PROTECTED_STORAGE" FORCE)
 set(TFM_SPM_LOG_LEVEL TFM_SPM_LOG_LEVEL_INFO CACHE STRING "TFM_SPM_LOG_LEVEL" FORCE)
+set(TFM_BL1_2_CM_SIGNING_ALG LMS CACHE STRING "TFM_BL1_2_CM_SIGNING_ALG" FORCE)
+set(TFM_BL1_2_DM_SIGNING_ALG LMS CACHE STRING "TFM_BL1_2_DM_SIGNING_ALG" FORCE)
 
 # TF-M can be built with a different toolchain, but the toolchain that
 # builds the IoT SDK is guaranteed to be available in the environment.

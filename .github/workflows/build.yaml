@@ -44,9 +44,9 @@ jobs:
       - name: Install build dependencies
         shell: bash
         run: |
-          pip install cmake ninja imgtool cffi intelhex cbor2 cbor jinja2 PyYaml pyelftools pyhsslms
+          pip install cmake ninja imgtool cffi intelhex cbor2 cbor jinja2 PyYaml pyelftools pyhsslms clang==14.0 rich
           sudo apt-get -y update
-          sudo apt-get -y install srecord libsndfile1-dev
+          sudo apt-get -y install srecord libsndfile1-dev libclang-14-dev
       - name: Install GNU Arm toolchain
         shell: bash
         run: |
@@ -67,6 +67,10 @@ jobs:
           git config --global user.email "ci@example.com"
           git config --global user.name "ci"
           git config --global core.autocrlf input
+      - name: Set up LD_LIBRARY_PATH
+        shell: bash
+        run: |
+          echo "LD_LIBRARY_PATH=/usr/lib/llvm-14/lib:\$LD_LIBRARY_PATH" >> $GITHUB_ENV
       - name: Build ${{ matrix.application }} application
         shell: bash
         run: |

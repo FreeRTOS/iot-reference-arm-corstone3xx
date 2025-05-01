@@ -1,4 +1,4 @@
-# Copyright 2024 Arm Limited and/or its affiliates
+# Copyright 2024-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -26,6 +26,7 @@ RUN apt-get update && \
     gdb \
     lcov \
     libbz2-dev \
+    libclang-14-dev \
     libffi-dev \
     libgdbm-dev \
     libgdbm-compat-dev \
@@ -74,6 +75,7 @@ RUN pip3 install \
     cbor \
     cbor2 \
     cffi \
+    clang==14.0 \
     cmake \
     imgtool \
     intelhex \
@@ -83,9 +85,18 @@ RUN pip3 install \
     pyelftools \
     pyhsslms \
     PyYaml \
+    rich \
     setuptools \
     towncrier \
     wheel
+
+# This is needed to define where the libclang shared object is located
+ENV LD_LIBRARY_PATH="/usr/lib/llvm-14/lib:${LD_LIBRARY_PATH}"
+
+# This is needed for the GDB debugger to work
+RUN sudo add-apt-repository -y ppa:deadsnakes/ppa && \
+    sudo apt-get update && \
+    sudo apt-get -y install python3.8 libpython3.8 libpython3.8-dev
 
 # Create the user
 RUN groupadd --gid $USER_GID $USERNAME \

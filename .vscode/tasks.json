@@ -1,4 +1,4 @@
-// Copyright 2021-2024 Arm Limited and/or its affiliates
+// Copyright 2021-2025 Arm Limited and/or its affiliates
 // <open-source-office@arm.com>
 // SPDX-License-Identifier: MIT
 
@@ -40,7 +40,7 @@
                 "${input:FRITarget}",
                 "${input:FRICameraFramesPath}",
                 "${input:FRIBuildDirectory}",
-                "${input:FRIDisplay}"
+                "${input:FRIHdLcdGui}"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -65,7 +65,7 @@
                 "${input:FRIBuildDirectory}",
                 "${input:FRICameraFramesPath}",
                 "${input:FRIGdbDebuggerPlugin}",
-                "${input:FRIDisplay}"
+                "${input:FRIHdLcdGui}"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -161,13 +161,13 @@
         },
         {
             "type": "pickString",
-            "id": "FRIDisplay",
-            "description": "Is display (GUI) available?",
+            "id": "FRIHdLcdGui",
+            "description": "Is HDLCD GUI available?",
             "options": [
-                "-Dtrue",
-                "-Dfalse"
+                "-Gtrue",
+                "-Gfalse"
             ],
-            "default": "-Dfalse"
+            "default": "-Gfalse"
         },
     ]
 }

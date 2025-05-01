@@ -38,27 +38,20 @@ To run the blinky example, run the following command:
 
 ```bash
 [INF] Starting bootloader
-[INF] Beginning BL2 provisioning
-[WRN] TFM_DUMMY_PROVISIONING is not suitable for production! This device is NOT SECURE
-[INF] Primary image: magic=good, swap_type=0x1, copy_done=0x3, image_ok=0x3
-[INF] Scratch: magic=bad, swap_type=0x1, copy_done=0x2, image_ok=0x2
-[INF] Boot source: primary slot
-[INF] Swap type: none
-[INF] Primary image: magic=good, swap_type=0x1, copy_done=0x3, image_ok=0x1
-[INF] Scratch: magic=bad, swap_type=0x1, copy_done=0x2, image_ok=0x2
-[INF] Boot source: primary slot
-[INF] Swap type: none
+[INF] Beginning provisioning
+[INF] Waiting for provisioning bundle
+[INF] Running provisioning bundle
+[INF] PSA Crypto init done, sig_type: EC-P256, using builtin keys
+[INF] Image index: 1, Swap type: none
+[INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
+[INF] Image version: v2.2.0
 [INF] Jumping to the first image slot
-[INF] Beginning TF-M provisioning
-<NUL>[WRN] <NUL>TFM_DUMMY_PROVISIONING is not suitable for production! <NUL>This device is NOT SECURE<NUL>
-<NUL>[Sec Thread] Secure image initializing!
-<NUL>Booting TF-M v1.8.0
-<NUL>Creating an empty ITS flash layout.
-Creating an empty PS flash layout.
-[INF][Crypto] Provisioning entropy seed... complete.
-[DBG][Crypto] Initialising mbed TLS 3.4.0 as PSA Crypto backend library... complete.
-psa_framework_version is: 257
+[1;34mBooting TF-M v2.2.0+gdd2b7de[0m
+<NUL>[1;34m[Sec Thread] Secure image initializing![0m
+<NUL>TF-M Float ABI: Hard
+<NUL>Lazy stacking enabled
+<NUL>psa_framework_version is: 257
 LED on
 LED off
 LED on
