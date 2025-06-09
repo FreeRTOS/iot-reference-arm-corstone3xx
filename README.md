@@ -125,7 +125,7 @@ for Armv8-M, Armv8.1-M architectures (e.g. the Cortex-M33, Cortex-M23,
 Cortex-M55, Cortex-M85 processors) and dual-core platforms. It is the platform
 security architecture reference implementation aligning with PSA Certified
 guidelines, enabling chips, Real Time Operating Systems and devices to become
-PSA Certified. Follow the [link](https://tf-m-user-guide.trustedfirmware.org/introduction/readme.html)
+PSA Certified. Follow the [link](https://trustedfirmware-m.readthedocs.io/en/latest/introduction/readme.html)
 for more information on Trusted Firmware M. To have a better overview of how Trusted Firmware M is integrated with the FRI project, you're kindly asked to check [Trusted Firmware M component document](docs/components/security/trusted_firmware-m/trusted_firmware-m.md)
 
 ### Mbed TLS
