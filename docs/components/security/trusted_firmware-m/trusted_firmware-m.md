@@ -143,7 +143,7 @@ For more details of how to use Trusted Firmware-M, see its [official documentati
 
 If you encounter any issues or have questions regarding the integration of Trusted Firmware M into your IoT project, feel free to reach out to the Arm support community or consult the official documentation for assistance.
 
-[Configuration]: https://tf-m-user-guide.trustedfirmware.org/configuration
-[official documentation]: https://tf-m-user-guide.trustedfirmware.org/
-[TF-M Platforms]: https://tf-m-user-guide.trustedfirmware.org/platform
+[Configuration]: https://trustedfirmware-m.readthedocs.io/en/latest/configuration/index.html
+[official documentation]: https://trustedfirmware-m.readthedocs.io/en/latest/index.html
+[TF-M Platforms]: https://trustedfirmware-m.readthedocs.io/en/latest/platform/index.html
 [Trusted Firmware-M]: https://www.trustedfirmware.org/projects/tf-m/
