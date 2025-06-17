@@ -33,6 +33,7 @@ cmos
 CMSDK
 cmsis
 CMSIS
+CMSISDSP
 CMSIS's
 COEF
 coef

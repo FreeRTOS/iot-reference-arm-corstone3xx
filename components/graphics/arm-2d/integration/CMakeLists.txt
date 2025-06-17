@@ -18,9 +18,12 @@ target_sources(arm-2d
         ${arm-2d_SOURCE_DIR}/Library/Source/arm_2d_alpha_blending.c
         ${arm-2d_SOURCE_DIR}/Library/Source/arm_2d_helium.c
 )
+target_compile_options(arm-2d PRIVATE $<$<STREQUAL:${CMAKE_C_COMPILER_ID},GNU>:-flax-vector-conversions>)
+target_compile_options(arm-2d PRIVATE $<$<STREQUAL:${CMAKE_C_COMPILER_ID},ARMClang>:-flax-vector-conversions=integer>)
 
 target_link_libraries(arm-2d
     PUBLIC
         arm_2d-config
-        cmsis-dsp
+        CMSISDSP
+        arm-corstone-platform-bsp
 )

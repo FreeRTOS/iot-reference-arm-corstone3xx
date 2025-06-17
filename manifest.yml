@@ -169,7 +169,7 @@ dependencies:
     license: "Apache-2.0"
     tpip-category: "category-2"
     security-risk: "low"
-    version: "ddb3ffdbcfc6f66dc3906e84158f235824536b4a"
+    version: "25.05"
     repository:
       type: "git"
       url: "https://git.gitlab.arm.com/artificial-intelligence/ethos-u/ml-embedded-evaluation-kit.git"
