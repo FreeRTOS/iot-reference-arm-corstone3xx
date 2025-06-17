@@ -34,7 +34,7 @@
 
     ```bash
     sudo apt install python3-pip -y
-    python3 -m pip install ninja imgtool cffi intelhex cbor2 jinja2 PyYaml pyelftools click pyhsslms cbor cmake setuptools wheel
+    python3 -m pip install ninja imgtool cffi intelhex cbor2 jinja2 PyYaml pyelftools click pyhsslms cbor cmake setuptools wheel clang==14.0 rich
     ```
 
     **NOTE**: The virtual environment can be deactivated when not needed anymore
@@ -46,8 +46,8 @@
 * Installing required libraries
 
     ```bash
-    sudo apt install srecord
-    sudo apt install binutils
+    sudo apt install srecord binutils libsndfile1-dev libclang-14-dev
+    echo LD_LIBRARY_PATH=\"/usr/lib/llvm-14/lib:\$LD_LIBRARY_PATH\" >> ~/.bashrc
     ```
 * Installing a toolchain
 
