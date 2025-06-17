@@ -1,4 +1,4 @@
-/* Copyright 2023-2024 Arm Limited and/or its affiliates
+/* Copyright 2023-2025 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  * SPDX-License-Identifier: MIT
  */
@@ -118,7 +118,7 @@ extern EventGroupHandle_t xSystemEvents;
 
 #else /* !defined(AUDIO_VSI) */
 
-    #include "InputFiles.hpp"
+    #include "sample_files.h"
 
 #endif // AUDIO_VSI
 
@@ -168,12 +168,20 @@ void vDspTask( void * pvParameters )
         const int16_t * audioBuf = shared_audio_buffer;
         auto audioSource = DspAudioSource( audioBuf, AUDIO_BLOCK_NUM );
     #else
-        const int16_t * audioBuf = GetAudioArray( 0 );
+        const int16_t * audioBuf = get_sample_data_ptr( 0 );
+        uint32_t ulSampleDataSize = get_sample_data_size( 0 );
+
+        if( ( audioBuf == NULL ) || ( ulSampleDataSize < ( AUDIO_BLOCK_SIZE / sizeof( uint16_t ) ) ) )
+        {
+            LogError( ( "No audio sample data available for inference.\r\n" ) );
+            return;
+        }
+
         /* This integer division for calculating the number of blocks means that, */
         /* any remainder data at the end of the audio clip that's smaller than a */
         /* block will not be accounted for. This will not have a major impact on */
         /* the inference result as a block is only a small fraction of a second. */
-        const size_t audioBlockNum = ( size_t ) GetAudioArraySize( 0 ) / ( AUDIO_BLOCK_SIZE / sizeof( uint16_t ) );
+        const size_t audioBlockNum = ( size_t ) ulSampleDataSize / ( AUDIO_BLOCK_SIZE / sizeof( uint16_t ) );
         auto audioSource = DspAudioSource( audioBuf, audioBlockNum );
     #endif /* ifdef AUDIO_VSI */
 

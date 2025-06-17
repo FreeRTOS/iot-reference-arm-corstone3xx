@@ -1,7 +1,7 @@
-From 1a047cff83badc2f6a95e3e78af735abef51ef8a Mon Sep 17 00:00:00 2001
+From 8ea782b063ffe69cbce26655af66382fe797378b Mon Sep 17 00:00:00 2001
 From: Ahmed Ismail <Ahmed.Ismail@arm.com>
-Date: Thu, 28 Nov 2024 16:14:38 +0000
-Subject: [PATCH 4/4] Override EthosU55 NPU default IRQ handler
+Date: Mon, 7 Jul 2025 12:43:51 +0100
+Subject: [PATCH] Override EthosU55 NPU default IRQ handler
 
 This change is done to avoid modifying the
 vector table by setting the Ethos U55 IRQ handler
@@ -24,7 +24,7 @@ Signed-off-by: Ahmed Ismail <Ahmed.Ismail@arm.com>
  2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/source/hal/source/components/npu/ethosu_npu_init.c b/source/hal/source/components/npu/ethosu_npu_init.c
-index 2cbdb1e..1c8b4f6 100644
+index 8b74e93..c17a443 100644
 --- a/source/hal/source/components/npu/ethosu_npu_init.c
 +++ b/source/hal/source/components/npu/ethosu_npu_init.c
 @@ -71,20 +71,20 @@ static void arm_ethosu_npu_irq_init(void)

@@ -1,4 +1,4 @@
-# Copyright 2021-2024 Arm Limited and/or its affiliates
+# Copyright 2021-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -8,8 +8,7 @@ include(ExternalProject)
 # Setup for the ML target #
 ###########################
 #set(LOG_LEVEL LOG_LEVEL_TRACE)
-
-set(CMSIS_VER                   5)
+set(CMSIS_VER                   6)
 
 # External repositories
 set(CMSIS_SRC_PATH              "${ml_embedded_evaluation_kit_SOURCE_DIR}/dependencies/cmsis-${CMSIS_VER}")
@@ -26,7 +25,7 @@ set(MLEK_RESOURCES_DIR       ${CMAKE_CURRENT_BINARY_DIR}/mlek_resources_download
 set(ML_RESOURCES_SET_UP_ARGS
     "--additional-ethos-u-config-name=${ETHOSU_TARGET_NPU_CONFIG}"
     "--use-case-resources-file=${ML_USE_CASE_RESOURCES_FILE}"
-    "--downloaded-model-resources-path=${MLEK_RESOURCES_DIR}"
+    "--downloads-dir=${MLEK_RESOURCES_DIR}"
 )
 
 # Tensorflow settings
@@ -77,7 +76,7 @@ function(assert_defined var_name)
     endif()
 endfunction()
 
-include(${CMAKE_SCRIPTS_DIR}/tensorflow_lite_micro.cmake)
+add_library(cmsis_device INTERFACE)
 
 # Manually add libs
 add_subdirectory(${ml_embedded_evaluation_kit_SOURCE_DIR}/source/log ${CMAKE_BINARY_DIR}/log)
@@ -91,13 +90,26 @@ add_subdirectory(${ml_embedded_evaluation_kit_SOURCE_DIR}/source/application/api
 if (ETHOS_U_NPU_ENABLED)
     add_subdirectory(${ml_embedded_evaluation_kit_SOURCE_DIR}/source/hal/source/components/npu ${CMAKE_BINARY_DIR}/npu)
     # ethos_u_npu library needs the CPU Header (CMSIS_device_header)
+    target_include_directories(ethos_u_npu PUBLIC ${ml_embedded_evaluation_kit_SOURCE_DIR}/source/hal/source/components/cmsis_device/include)
     target_link_libraries(ethos_u_npu PUBLIC arm-corstone-platform-bsp)
 endif()
 
+include(${CMAKE_SCRIPTS_DIR}/tensorflow_lite_micro.cmake)
+target_include_directories(tflu PRIVATE
+    ${TARGET_PLATFORM_PATH}/device/include
+    ${TARGET_PLATFORM_PATH}/partition
+)
+target_compile_definitions(tflu PRIVATE
+    CMSIS_DEVICE_ARM_CORTEX_M_XX_HEADER_FILE=CMSIS_device_header
+)
+target_compile_options(tflu PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-std=c++17>)
+target_link_libraries(tflu PRIVATE arm-corstone-platform-bsp)
+
+
 # Add the dependency on tensorflow_build (defined in tensorflow.cmake)
-add_dependencies(common_api tensorflow_build)
+add_dependencies(common_api tflu)
 target_include_directories(common_api PUBLIC ${TFLITE_MICRO_PATH})
-target_compile_options(common_api PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>)
+target_compile_options(common_api PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-std=c++17>)
 
 # Add relevant use case API
 add_subdirectory(${ml_embedded_evaluation_kit_SOURCE_DIR}/source/application/api/use_case/${ML_USE_CASE} ${CMAKE_BINARY_DIR}/${ML_USE_CASE}_api)

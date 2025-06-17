@@ -103,7 +103,7 @@ extern QueueHandle_t xMlMqttQueue;
 
 #else /* !defined(AUDIO_VSI) */
 
-    #include "InputFiles.hpp"
+    #include "sample_files.h"
 
 #endif /* AUDIO_VSI */
 
@@ -739,10 +739,18 @@ static void prvProcessAudio( ApplicationContext &ctx )
                                                          ctx.Get<arm::app::KwsClassifier &>( "classifier" ),
                                                          ctx.Get<std::vector<std::string> &>( "labels" ),
                                                          singleInfResult );
+            const int16_t * pusSampleDataPtr = get_sample_data_ptr( 0 );
+            uint32_t ulSampleDataSize = get_sample_data_size( 0 );
+
+            if( ( pusSampleDataPtr == NULL ) || ( ulSampleDataSize < preProcess.m_audioDataWindowSize ) )
+            {
+                LogError( ( "No audio sample data available for inference.\r\n" ) );
+                return;
+            }
 
             /* Creating a sliding window through the whole audio clip. */
             auto audioDataSlider = audio::SlidingWindow<const int16_t>(
-                GetAudioArray( 0 ), GetAudioArraySize( 0 ), preProcess.m_audioDataWindowSize, preProcess.m_audioDataStride );
+                pusSampleDataPtr, ulSampleDataSize, preProcess.m_audioDataWindowSize, preProcess.m_audioDataStride );
 
             /* Start sliding through audio clip. */
             while( audioDataSlider.HasNext() )

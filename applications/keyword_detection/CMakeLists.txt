@@ -94,18 +94,18 @@ target_include_directories(keyword-detection
 if(${AUDIO_SOURCE} STREQUAL "ROM")
     iot_reference_arm_corstone3xx_convert_audio_source_to_code(
         ${CMAKE_CURRENT_LIST_DIR}/resources
-        ${CMAKE_CURRENT_BINARY_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR}/generated/${ML_USE_CASE}
     )
 
     target_sources(keyword-detection
         PRIVATE
-            ${CMAKE_CURRENT_BINARY_DIR}/InputFiles.cc
-            ${CMAKE_CURRENT_BINARY_DIR}/test.cc
+            ${CMAKE_CURRENT_BINARY_DIR}/generated/${ML_USE_CASE}/sample_files.c
+            ${CMAKE_CURRENT_BINARY_DIR}/generated/${ML_USE_CASE}/test.c
     )
 
     target_include_directories(keyword-detection
         PRIVATE
-            ${CMAKE_CURRENT_BINARY_DIR}
+            ${CMAKE_CURRENT_BINARY_DIR}/generated/${ML_USE_CASE}
     )
 elseif(${AUDIO_SOURCE} STREQUAL "VSI")
     target_compile_definitions(keyword-detection
