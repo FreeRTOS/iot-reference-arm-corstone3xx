@@ -100,3 +100,20 @@ jobs:
         cmake -S . -B build_unit_test -GNinja -DOPT_ENABLE_COVERAGE=ON
         cmake --build build_unit_test
         ctest --test-dir build_unit_test --output-on-failure
+
+  dco-check:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+          with:
+            fetch-depth: 0
+        - name: Check commits for DCO
+          run: |
+            set -eo pipefail
+            git rev-list --no-merges origin/main..HEAD | while read -r rev; do
+              if ! git show "$rev" --pretty=format:%B --no-patch \
+                  | grep -qE '^Signed-off-by: [A-Za-z0-9 ._-]+ <[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}>[[:space:]]*$'; then
+                echo "Commit $rev has a missing or malformed 'Signed-off-by' footer." >&2
+                exit 1
+              fi
+            done
