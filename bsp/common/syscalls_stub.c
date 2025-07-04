@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
- * Based on: https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git/tree/platform/ext/common/syscalls_stub.c?id=9ca8a5eb3c85eecee1303dffa262800ea0385584
+ * Based on: https://git.trustedfirmware.org/plugins/gitiles/TF-M/trusted-firmware-m.git/+/9ca8a5eb3c85eecee1303dffa262800ea0385584/platform/ext/common/syscalls_stub.c
  *
  */
 
