@@ -873,8 +873,6 @@ black-duck:
     - if: ( $SCHEDULED_JOB_TO_RUN == "run-blackduck-scan" )
   script:
     - export PROJECTNAME="${BLACKDUCK_PROJECT_NAME}"
-    - apt update -y
-    - apt install default-jdk -y
     - echo "-------Starting Black Duck Scan-------"
     - bash <(curl -s -L ${BLACKDUCK_DETECT_SCRIPT})
       --blackduck.url="${BLACKDUCK_URL}"
