@@ -76,17 +76,24 @@ target_compile_options(mbedcrypto
     PRIVATE
         -Wno-error=switch-default
         -Wno-error=null-dereference
+        -Wno-error=redundant-decls
 )
 target_compile_options(mbedtls
     PRIVATE
         -Wno-error=switch-default
         -Wno-error=null-dereference
+        -Wno-error=redundant-decls
 )
 target_compile_options(mbedx509
     PRIVATE
         -Wno-error=null-dereference
+        -Wno-error=redundant-decls
 )
 target_compile_options(everest
+    PRIVATE
+        -Wno-error=redundant-decls
+)
+target_compile_options(p256m
     PRIVATE
         -Wno-error=redundant-decls
 )
