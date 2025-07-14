@@ -27,8 +27,9 @@ license:
   tags:
     - iotmsw-amd64
   script:
-    - scancode -l --ignore "**/*.tmp/**" --json-pp scancode_report.json $PWD/..
+    - scancode -lc --ignore "**/*.tmp/**" --json-pp scancode_report.json $PWD/..
     - jsonschema -i scancode_report.json $PWD/tools/ci/license/license.schema
+    - python3 ${PWD}/tools/scripts/copyright_date_check.py
   artifacts:
     paths:
       - scancode_report.json
