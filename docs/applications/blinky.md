@@ -45,9 +45,9 @@ To run the blinky example, run the following command:
 [INF] Image index: 1, Swap type: none
 [INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
-[INF] Image version: v2.2.0
+[INF] Image version: v2.2.1
 [INF] Jumping to the first image slot
-[1;34mBooting TF-M v2.2.0+gdd2b7de[0m
+[1;34mBooting TF-M v2.2.1+gdd2b7de[0m
 <NUL>[1;34m[Sec Thread] Secure image initializing![0m
 <NUL>TF-M Float ABI: Hard
 <NUL>Lazy stacking enabled

@@ -100,9 +100,9 @@ To run the Keyword-Detection example, run the following command:
 [INF] Boot source: primary slot
 [INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
-[INF] Image version: v2.2.0
+[INF] Image version: v2.2.1
 [INF] Jumping to the first image slot
-[1;34mBooting TF-M v2.2.0+gdd2b7de[0m
+[1;34mBooting TF-M v2.2.1+gdd2b7de[0m
 <NUL>[1;34m[Sec Thread] Secure image initializing![0m
 <NUL>TF-M Float ABI: Hard
 <NUL>Lazy stacking enabled
@@ -115,7 +115,7 @@ To run the Keyword-Detection example, run the following command:
 3 0 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
 4 23 [BLINK_TASK ] [INFO] Blink task started
 5 27 [OTA Task] [INFO] OTA over MQTT, firmware versions:
-6 33 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.0
+6 33 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.1
 7 40 [OTA Task] [INFO] Non-Secure Component (ID 1) version=0.0.20
 8 1000 [IP-Task] DHCP-socket[44-21]: DHCP Socket Create
 9 1000 [IP-Task] prvCreateDHCPSocket[44-21]: open, user count 1
@@ -233,9 +233,9 @@ Follow the instructions described in the [Firmware update with AWS](./aws_iot/aw
 [INF] Boot source: primary slot
 [INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
-[INF] Image version: v2.2.0
+[INF] Image version: v2.2.1
 [INF] Jumping to the first image slot
-[1;34mBooting TF-M v2.2.0+gdd2b7de[0m
+[1;34mBooting TF-M v2.2.1+gdd2b7de[0m
 <NUL>[1;34m[Sec Thread] Secure image initializing![0m
 <NUL>TF-M Float ABI: Hard
 <NUL>Lazy stacking enabled
@@ -253,7 +253,7 @@ Creating an empty PS flash layout.
 6 0 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
 7 38 [BLINK_TASK ] [INFO] Blink task started
 8 42 [OTA Task] [INFO] OTA over MQTT, firmware versions:
-9 48 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.0
+9 48 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.1
 10 55 [OTA Task] [INFO] Non-Secure Component (ID 1) version=0.0.10
 11 1000 [IP-Task] DHCP-socket[44-21]: DHCP Socket Create
 12 1000 [IP-Task] prvCreateDHCPSocket[44-21]: open, user count 1
@@ -317,9 +317,9 @@ Creating an empty PS flash layout.
 [INF] Boot source: primary slot
 [INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
-[INF] Image version: v2.2.0
+[INF] Image version: v2.2.1
 [INF] Jumping to the first image slot
-[1;34mBooting TF-M v2.2.0+gdd2b7de[0m
+[1;34mBooting TF-M v2.2.1+gdd2b7de[0m
 <NUL>[1;34m[Sec Thread] Secure image initializing![0m
 <NUL>TF-M Float ABI: Hard
 <NUL>Lazy stacking enabled
@@ -332,7 +332,7 @@ Creating an empty PS flash layout.
 3 0 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
 4 23 [BLINK_TASK ] [INFO] Blink task started
 5 27 [OTA Task] [INFO] OTA over MQTT, firmware versions:
-6 33 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.0
+6 33 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.1
 7 40 [OTA Task] [INFO] Non-Secure Component (ID 1) version=0.0.20
 ```
 

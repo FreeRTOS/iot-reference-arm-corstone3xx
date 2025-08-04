@@ -1,11 +1,11 @@
 Waiting for DM provisioning bundle
 Running DM provisioning bundle
-Secure Component (ID 0) version=2.2.0
+Secure Component (ID 0) version=2.2.1
 Non-Secure Component (ID 1) version=0.0.10
 Starting bootloader
-Booting TF-M v2.2.0
+Booting TF-M v2.2.1
 PSA Framework version is: 257
-Secure Component (ID 0) version=2.2.0
+Secure Component (ID 0) version=2.2.1
 Non-Secure Component (ID 1) version=0.0.20
 Init speex
 ML interface initialised

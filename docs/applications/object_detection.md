@@ -74,9 +74,9 @@ Check [Device Provisioning](./device_provisioning/device_provisioning.md) for de
 [INF] Boot source: primary slot
 [INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
-[INF] Image version: v2.2.0
+[INF] Image version: v2.2.1
 [INF] Jumping to the first image slot
-[1;34mBooting TF-M v2.2.0+gdd2b7de[0m
+[1;34mBooting TF-M v2.2.1+gdd2b7de[0m
 <NUL>[1;34m[Sec Thread] Secure image initializing![0m
 <NUL>TF-M Float ABI: Hard
 <NUL>Lazy stacking enabled
@@ -89,7 +89,7 @@ Check [Device Provisioning](./device_provisioning/device_provisioning.md) for de
 3 0 [IP-Task] vIPSetDHCP_RATimerEnableState: Off
 4 0 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
 5 27 [OTA Task] [INFO] OTA over MQTT, firmware versions:
-6 33 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.0
+6 33 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.1
 7 40 [OTA Task] [INFO] Non-Secure Component (ID 1) version=0.0.20
 8 47 [ML_TASK] [INFO] ML Task start
 9 51 [BLINK_TASK ] [INFO] Blink task started
@@ -353,9 +353,9 @@ Follow the instructions described in the [Firmware update with AWS](./aws_iot/aw
 [INF] Boot source: primary slot
 [INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
-[INF] Image version: v2.2.0
+[INF] Image version: v2.2.1
 [INF] Jumping to the first image slot
-[1;34mBooting TF-M v2.2.0+gdd2b7de[0m
+[1;34mBooting TF-M v2.2.1+gdd2b7de[0m
 <NUL>[1;34m[Sec Thread] Secure image initializing![0m
 <NUL>TF-M Float ABI: Hard
 <NUL>Lazy stacking enabled
@@ -373,7 +373,7 @@ Creating an empty PS flash layout.
 6 0 [IP-Task] vIPSetDHCP_RATimerEnableState: Off
 7 0 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
 8 43 [OTA Task] [INFO] OTA over MQTT, firmware versions:
-9 49 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.0
+9 49 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.1
 10 55 [OTA Task] [INFO] Non-Secure Component (ID 1) version=0.0.10
 11 62 [ML_TASK] [INFO] ML Task start
 12 66 [BLINK_TASK ] [INFO] Blink task started
@@ -473,9 +473,9 @@ Creating an empty PS flash layout.
 [INF] Boot source: primary slot
 [INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
-[INF] Image version: v2.2.0
+[INF] Image version: v2.2.1
 [INF] Jumping to the first image slot
-[1;34mBooting TF-M v2.2.0+gdd2b7de[0m
+[1;34mBooting TF-M v2.2.1+gdd2b7de[0m
 <NUL>[1;34m[Sec Thread] Secure image initializing![0m
 <NUL>TF-M Float ABI: Hard
 <NUL>Lazy stacking enabled
@@ -488,6 +488,6 @@ Creating an empty PS flash layout.
 3 0 [IP-Task] vIPSetDHCP_RATimerEnableState: Off
 4 0 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
 5 27 [OTA Task] [INFO] OTA over MQTT, firmware versions:
-6 33 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.0
+6 33 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.1
 7 40 [OTA Task] [INFO] Non-Secure Component (ID 1) version=0.0.20
 ```
