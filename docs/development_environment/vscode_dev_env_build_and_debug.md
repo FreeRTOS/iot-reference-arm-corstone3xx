@@ -106,8 +106,8 @@ download it from its [official page](https://developer.arm.com/Tools%20and%20Sof
 Login is required for the download, and you will need a license in order to
 run the toolchain once installed.
 >
-> This project has been tested with version *6.21* of the toolchain, which
-is available as `r6p21-00rel0` from the *Revision* drop-down menu on the
+> This project has been tested with version *6.24* of the toolchain, which
+is available as `r6p24-00rel0` from the *Revision* drop-down menu on the
 download page after logging in.
 
 * **Using generic vscode task:**
