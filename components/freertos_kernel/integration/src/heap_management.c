@@ -1,8 +1,9 @@
-/* Copyright 2024 Arm Limited and/or its affiliates
+/* Copyright 2024-2025 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  * SPDX-License-Identifier: MIT
  */
 
+#include "heap_management.h"
 #include <stdlib.h>
 
 void * pvPortMalloc( size_t xWantedSize )
@@ -21,11 +22,6 @@ void * pvPortCalloc( size_t xNum,
     return calloc( xNum, xSize );
 }
 
-/* These are dummy implementations as C standard library does not provide
- * functions to get the statistics of heap memory. These dummy implementation are needed
- * as these APIs are used as part of FreeRTOS Plus TCP code which is unused in the FRI code (removed by the linker)
- * but ARMClang linker requires all the compiled symbols to be defined.
- */
 size_t xPortGetFreeHeapSize( void )
 {
     return 0;

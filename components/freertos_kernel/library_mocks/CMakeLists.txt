@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Arm Limited and/or its affiliates
+# Copyright 2023-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -7,6 +7,7 @@ add_library(freertos-kernel-mock
     src/semphr.c
     src/tasks.c
     src/queue.c
+    src/alloc_fakes.c
 )
 
 target_include_directories(freertos-kernel-mock
