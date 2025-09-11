@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Arm Limited and/or its affiliates
+# Copyright 2023-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -29,6 +29,9 @@ else()
             $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone310>:${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone310/include>
             $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone315>:${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone315/include>
             $<$<STREQUAL:${ARM_CORSTONE_BSP_TARGET_PLATFORM},corstone320>:${IOT_REFERENCE_ARM_CORSTONE3XX_SOURCE_DIR}/bsp/corstone320/include>
+            ${CMAKE_CURRENT_LIST_DIR}/integration/inc
     )
     add_subdirectory(library)
 endif()
+
+add_subdirectory(integration)
