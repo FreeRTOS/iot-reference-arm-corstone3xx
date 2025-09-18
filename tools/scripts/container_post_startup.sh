@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2024 Arm Limited and/or its affiliates
+# Copyright 2024-2025 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -16,7 +16,7 @@ fi
 
 # Install the pre-commit hooks.
 rm -rf /tmp/build
-pip install . -t /tmp/build
+pip install tools/ci -t /tmp/build
 sudo cp /tmp/build/bin/banned-api-hook /usr/local/bin/banned-api-hook
 rm -rf iot_reference_arm_corstone3xx.egg-info
 pre-commit install
