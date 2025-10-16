@@ -141,11 +141,9 @@ user defines called out below.
 
 `clientcredentialMQTT_BROKER_ENDPOINT`
 
-* Set this to the Device data endpoint name of your amazon account.
-* To find this go to the navigation pane of the [AWS IoT console](https://console.aws.amazon.com/iotv2/),
-  choose **Settings** (bottom left hand corner).
-* On the **Settings** page, in the **Device data endpoint** section of the page
-  look for **Endpoint**.  (e.g. `a3xyzzyx-ats.iot.us-east-2.amazonaws.com`).
+* Set this to the **Domain name** (aka Device data endpoint name) of your amazon account.
+* To find this go to the navigation pane of the [AWS IoT console](https://console.aws.amazon.com/iotv2/), under the **Connect** section (top left hand corner) click on **Domain configurations**.
+* Look for **Domain name** (e.g. `a3xyzzyx-ats.iot.us-east-2.amazonaws.com`).
   * Note the region may be different than these instructions.  It should match
     where your thing and policy were created due to the MQTT Topic restrictions
     discussed above.
