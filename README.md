@@ -30,7 +30,7 @@ AI-capable SoCs faster.
 
 Arm's [Fixed Virtual Platform](https://www.arm.com/products/development-tools/simulation/fixed-virtual-platforms)
 is used to run the application artefacts.
-The [currently released version <11.24.22>](https://developer.arm.com/downloads/-/arm-ecosystem-fvps)
+The [currently released version <11.27.xx>](https://developer.arm.com/Tools%20and%20Software/Fixed%20Virtual%20Platforms/IoT%20FVPs)
 of FVP is supported by the FRI.
 
 * [Corstone-320](https://developer.arm.com/Processors/Corstone-320)

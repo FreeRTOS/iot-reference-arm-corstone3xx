@@ -165,7 +165,7 @@ RUN rm -rf /home/ubuntu/FVP_Corstone_SSE-300; \
     if [[ $(uname -m) == "aarch64" ]]; then \
         FVP_LINK="_armv8l"; \
     fi; \
-    wget -qO - https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Corstone-300/FVP_Corstone_SSE-300_11.24_13_Linux64${FVP_LINK}.tgz \
+    wget -qO - https://developer.arm.com/-/cdn-downloads/permalink/FVPs-Corstone-IoT/Corstone-300/FVP_Corstone_SSE-300_11.27_42_Linux64${FVP_LINK}.tgz \
     | tar -xz -C /tmp/arm-ecosystem-fvp; \
     cd /tmp/arm-ecosystem-fvp && ./FVP_Corstone_SSE-300.sh --i-agree-to-the-contained-eula --no-interactive -q; \
     rm -rf /tmp/arm-ecosystem-fvp
@@ -178,7 +178,7 @@ RUN rm -rf /home/ubuntu/FVP_Corstone_SSE-310; \
     if [[ $(uname -m) == "aarch64" ]]; then \
         FVP_LINK="_armv8l"; \
     fi; \
-    wget -qO - https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Corstone-310/FVP_Corstone_SSE-310_11.24_13_Linux64${FVP_LINK}.tgz \
+    wget -qO - https://developer.arm.com/-/cdn-downloads/permalink/FVPs-Corstone-IoT/Corstone-310/FVP_Corstone_SSE-310_11.27_42_Linux64${FVP_LINK}.tgz \
     | tar -xz -C /tmp/arm-ecosystem-fvp; \
     cd /tmp/arm-ecosystem-fvp && ./FVP_Corstone_SSE-310.sh --i-agree-to-the-contained-eula --no-interactive -q; \
     rm -rf /tmp/arm-ecosystem-fvp
@@ -191,7 +191,7 @@ RUN rm -rf /home/ubuntu/FVP_Corstone_SSE-315; \
     if [[ $(uname -m) == "aarch64" ]]; then \
         FVP_LINK="_armv8l"; \
     fi; \
-    wget -qO - https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Corstone-315/FVP_Corstone_SSE-315_11.24_22_Linux64${FVP_LINK}.tgz \
+    wget -qO - https://developer.arm.com/-/cdn-downloads/permalink/FVPs-Corstone-IoT/Corstone-315/FVP_Corstone_SSE-315_11.27_42_Linux64${FVP_LINK}.tgz \
     | tar -xz -C /tmp/arm-ecosystem-fvp; \
     cd /tmp/arm-ecosystem-fvp && ./FVP_Corstone_SSE-315.sh --i-agree-to-the-contained-eula --no-interactive -q; \
     rm -rf /tmp/arm-ecosystem-fvp
@@ -204,7 +204,7 @@ RUN rm -rf /home/ubuntu/FVP_Corstone_SSE-320; \
     if [[ $(uname -m) == "aarch64" ]]; then \
         FVP_LINK="_armv8l"; \
     fi; \
-    wget -qO - https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Corstone-320/FVP_Corstone_SSE-320_11.27_25_Linux64${FVP_LINK}.tgz \
+    wget -qO - https://developer.arm.com/-/cdn-downloads/permalink/FVPs-Corstone-IoT/Corstone-320/FVP_Corstone_SSE-320_11.27_25_Linux64${FVP_LINK}.tgz \
     | tar -xz -C /tmp/arm-ecosystem-fvp; \
     cd /tmp/arm-ecosystem-fvp && ./FVP_Corstone_SSE-320.sh --i-agree-to-the-contained-eula --no-interactive -q; \
     rm -rf /tmp/arm-ecosystem-fvp
