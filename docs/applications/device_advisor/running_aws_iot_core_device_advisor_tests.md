@@ -107,6 +107,12 @@ Save and close the file.
 
 ## Building the application
 
+> ⚠️ **If you’ve built a different application, run the following commands before proceeding**
+```bash
+git submodule deinit --all -f
+git submodule update --init --recursive
+```
+
 To build the application, run the following command:
 
 ```bash

@@ -44,6 +44,12 @@ Follow the instructions described in [Setting Up AWS Connectivity](./aws_iot/set
 
 ## Building the application
 
+> ⚠️ **If you’ve built a different application, run the following commands before proceeding**
+```bash
+git submodule deinit --all -f
+git submodule update --init --recursive
+```
+
 To build the Keyword-Detection example, run the following command:
 
 ```bash

@@ -17,6 +17,12 @@ setup correctly before proceeding.
 
 ## Building the application
 
+> ⚠️ **If you’ve built a different application, run the following commands before proceeding**
+```bash
+git submodule deinit --all -f
+git submodule update --init --recursive
+```
+
 To build the blinky example, run the following command:
 ```bash
 ./tools/scripts/build.sh blinky --target <corstone300/corstone310/corstone315/corstone320> --toolchain <ARMCLANG/GNU>
