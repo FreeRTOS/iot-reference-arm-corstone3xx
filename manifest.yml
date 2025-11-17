@@ -1,5 +1,5 @@
 name : "IoT Reference Integration for Corstone-3xx"
-version: "v202410.00"
+version: "v202511.00"
 description: |-
   "Reference IoT integration projects using the Arm Corstone platforms and FreeRTOS libraries"
 dependencies:

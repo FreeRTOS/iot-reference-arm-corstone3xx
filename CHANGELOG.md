@@ -1,3 +1,61 @@
+# v202511.00 (2025-11-19)
+
+## Highlights
+
+* Added ML-Model component update feature to `Keyword-Detection` application
+* Updated the FRI to use new modular OTA structure
+* Added unit tests for heap management module
+* Updated AWS libraries to `202406.04-LTS`
+* Updated FreeRTOS-Kernel to version `v11.2.0`
+* Updated MLEK to version `v25.05`
+* Updated Mbed TLS to version `v3.6.4`
+* Updated TrustedFirmware-M to version `v2.2.1`
+
+## Changes
+
+* ml-model: Add ML-Model component update feature to keyword-detection application.
+* ci: Enable scheduled blackduck scanning
+* components: Remove out-of-tree patches
+* ci: Enable gitlab-ci cache
+* ota: Update FRI to use new modular OTA structure
+* build: Integrate TF-M split-build
+* tests: Add FVP version logging
+* Update AWS libraries to `202406.01-LTS`
+* Modular OTA improvements: Print job metadata and check if new firmware version
+  higher than previous version
+* ubuntu: Adapt to ubuntu v22.04 docker image changes.
+* ota-orchestrator: Add multiple enhancements and fixes.
+  mqtt-agent: Increase MQTT Agent keep alive interval.
+* freertos-kernel: Bump to v11.2.0 release.
+  mbedtls: Bump to v3.6.3 release.
+  tf-m: Bump to v2.2.0 release.
+* run-script: Fix conflicts with DISPLAY system wide variable.
+  mlek: Switch to public GitLab repo
+  setuptools: Update to latest version
+* toolchains: Add recommended toolchain flags.
+* armclang: Fix map file generation.
+* armclang-map-file: Only add list option if CMake version greater than 4
+  license: Exclude new gitlab tmp folder from license check
+* github-ci: Add DCO sign-off enforcement workflow
+  docs: Redirect TF-M links to Read the Docs URLs
+  docs: Add the missing development environment requirements
+* ci: Remove redundant default-jdk installation
+  syscalls-stub: Fix TF-M link
+* components: Bump MLEK version to 25.05
+* components: Bump Mbed TLS version to v3.6.4
+* ci-license: Check for current year in the license job
+* compiler: Update ARMClang to 6.24.18
+* components: Bump TF-M to v2.2.1 release.
+* unit-test: Add unit tests for heap management module
+* dev-container: Fix incorrect pyproject toml file reference location
+* npm: Use internal npm mirror
+  docs: Update endpoint instructions to new AWS console UI
+  docs: Add the SSL certification misconfiguration symptom
+  docs: Document outdated submodules symptom
+  docs: Update MQTT connectivity and OTA update instructions
+  fvp: Update to latest Corstone platforms FVP release
+* components: Update AWS libraries to `202406.04-LTS`
+
 # v202410.00 (2024-10-22)
 
 ## Highlights
