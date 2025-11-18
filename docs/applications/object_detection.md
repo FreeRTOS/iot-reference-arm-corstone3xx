@@ -23,6 +23,12 @@ Follow the instructions described in [Setting Up AWS Connectivity](./aws_iot/set
 
 ## Building the application
 
+> ⚠️ **If you’ve built a different application, run the following commands before proceeding**
+```bash
+git submodule deinit --all -f
+git submodule update --init --recursive
+```
+
 To build the Object-Detection example, run the following command:
 ```bash
 ./tools/scripts/build.sh object-detection --certificate_path <certificate pem's path> --private_key_path <private key pem's path> -t <corstone315/corstone320> --toolchain GNU --conn-stack <FREERTOS_PLUS_TCP/IOT_VSOCKET> --psa-crypto-implementation <TF-M/MBEDTLS>

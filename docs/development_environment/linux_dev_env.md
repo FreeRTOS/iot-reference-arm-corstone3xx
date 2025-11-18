@@ -113,3 +113,19 @@ git submodule update --init --recursive
     * In the file,
       `applications/<application_name>/configs/freertos_config/FreeRTOSIPConfig.h`,
       set `ipconfigUSE_DHCP` to value `0`
+* If you encounter an error similar to the following during any of the applications compilation stage:
+  ```
+  ERROR: cannot verify <domain>'s certificate, issued by '<CA name>':
+  Unable to locally verify the issuer's authority.
+  ```
+  This indicates that the system or Python environment cannot locate a valid set of trusted Certificate Authorities (CAs).
+  This can happen in WSL or other custom environments where the default certificate path is not automatically configured.
+
+  You can temporarily set the correct certificate path by exporting the appropriate environment variable:
+  ```
+  export SSL_CERT_FILE=<path-to-your-system-certificate-bundle>
+  ```
+  For example, on many Linux-based systems this is commonly:
+  ```
+  export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+  ```

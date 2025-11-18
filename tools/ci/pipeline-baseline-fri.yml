@@ -129,6 +129,7 @@ spell-check:
       [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
     - nvm install v22.7.0
     - apt-get install fd-find -y
+    - npm config set registry "${NPM_CONFIG_REGISTRY}"
     - npm install -g cspell
       # Find files with `.c`, `.h`, `.md`, `.txt`, `.change`, and `.yml` extensions in one patch.
       # Then, run `cspell` on the collected files using `cspell.config.yaml` configuration file.

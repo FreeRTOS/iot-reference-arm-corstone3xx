@@ -45,14 +45,15 @@ To see messages being sent by the application:
 1. Click on the **MQTT test client** button. This will open a new page.
 1. Click on **Subscribe to a topic**.
 1. In the **Subscription topic** field enter the topic name
-   `<mqtt-client-identifier>/ml/inference.`
+   `<mqtt-client-identifier>/ml/inference`
     > `mqtt-client-identifier` value is defined in
       `applications/<application_name>/configs/aws_configs/aws_clientcredential.h` as
       `clientcredentialIOT_THING_NAME`.
-1. In the **MQTT payload display** combo box select `Display payloads as
-   strings (more accurate)`
-1. Click the **Subscribe** button. The messages will be shown below within
-   this same page.
+1. Under **Additional configurations**, in the **MQTT payload display** combo box select
+   `Display payloads as strings (more accurate)`
+1. Click the **Subscribe** button. The messages will be shown below under
+   `<mqtt-client-identifier>/ml/inference` topic within the same page under **Subscriptions** when
+   the application is running.
 
 ## Firmware update with AWS
 
@@ -96,20 +97,19 @@ in the next step.
 1. Select the device to update (the Thing you created in earlier steps)
 1. Select `MQTT` transport only
 1. Select **Use my custom signed file**
-1. Select upload new file and select the signed update binary
-   (`build/${APPLICATION_NAME}-update_signed.bin`)
-1. Select the S3 bucket you created in step 1. to upload the binary to
 1. Paste the signature string that is echoed during the build of the example
    (it is also available in
    `build/update-signature.txt`).
-1. Select `SHA-256` and `ECDSA` algorithms.
+1. Select `SHA-256` and `RSA` algorithms.
 1. For **Path name of code signing certificate on device** put in `0`
    (the path is not used)
+1. Select upload new file and select the signed update binary
+   (`build/${APPLICATION_NAME}-update_signed.bin`)
+1. Select the S3 bucket you created in step 1. to upload the binary to
 1. For **Path name of file on device** put in `non_secure image`
 1. As the role, select the OTA role you created in step 2.
 1. Click next
 1. **Job type**, select
-   *Your job will complete after deploying to the selected devices/groups
-   (snapshot).*
-1. Click next, now your update job is ready and running
+   *Your job will complete after deploying to the devices and groups that you chose (snapshot)*
+1. Click **Create job**, now your update job is ready and running
    * If your application is connected to AWS, the update will begin immediately. If not, next time your application connects to AWS it will perform the update.
