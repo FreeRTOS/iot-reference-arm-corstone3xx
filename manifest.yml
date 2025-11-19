@@ -106,7 +106,7 @@ dependencies:
     license: "MIT"
     tpip-category: "category-2"
     security-risk: "low"
-    version: "8a4ac0e0e27a83da5c2a5e8c87f34998f6eb7aaf"
+    version: "v3.6.3"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/corePKCS11.git"
@@ -160,7 +160,7 @@ dependencies:
     license: "MIT"
     tpip-category: "category-2"
     security-risk: "low"
-    version: "V4.2.2"
+    version: "V4.2.5"
     repository:
       type: "git"
       url: "https://github.com/FreeRTOS/FreeRTOS-Plus-TCP.git"
