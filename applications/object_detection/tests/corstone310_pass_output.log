@@ -1,11 +1,11 @@
 Waiting for provisioning bundle
 Running provisioning bundle
-Secure Component (ID 0) version=2.2.1
+Secure Component (ID 0) version=2.2.2
 Non-Secure Component (ID 1) version=0.0.10
 Starting bootloader
-Booting TF-M v2.2.1
+Booting TF-M v2.2.2
 PSA Framework version is: 257
-Secure Component (ID 0) version=2.2.1
+Secure Component (ID 0) version=2.2.2
 Non-Secure Component (ID 1) version=0.0.20
 Complete recognition: Detected faces: 2
 Complete recognition: Detected faces: 2
