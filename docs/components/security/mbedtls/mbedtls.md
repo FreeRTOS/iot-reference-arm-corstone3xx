@@ -18,7 +18,7 @@ Consult the FRI `manifest.yml` for the currently supported version of MbedTLS.
 
 ## Configuration
 
-User must provide an MbedTLS configuration file. It can be an empty file or override MbedTLS default [configurations](https://tls.mbed.org/api/config_8h.html).
+User must provide an MbedTLS configuration file. You can use or override MbedTLS default [configuration file](https://mbed-tls.readthedocs.io/en/latest/kb/compiling-and-building/how-do-i-configure-mbedtls/#the-configuration-file).
 
 The configuration file specified by the application is retrieved by adding the C macro `MBEDTLS_CONFIG_FILE=<filename>` to the `mbedtls-config` target and its include path.
 
