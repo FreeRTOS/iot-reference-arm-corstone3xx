@@ -84,9 +84,9 @@ To run the Speech-Recognition example, run the following command:
 [INF] Boot source: primary slot
 [INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
-[INF] Image version: v2.2.1
+[INF] Image version: v2.2.2
 [INF] Jumping to the first image slot
-[1;34mBooting TF-M v2.2.1+gdd2b7de[0m
+[1;34mBooting TF-M v2.2.2+gdd2b7de[0m
 <NUL>[1;34m[Sec Thread] Secure image initializing![0m
 <NUL>TF-M Float ABI: Hard
 <NUL>Lazy stacking enabled
@@ -98,7 +98,7 @@ To run the Speech-Recognition example, run the following command:
 2 0 [IP-Task] vIPSetDHCP_RATimerEnableState: Off
 3 0 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
 4 23 [OTA Task] [INFO] OTA over MQTT, firmware versions:
-5 29 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.1
+5 29 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.2
 6 35 [OTA Task] [INFO] Non-Secure Component (ID 1) version=0.0.20
 7 42 [ML_TASK] [INFO] ML Task start
 8 46 [DSP_TASK] [INFO] DSP Task start
@@ -223,9 +223,9 @@ Follow the instructions described in the [Firmware update with AWS](./aws_iot/aw
 [INF] Boot source: primary slot
 [INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
-[INF] Image version: v2.2.1
+[INF] Image version: v2.2.2
 [INF] Jumping to the first image slot
-[1;34mBooting TF-M v2.2.1+gdd2b7de[0m
+[1;34mBooting TF-M v2.2.2+gdd2b7de[0m
 <NUL>[1;34m[Sec Thread] Secure image initializing![0m
 <NUL>TF-M Float ABI: Hard
 <NUL>Lazy stacking enabled
@@ -242,7 +242,7 @@ Creating an empty PS flash layout.
 5 0 [IP-Task] vIPSetDHCP_RATimerEnableState: Off
 6 0 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
 7 38 [OTA Task] [INFO] OTA over MQTT, firmware versions:
-8 44 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.1
+8 44 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.2
 9 50 [OTA Task] [INFO] Non-Secure Component (ID 1) version=0.0.10
 10 57 [ML_TASK] [INFO] ML Task start
 11 61 [DSP_TASK] [INFO] DSP Task start
@@ -310,9 +310,9 @@ Creating an empty PS flash layout.
 [INF] Boot source: primary slot
 [INF] Image index: 0, Swap type: none
 [INF] Bootloader chainload address offset: 0x0
-[INF] Image version: v2.2.1
+[INF] Image version: v2.2.2
 [INF] Jumping to the first image slot
-[1;34mBooting TF-M v2.2.1+gdd2b7de[0m
+[1;34mBooting TF-M v2.2.2+gdd2b7de[0m
 <NUL>[1;34m[Sec Thread] Secure image initializing![0m
 <NUL>TF-M Float ABI: Hard
 <NUL>Lazy stacking enabled
@@ -324,6 +324,6 @@ Creating an empty PS flash layout.
 2 0 [IP-Task] vIPSetDHCP_RATimerEnableState: Off
 3 0 [IP-Task] prvCloseDHCPSocket[44-21]: closed, user count 0
 4 23 [OTA Task] [INFO] OTA over MQTT, firmware versions:
-5 29 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.1
+5 29 [OTA Task] [INFO] Secure Component (ID 0) version=2.2.2
 6 35 [OTA Task] [INFO] Non-Secure Component (ID 1) version=0.0.20
 ```

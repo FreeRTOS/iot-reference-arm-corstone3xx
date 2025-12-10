@@ -11,6 +11,8 @@
 /*
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright 2025 Arm Limited and/or its affiliates
+ *  <open-source-office@arm.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -2411,7 +2413,7 @@ void mbedtls_platform_free( void * ptr );
  *
  * \note See also our Knowledge Base article about porting to a new
  * environment:
- * https://tls.mbed.org/kb/how-to/how-do-i-port-mbed-tls-to-a-new-environment-OS
+ * https://mbed-tls.readthedocs.io/en/latest/kb/how-to/how-do-i-port-mbed-tls-to-a-new-environment-OS
  *
  * Module:  library/net_sockets.c
  *
@@ -2857,7 +2859,7 @@ void mbedtls_platform_free( void * ptr );
  * contexts are not shared between threads. If you do intend to use contexts
  * between threads, you will need to enable this layer to prevent race
  * conditions. See also our Knowledge Base article about threading:
- * https://tls.mbed.org/kb/development/thread-safety-and-multi-threading
+ * https://mbed-tls.readthedocs.io/en/latest/kb/development/thread-safety-and-multi-threading
  *
  * Module:  library/threading.c
  *
@@ -2885,7 +2887,7 @@ void mbedtls_platform_free( void * ptr );
  *
  * \note See also our Knowledge Base article about porting to a new
  * environment:
- * https://tls.mbed.org/kb/how-to/how-do-i-port-mbed-tls-to-a-new-environment-OS
+ * https://mbed-tls.readthedocs.io/en/latest/kb/how-to/how-do-i-port-mbed-tls-to-a-new-environment-OS
  *
  * Module:  library/timing.c
  */

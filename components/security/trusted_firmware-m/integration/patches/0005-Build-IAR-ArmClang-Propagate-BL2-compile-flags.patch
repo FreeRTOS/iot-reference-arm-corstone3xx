@@ -1,0 +1,35 @@
+From d7e4854125104f3cd6eedd35f39ed2d168e32319 Mon Sep 17 00:00:00 2001
+From: Ahmed Ismail <Ahmed.Ismail@arm.com>
+Date: Tue, 2 Dec 2025 15:08:55 +0000
+Subject: [PATCH] Build: IAR-ArmClang: Propagate BL2 compile flags
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Missing propagation of CP_FLAGS to BL2 target
+caused IAR and ArmClang to fail building.
+
+Signed-off-by: Dávid Házi <david.hazi@arm.com>
+Signed-off-by: Ahmed Ismail <Ahmed.Ismail@arm.com>
+---
+ bl2/CMakeLists.txt | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/bl2/CMakeLists.txt b/bl2/CMakeLists.txt
+index d85210242..818b75b23 100644
+--- a/bl2/CMakeLists.txt
++++ b/bl2/CMakeLists.txt
+@@ -68,6 +68,10 @@ if(NOT CRYPTO_HW_ACCELERATOR)
+         PUBLIC
+             bl2_crypto_config
+     )
++    target_compile_options(bl2_fallback_rng
++        PRIVATE
++            ${BL2_COMPILER_CP_FLAG}
++    )
+ endif()
+ 
+ set(is_384_bit_curve "$<STREQUAL:${SIG_LEN},384>")
+-- 
+2.34.1
+

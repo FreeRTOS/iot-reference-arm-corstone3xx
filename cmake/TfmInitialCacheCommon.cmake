@@ -9,6 +9,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/../tools/cmake/ApplyPatches.cmake)
 set(PATCH_FILES_DIRECTORY "${CMAKE_SOURCE_DIR}/../integration/patches")
 set(PATCH_FILES
     "${PATCH_FILES_DIRECTORY}/0004-mps4-Provision-dummy-ROTPK-key.patch"
+    "${PATCH_FILES_DIRECTORY}/0005-Build-IAR-ArmClang-Propagate-BL2-compile-flags.patch"
 )
 # These patches are only applied in case of building keyword_detection application with GNU toolchain
 # as it is currently the only application that utilises the ML Model component OTA update feature
