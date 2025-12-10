@@ -1,3 +1,14 @@
+# v202511.01 (2025-12-10)
+
+## Highlights
+
+* Updated TrustedFirmware-M to version `v2.2.2`
+
+## Changes
+
+* tf-m: Bump to v2.2.2 minor release.
+* mbedtls-docs: Replace tls links with mbedtls alternatives.
+
 # v202511.00 (2025-11-19)
 
 ## Highlights
