@@ -29,6 +29,7 @@ variables:
   TOOLCHAIN: [ARMCLANG, GNU]
 
 stages:
+  - security-check
   - quality-check
   - build
   - test
