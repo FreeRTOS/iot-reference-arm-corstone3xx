@@ -882,7 +882,7 @@ black-duck:
       --detect.source.path="."
       --detect.project.name="${PROJECTNAME}"
       --detect.project.version.name="${CI_COMMIT_REF_NAME}"
-      --detect.project.tags=security_scan,unconfirmedsnippetsblocker
+      --detect.project.tags=security_scan,unconfirmedsnippetsblocker,allowmitapache2bsd3onlyblocker
       --detect.project.version.phase=DEVELOPMENT
       --detect.project.version.distribution=OPENSOURCE
       --detect.project.version.update=true
