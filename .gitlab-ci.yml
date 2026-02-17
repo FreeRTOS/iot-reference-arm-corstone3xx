@@ -1,4 +1,4 @@
-# Copyright 2023-2025 Arm Limited and/or its affiliates
+# Copyright 2023-2026 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -29,6 +29,7 @@ variables:
   TOOLCHAIN: [ARMCLANG, GNU]
 
 stages:
+  - security-check
   - quality-check
   - build
   - test
@@ -874,13 +875,14 @@ black-duck:
   script:
     - export PROJECTNAME="${BLACKDUCK_PROJECT_NAME}"
     - echo "-------Starting Black Duck Scan-------"
+    # Use process substitution to execute the downloaded Black Duck Detect script without saving it to disk
     - bash <(curl -s -L ${BLACKDUCK_DETECT_SCRIPT})
       --blackduck.url="${BLACKDUCK_URL}"
       --blackduck.api.token="${BLACKDUCK_API_TOKEN}"
       --detect.source.path="."
       --detect.project.name="${PROJECTNAME}"
       --detect.project.version.name="${CI_COMMIT_REF_NAME}"
-      --detect.project.tags=security_scan
+      --detect.project.tags=security_scan,unconfirmedsnippetsblocker,allowmitapache2bsd3onlyblocker
       --detect.project.version.phase=DEVELOPMENT
       --detect.project.version.distribution=OPENSOURCE
       --detect.project.version.update=true
@@ -893,6 +895,8 @@ black-duck:
       --detect.blackduck.signature.scanner.license.search=true
       --detect.blackduck.signature.scanner.snippet.matching=SNIPPET_MATCHING
       --detect.blackduck.signature.scanner.upload.source.mode=true
+      --detect.policy.check.fail.on.severities=BLOCKER,CRITICAL,MAJOR
+  after_script:
     - tar -czf fri-bd-scan-results.tar.gz -C /root/blackduck/runs .
   artifacts:
     paths:

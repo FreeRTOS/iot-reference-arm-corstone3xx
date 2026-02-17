@@ -1,4 +1,4 @@
-# Copyright 2021-2025 Arm Limited and/or its affiliates
+# Copyright 2021-2026 Arm Limited and/or its affiliates
 # <open-source-office@arm.com>
 # SPDX-License-Identifier: MIT
 
@@ -136,3 +136,39 @@ spell-check:
     - |
       fdfind -e c -e h -e md -e txt -e change -e yml --exec-batch \
       cspell lint --language-id C --color --show-context --show-suggestions --no-must-find-files -c cspell.config.yaml
+
+########################
+# Snippet Checker Job  #
+########################
+snippet-check:
+  tags:
+    - iotmsw-amd64
+  stage: security-check
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+  script:
+    - |
+      set +e
+      export PROJECTNAME="${BLACKDUCK_PROJECT_NAME}"
+      echo "-------Starting Black Duck Snippet Check-------"
+      # Use process substitution to execute the downloaded Black Duck Detect script without saving it to disk
+      bash <(curl -s -L "${BLACKDUCK_DETECT_SCRIPT}") \
+        --blackduck.url="${BLACKDUCK_URL}" \
+        --blackduck.api.token="${BLACKDUCK_API_TOKEN}" \
+        --detect.source.path="." \
+        --detect.project.name="${PROJECTNAME}" \
+        --detect.project.version.name="MR-${CI_MERGE_REQUEST_IID}" \
+        --detect.project.tags=unconfirmedsnippetsblocker \
+        --detect.tools=SIGNATURE_SCAN \
+        --detect.blackduck.signature.scanner.individual.file.matching=ALL \
+        --detect.blackduck.signature.scanner.snippet.matching=SNIPPET_MATCHING \
+        --detect.blackduck.signature.scanner.upload.source.mode=true \
+        --detect.policy.check.fail.on.names="unconfirmed-snippets-blocker"
+
+      DETECT_RC=$?
+      if [ "${DETECT_RC}" -ne 0 ]; then
+        echo "Black Duck Snippet Check failed with exit code ${DETECT_RC}"
+        python3 "${PWD}/tools/ci/scripts/post_snippet_comments.py"
+      fi
+
+      exit "${DETECT_RC}"
