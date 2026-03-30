@@ -54,7 +54,7 @@ Check [Device Provisioning](./device_provisioning/device_provisioning.md) for de
 ## Running the application
 
 ```bash
-./tools/scripts/run.sh object-detection -t <corstone315/corstone320> --frames applications/object_detection/resources/test.frm
+./tools/scripts/run.sh object-detection -t <corstone315/corstone320> --frames applications/object_detection/resources/Faces_Image.frm
 ```
 - The `frames` is used to select the input frames file.
 

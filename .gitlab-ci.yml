@@ -346,7 +346,7 @@ test-blinky-output:
         --pythonhome-path "/opt/python/3.9.18"
       elif [[ $APP == "object-detection" ]]; then
         pytest -s tools/tests/test_applications.py \
-        --frm-file-path "applications/${APP_UNDERSCORED}/resources/test.frm" \
+        --frm-file-path "applications/${APP_UNDERSCORED}/resources/Faces_Image.frm" \
         --build-artefacts-path "build" \
         --fvp $FVP_BIN \
         --credentials-path "applications/${APP_UNDERSCORED}/configs/aws_configs" \
